@@ -1,0 +1,250 @@
+/**
+* Standard dimmer with switching and dimming function
+*
+* @param unique id for this widget
+* @param name of the dimmer
+* @param a item for switching
+* @param a item for dimming
+* @param the minimum value if the slider is moved to total left (optional, default 0)
+* @param the maximum value if the slider is moved to total right (optional, default 255)
+* @param step between two values (optional, default 5)
+*/
+{% macro mow_calendar(id, item,_backend ) %}
+
+{% import "basic.html" as basic %}
+	<div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.calendar" data-item="{{ item }}" data-designType="{{ _backend }}">
+	</div>
+        <div class="indego_calendar">
+        </div>
+
+<html>
+<head>
+<!--
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0;" /> -->
+  <link rel="stylesheet" type="text/css" media="screen" href="base.css" /> 
+<style>
+main {
+  position: relative;
+}
+.overlay  {
+  border-radius: .5em .5em .5em .5em;	
+  border: 1px solid;
+  padding: .5em;
+  margin: .5em;
+} 
+
+.overlayHidden {
+  display: none;
+}
+ 
+.overlay { 
+  width: 30em; 
+  background: #fffbf0; 
+  border: 1px solid #e7c157;
+  position: absolute;
+  top: 10%;
+  right: 5%;
+  margin: auto;
+  padding: 1em;
+}
+</style>
+
+</head>
+<body>
+
+   <div id="popup" class="overlayHidden">
+      <h2>Kalendereintrag hinzu</h2>
+
+
+	<table>
+
+	<tr>
+		<td width=60px>
+		<input type="time" id="t_von" name="Time_von" min="0:00" max="23:59" required>
+		</td>
+		<td width=60px>
+		<input type="time" id="t_bis" name="Time_bis" min="0:00" max="23:59" required>
+		</td>
+		<td width=150px></td>
+	</tr>
+<!--
+	<tr>
+	<td width=60px colspan="3">
+	 <h4>Wochentage</h4>
+	</td>
+	<td width=60px></td>
+	<td width=60px></td>
+	</tr>
+	<tr>
+-->
+	<td colspan="3">
+	   <body>
+	      <form>
+		 <fieldset data-role = "controlgroup" data-type = "horizontal" id="Weekdays">
+		    <input type = "checkbox" id = "day_0" >
+		    <label for = "day_0">Mo</label>
+
+		    <input type = "checkbox" id = "day_1" value = 1 >
+		    <label for = "day_1">Di</label>
+
+		    <input type = "checkbox" id = "day_2" value = 0>
+		    <label for = "day_2">Mi</label>
+
+		    <input type = "checkbox" id = "day_3" >
+		    <label for = "day_3">Do</label>
+
+		    <input type = "checkbox" id = "day_4" >
+		    <label for = "day_4">Fr</label>
+
+		    <input type = "checkbox" id = "day_5" >
+		    <label for = "day_5">Sa</label>
+
+		    <input type = "checkbox" id = "day_6" >
+		    <label for = "day_6">So</label>
+		 </fieldset>
+	      </form>
+	   </body>
+	</td>
+	</tr>
+	<tr><td>
+         <button id="cancel">abbrechen</button>
+	</td>
+	<td>
+         <button id="OK">OK</button>
+	</td></tr>
+
+	</table>
+    </div>
+  </main>
+ 
+<script>
+  var CancelBtn = document.getElementById('cancel');
+  OkBtn = document.getElementById('OK');
+  popup = document.getElementById('popup');
+  CancelBtn.addEventListener('click',CloseEntryWindowByCancel);
+  OkBtn.addEventListener('click',CloseEntryWindowByOK);
+</script>
+
+</body>
+</html>
+
+
+{% endmacro %}
+
+
+
+{% macro predictive_calendar(id, item,_backend ) %}
+
+{% import "basic.html" as basic %}
+	<div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.calendar_predictive_list" data-item="{{ item }}" data-designType="{{ _backend }}">
+	</div>
+        <div class="indego_calendar">
+        </div>
+
+<html>
+<head>
+<!--
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0;" /> -->
+  <link rel="stylesheet" type="text/css" media="screen" href="base.css" /> 
+<style>
+main {
+  position: relative;
+}
+.overlay1  {
+  border-radius: .5em .5em .5em .5em;	
+  border: 1px solid;
+  padding: .5em;
+  margin: .5em;
+} 
+
+.overlayHidden1 {
+  display: none;
+}
+ 
+.overlay1 { 
+  width: 30em; 
+  background: #fffbf0; 
+  border: 1px solid #e7c157;
+  position: absolute;
+  top: 10%;
+  right: 5%;
+  margin: auto;
+  padding: 1em;
+}
+</style>
+
+</head>
+<body>
+
+   <div id="popup_pred" class="overlayHidden">
+      <h2>Kalendereintrag hinzu</h2>
+
+
+	<table>
+
+	<tr>
+		<td width=60px>
+		<input type="time" id="t_von" name="Time_von" min="0:00" max="23:59" required>
+		</td>
+		<td width=60px>
+		<input type="time" id="t_bis" name="Time_bis" min="0:00" max="23:59" required>
+		</td>
+		<td width=150px></td>
+	</tr>
+
+	<td colspan="3">
+	   <body>
+	      <form>
+		 <fieldset data-role = "controlgroup" data-type = "horizontal" id="Weekdays">
+		    <input type = "checkbox" id = "pred_day_0" >
+		    <label for = "day_0">Mo</label>
+
+		    <input type = "checkbox" id = "pred_day_1" value = 1 >
+		    <label for = "day_1">Di</label>
+
+		    <input type = "checkbox" id = "pred_day_2" value = 0>
+		    <label for = "day_2">Mi</label>
+
+		    <input type = "checkbox" id = "pred_day_3" >
+		    <label for = "day_3">Do</label>
+
+		    <input type = "checkbox" id = "pred_day_4" >
+		    <label for = "day_4">Fr</label>
+
+		    <input type = "checkbox" id = "pred_day_5" >
+		    <label for = "day_5">Sa</label>
+
+		    <input type = "checkbox" id = "pred_day_6" >
+		    <label for = "day_6">So</label>
+		 </fieldset>
+	      </form>
+	   </body>
+	</td>
+	</tr>
+	<tr><td>
+         <button id="cancel">abbrechen</button>
+	</td>
+	<td>
+         <button id="OK">OK</button>
+	</td></tr>
+
+	</table>
+    </div>
+  </main>
+ 
+<script>
+  var CancelBtn = document.getElementById('cancel');
+  OkBtn = document.getElementById('OK');
+  popup = document.getElementById('popup');
+  CancelBtn.addEventListener('click',CloseEntryWindowByCancel);
+  OkBtn.addEventListener('click',CloseEntryWindowByOK);
+</script>
+
+</body>
+</html>
+
+
+{% endmacro %}
+
