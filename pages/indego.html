@@ -11,6 +11,10 @@
     font-size:8px !important;
 
 }
+.predictive_calendar_active {
+    font-size:12px !important;
+
+}
 </style>
 
 /** # Gartenkarte ---------------------------------------------------------- */
@@ -30,15 +34,34 @@
 		<div class="set-2" data-role="collapsible-set" data-theme="c" data-content-theme="a" data-mini="true">
 			<div data-role="collapsible" data-collapsed="false" >
 				<h3>Indego</h3>
-				{{ basic.symbol('state_offline', 'indego.online','','scene_robo_lawnmower_offline.svg',0,'','#f00') }}
-				{{ basic.symbol('state_docked', ['indego.docked','indego.online'],'','scene_robo_lawnmower_docked.svg','','and') }}
+				<!-- Symbold for the 350/400er Connect -->
+<!--
+				{{ indego.symbol('state_docked', 'indego.docked','dropins/indego-s-docked.png','','and') }}
+				{{ indego.symbol('state_moving', 'indego.moving','dropins/indego-s-mowing.png','','and') }}
+				{{ indego.symbol('state_pause',  'indego.pause' ,'dropins/indego-s.png','','and') }}
+				{{ indego.symbol('state_help',   'indego.help'  ,'dropins/indego-s-help.png','','and') }}
+				{{ indego.symbol('state_help',   'indego.help'  ,'dropins/indego-s-offline.png','','and') }}
+-->
+				<!-- Symbold for the 800/1000/1300er Connect -->
+				{{ indego.symbol('state_offline','indego.online','dropins/indego-offline.png',0,'and') }}
+				{{ indego.symbol('state_docked', 'indego.docked','dropins/indego-docked.png','','and') }}
+				{{ indego.symbol('state_moving', 'indego.moving','dropins/indego-mowing.png','','and') }}
+				{{ indego.symbol('state_pause',  'indego.pause' ,'dropins/indego-png','','and') }}
+				{{ indego.symbol('state_help',   'indego.help'  ,'dropins/indego-help.png','','and') }}
+
+<!--
+				{{ basic.symbol('state_docked', 'indego.online','','scene_robo_lawnmower_offline.svg',0,'','#f00') }}
+				{{ basic.symbol('state_docked', ['indego.docked','indego.online'],'','dropins/indego-docked.png','','and') }}
 				{{ basic.symbol('state_moving', ['indego.moving','indego.online'],'','scene_robo_lawnmower_moving.svg','','and','icon1') }}
 				{{ basic.symbol('state_pause', ['indego.pause','indego.online'],'','scene_robo_lawnmower_stopp.svg','','and') }}
 				{{ basic.symbol('state_help', 'indego.help','','scene_robo_lawnmower_help.svg','','','#f00') }}
+-->
 				<br />
 				<center>
-					<font size="104">
+					<font style="font-size:200%">
 						{{ basic.print('', 'indego.mowedPercent', '%') }}</br>
+					</font>
+					<font style="font-size:100%">
 						{{ basic.print('', 'indego.state_str') }}
 					</font>
 				</center>
@@ -66,8 +89,7 @@
 					</tr>
 				</table>
 
-				<br />
-				<br />
+
 			</div>
 		</div>
     </div>
@@ -81,9 +103,9 @@
 					<h3>Mähkalender - Kalenderfunktionen</h3>
 					<br />
 					<button id="indego_cancel" onclick="CancelChanges_mow()">abbrechen</button>
-
 					<button id="indego_ok" onclick="SaveChanges_mow()">Speichern</button>
-
+					{{ indego.calendar_active('Indego_calendar_active','indego.calendar_sel_cal','M','Mähkalender') }} 
+   					<h3>Response:</h3><br> {{ basic.print('pred_cal_response', 'indego.calendar_result') }}
 				</div>
 			</div>
 			<div data-role="collapsible" data-collapsed="false" >
@@ -137,13 +159,16 @@
 /** # Predictive Kalender  ---------------------------------------------------------- */
     <div class="block" {border-style: solid;}>
 		{{ indego.predictive_calendar('Indego_predictive_calendar','indego.calendar_predictive_list') }}
+
 		<div class="set-3" data-role="collapsible-set" data-theme="c" data-content-theme="a" data-mini="true">
 			<div class="set-3" data-role="collapsible-set" data-theme="c" data-content-theme="a" data-mini="true">
 				<div data-role="collapsible" data-collapsed="false" >
 					<h3>SmartMow - Kalenderfunktionen</h3>
 					<br />
-					<button id="indego_cancel_predictive" onclick="CancelChanges()">abbrechen</button>
-					<button id="indego_ok_predictive" onclick="SaveChanges()">Speichern</button>
+					<button id="indego_cancel_predictive" onclick="CancelChanges_pred()">abbrechen</button>
+					<button id="indego_ok_predictive" onclick="SaveChanges_pred()">Speichern</button>
+					{{ indego.calendar_active('Indego_predictive_calendar_active','indego.calendar_predictive_sel_cal','P','Kalender für Ausschlusszeiten') }} 
+   					<h3>Response:</h3><br> {{ basic.print('pred_cal_response', 'indego.calendar_predictive_result') }}
 
 				</div>
 			</div>

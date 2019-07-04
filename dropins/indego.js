@@ -17,7 +17,12 @@ var orgCalendar = ""
 var newCalendar = ""
 var mode = ""
 var oldKey = ""
+var calType = ""
 
+var activeOrgPredictive = 0
+var activeOrgCalendar = 0
+var activeNewPredictive = 0
+var activeNewCalendar = 0
 	
 	
 function DrawCalendar(TableName, CalNo, preFix)
@@ -52,7 +57,35 @@ function DrawCalendar(TableName, CalNo, preFix)
 	$("#"+TableName).html(myHtml)
 }
 
+function ReDrawActCalendar(actCal, type)
+{
+	i=0
+	while (i <= 5)
+		{
+	  	 var activeDay = type + "-cal_"+parseInt(i)
+	  	 if (actCal == i)
+	  		 { document.getElementById(activeDay).checked = true }
+	  	 else
+			 { document.getElementById(activeDay).checked = false }
 
+	     $(document.getElementById(activeDay)).checkboxradio("refresh")
+		 i += 1
+		}
+
+}
+
+function GetActCalendar(type)
+{
+	i=0
+	while (i <= 5)
+		{
+	  	 var activeDay = type + "-cal_"+parseInt(i)
+	  	 if ( document.getElementById(activeDay).checked == true)
+	  		 { break}
+		 i += 1
+		}
+	return i
+}
 function ValidateEntry(CalNo,Days,myStartTime,myEndTime)
 {
 	var msg = ""
@@ -106,23 +139,43 @@ function ValidateEntry(CalNo,Days,myStartTime,myEndTime)
 
 function CancelChanges_mow()
 {
+    newCalendar = $.extend( true, [], orgCalendar );
 	UpdateTable(orgCalendar,'indego-draw-calendar','indego-calendar','m')	
+	
+    activeNewCalendar =  activeOrgCalendar
+	ReDrawActCalendar(activeNewCalendar, 'M');
 }
 
 function SaveChanges_mow()
 {
+	var ActCal = GetActCalendar('M')
+	io.write('indego.calendar_sel_cal',ActCal)
+	activeOrgCalendar = activeNewCalendar
+	
 	io.write('indego.calendar_list',newCalendar[0])
+    orgCalendar = $.extend( true, [], newCalendar );
 }
 
 // Functions for Predictive Calendar
 function CancelChanges_pred()
 {
-	UpdateTable(orgPredictiveCalendar,'indego-draw-calendar','indego-calendar','p')	
+    newPredictiveCalendar = $.extend( true, [], orgPredictiveCalendar );
+    UpdateTable(orgPredictiveCalendar,'indego-pred-draw-calendar','indego-pred-calendar','p')
+
+    activeNewPredictive = activeOrgPredictive
+	ReDrawActCalendar(activeNewPredictive, 'P');
+
 }
 
 function SaveChanges_pred()
 {
+	var ActCal = GetActCalendar('P')
+	io.write('indego.calendar_predictive_sel_cal',ActCal)
+    activeOrgPredictive = activeNewPredictive
+
+	
 	io.write('indego.calendar_predictive_list',newPredictiveCalendar[0])
+    orgPredictiveCalendar = $.extend( true, [], newPredictiveCalendar );
 }
 
 function InitWindow()
@@ -175,14 +228,28 @@ function CloseEntryWindowByOK()
     	}
     console.log("Key :"+myKey + ' DayArray :' + DayArray);
     myEntry = {"Days":DayArray, "Start": StartTime, "End" : EndTime, "Key":myKey}
-    if (mode = "Edit")
+    if (mode == "Edit")
     	{
     	 //Remove the old Key/Value
-    	delete newCalendar[0][oldKey]
+    	if (calType == 'm')
+    	{ delete newCalendar[0][oldKey]	}
+    	else 
+    	{ delete newPredictiveCalendar[0][oldKey]	}
     	}
-    newCalendar[0][myKey]=myEntry
+	if (calType == 'm')
+		{
+		 newCalendar[0][myKey]=myEntry
+		 UpdateTable(newCalendar,'indego-draw-calendar','indego-calendar',calType)
+		}
+	else
+		{
+		 newPredictiveCalendar[0][myKey]=myEntry
+		 UpdateTable(newPredictiveCalendar,'indego-pred-draw-calendar','indego-pred-calendar',calType)
+		}
+	
+	
     popup.className = 'overlayHidden';
-    UpdateTable(newCalendar,'indego-draw-calendar','indego-calendar','m')
+
 }
 
 
@@ -191,10 +258,15 @@ function CloseEntryWindowByOK()
 function BtnEdit(click_item)
 {
  console.log("BtnEdit from element :"+click_item);
- myKey = click_item.substring(5,20)
+ myKey = click_item.substring(6,21)
  oldKey = myKey
- actCalendar = click_item.substring(5,6)
- myObj = newCalendar[0][myKey]
+ actCalendar = click_item.substring(6,7)
+ calType = click_item.substring(0,1)
+ if (calType == 'm')
+	 { myObj = newCalendar[0][myKey] }
+ else
+ 	 { myObj = newPredictiveCalendar[0][myKey] }
+
  document.getElementById("t_von").value = myObj.Start
  document.getElementById("t_bis").value = myObj.End
  i=0
@@ -223,9 +295,18 @@ function BtnEdit(click_item)
 function BtnDelete(click_item)
 {
 	console.log("BtnDelete from element :"+click_item);
-	myKey = click_item.substring(7,20)
-	delete newCalendar[0][myKey]
-	UpdateTable(newCalendar,'indego-draw-calendar','indego-calendar','m')
+	myKey = click_item.substring(8,21)
+	calType = click_item.substring(0,1)
+	if (calType == 'm')
+		{
+		 delete newCalendar[0][myKey]
+		 UpdateTable(newCalendar,'indego-draw-calendar','indego-calendar',calType)
+		}
+	else
+		{
+		 delete newPredictiveCalendar[0][myKey]
+		 UpdateTable(newPredictiveCalendar,'indego-pred-draw-calendar','indego-pred-calendar',calType)
+		}
  
 }
 
@@ -233,7 +314,8 @@ function BtnAdd(click_item)
 {
  console.log("BtnAdd from element :"+click_item);
  InitWindow()
- actCalendar = click_item.substring(4,5)
+ actCalendar = click_item.substring(5,6)
+ calType = click_item.substring(0,1)
  mode = "Add"
  ShowEntryWindow();
 }
@@ -300,8 +382,8 @@ function UpdateTable(myCal,preFixDrawCalender, preFixEntryCalendar, preFix)
 	          myRow +="<td>" +
 	          "<div class='indegoControl' style='float: right'>" +
 	              "<div data-role='controlgroup' data-type='horizontal' data-inline='true' data-mini='true'>" +
-	                "<button id='edit_"  + key + "' onclick=BtnEdit(this.id)> Edit</button>" +
-	                "<button id='delete_"+ key + "' onclick=BtnDelete(this.id)>Del</button>" +
+	                "<button id='"+preFix+"edit_"  + key + "' onclick=BtnEdit(this.id)> Edit</button>" +
+	                "<button id='"+preFix+"delete_"+ key + "' onclick=BtnDelete(this.id)>Del</button>" +
 	              "</div>" +
 	            "</div>" +
 	 		"</td>" +
@@ -318,7 +400,7 @@ function UpdateTable(myCal,preFixDrawCalender, preFixEntryCalendar, preFix)
       myTable[i] += "<tr><td colspan='3' style='align: left>'"+
               "<div class='indegoadd'>" +
                   "<div data-role='controlgroup' data-type='horizontal' data-inline='true' data-mini='true'>" +
-                    "<button id='"+ "add_"+String(i) + "' onclick=BtnAdd(this.id)>Eintrag hinzu</button>" +
+                    "<button id='" +preFix+ "add_"+String(i) + "' onclick=BtnAdd(this.id)>Eintrag hinzu</button>" +
                   "</div>" +
                 "</div>" +
 		'</td></tr>'
@@ -355,7 +437,6 @@ $.widget("sv.indego_calendar", $.sv.widget, {
   _create: function()
   {
     this._super();
-    var id = this.options.id;
   },
 
  _update: function(response)
@@ -385,7 +466,6 @@ initSelector: 'div[data-widget="indego.calendar_predictive_list"]',
 _create: function()
 {
   this._super();
-  var id = this.options.id;
 },
 
 _update: function(response)
@@ -400,9 +480,100 @@ _update: function(response)
  orgPredictiveCalendar = $.extend( true, [], response );     
  newPredictiveCalendar = $.extend( true, [], response );
 
- //indego-pred-calendar-1
- //indego-pred-draw-calendar-1
+
  UpdateTable(orgPredictiveCalendar,'indego-pred-draw-calendar','indego-pred-calendar','p')
- //UpdateTable(orgPredictiveCalendar)
+
 }
+});
+
+//*****************************************************
+// Widget for active calendar
+//*****************************************************
+$.widget("sv.calendar_sel_cal", $.sv.widget, {
+
+initSelector: 'div[data-widget="indego.calendar_sel_cal"]',
+	options: {
+		mode: '',
+		id: ''
+	},
+
+_create: function()
+{
+ this._super();
+ var id = this.options.id;
+},
+
+_update: function(response)
+{
+
+// wenn keine Daten vorhanden, dann ist kein item mit den eigenschaften hinterlegt und es wird nichts gemacht
+if (response.length === 0)
+{
+ notify.error("Indego widget", "No active predictive Calendar found ");
+ return;
+}
+
+var type = this.options.mode
+if (type == 'P')
+	{
+  	 activeOrgPredictive = parseInt(response[0]);     
+  	 activeNewPredictive = parseInt(response[0]);     
+  	 ReDrawActCalendar(activeNewPredictive, type)
+	}
+else 
+	{
+	 activeOrgCalendar = parseInt(response[0]);     
+  	 activeNewCalendar = parseInt(response[0]);     
+  	 ReDrawActCalendar(activeNewCalendar, type);
+	}
+
+
+
+}
+});
+
+//*****************************************************
+//Widget for Symbols
+//*****************************************************
+$.widget("sv.symbol", $.sv.widget, {
+
+	initSelector: '[data-widget="indego.symbol"]',
+	
+	options: {
+		mode: '',
+		val: '',
+		id: ''
+	},
+
+	_create: function()
+	{
+		this._super()
+  	    var id = this.options.id;
+	},
+	_update: function(response)
+    {
+		//event.stopPropagation();
+		// response will be an array, if more then one item is requested
+		var bit = (this.options.mode == 'and');
+		if (response instanceof Array) {
+			for (var i = 0; i < response.length; i++) {
+				if (this.options.mode == 'and') {
+					bit = bit && (response[i] == this.options.val);
+				}
+				else {
+					bit = bit || (response[i] == this.options.val);
+				}
+			}
+		}
+		else {
+			bit = (response == this.options.val);
+		}
+		if (bit) {
+			this.element.show();
+
+		}
+		else {
+			this.element.hide();
+		}
+	}
 });

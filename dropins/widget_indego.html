@@ -1,14 +1,80 @@
-/**
-* Standard dimmer with switching and dimming function
+
+/*********************************************
 *
+*  Widget for the active predictive Calender
+*
+* id         = unique ID for the Widget
+* item       = item of shNG
+* type       = P:predictive Calendar M:MowCalendar
+* headline   = Headline for the Fieldset
+*********************************************/
+
+{% macro calendar_active(id, item, type, headline, _backend ) %}
+
+{% import "basic.html" as basic %}
+	<div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.calendar_sel_cal" data-item="{{ item }}"
+	       data-mode="{{ type|default('P') }}" data-designType="{{ _backend }}">
+
+        <div class="calendar_active">
+
+	<html>
+		<h4>{{ headline }}</h4>
+		   <body>
+		      <form>
+			 <fieldset data-role = "controlgroup" data-type = "horizontal" id="{{uid(type, '_cal_active' )}}">
+			    <input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_1') }}" >
+			    <label for = "{{ uid(type,'cal_1') }}">1</label>
+
+			    <input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_2') }}">
+			    <label for = "{{ uid(type,'cal_2') }}">2</label>
+
+			    <input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_3') }}">
+			    <label for = "{{ uid(type,'cal_3') }}">3</label>
+
+			    <input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_4') }}" >
+			    <label for = "{{ uid(type,'cal_4') }}">4</label>
+
+			    <input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_5') }}" >
+			    <label for = "{{ uid(type,'cal_5') }}">5</label>
+
+			    <input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_0') }}" >
+			    <label for = "{{ uid(type,'cal_0') }}">AUS</label>
+			 </fieldset>
+		      </form>
+		   </body>
+	</html>
+        </div>
+	</div>
+{% endmacro %}
+
+
+/*********************************************
+*
+*  Widget for the Indego-Symbols
+*
+*********************************************/
+/**
 * @param unique id for this widget
-* @param name of the dimmer
-* @param a item for switching
-* @param a item for dimming
-* @param the minimum value if the slider is moved to total left (optional, default 0)
-* @param the maximum value if the slider is moved to total right (optional, default 255)
-* @param step between two values (optional, default 5)
+* @param one or more item(s). More items in array form: [ item1 , item2 ]
+* @param the pic, shown when item has value val
+* @param value (default 1)
+* @param the mode, 'or', 'and' (default 'or')
 */
+{% macro symbol(id, items, pic, val, mode) %}
+
+	<div id="{{ uid(page, id) }}" data-widget="indego.symbol" data-item="{{ implode(items) }}" data-val="{{ val|default('1') }}"
+		data-mode="{{ mode|default('or') }}" class="symbol hide">
+		<img src="{{  pic }}" style="width:40%;height:40%;">
+	</div>
+{% endmacro %}
+
+
+/*********************************************
+*
+*  Widget for the Mow Calendar
+*
+*********************************************/
+
 {% macro mow_calendar(id, item,_backend ) %}
 
 {% import "basic.html" as basic %}
@@ -68,16 +134,7 @@ main {
 		</td>
 		<td width=150px></td>
 	</tr>
-<!--
-	<tr>
-	<td width=60px colspan="3">
-	 <h4>Wochentage</h4>
-	</td>
-	<td width=60px></td>
-	<td width=60px></td>
-	</tr>
-	<tr>
--->
+
 	<td colspan="3">
 	   <body>
 	      <form>
@@ -132,6 +189,13 @@ main {
 
 {% endmacro %}
 
+
+
+/*********************************************
+*
+*  Widget for the predictive Calendar
+*
+*********************************************/
 
 
 {% macro predictive_calendar(id, item,_backend ) %}

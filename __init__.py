@@ -29,6 +29,8 @@ from lib.model.smartplugin import *
 from lib.item import Items
 from lib.shtime import Shtime
 
+
+import time
 import base64
 import os
 import ast
@@ -40,6 +42,7 @@ import sys
 
 
 import requests
+from _ast import Or
 
 
 
@@ -83,6 +86,7 @@ class Indego(SmartPlugin):
 
         # get the parameters for the plugin (as defined in metadata plugin.yaml):
         #   self.param1 = self.get_parameter_value('param1')
+
         self.user = self.get_parameter_value('user')
         self.password = self.get_parameter_value('password')
         self.img_pfad = self.get_parameter_value('img_pfad')
@@ -104,6 +108,11 @@ class Indego(SmartPlugin):
         self.logged_in = self.check_auth()
 
         self.add_keys = {}
+        self.cal_update_count = 0
+        self.cal_update_running = False
+        
+        self.cal_upate_count_pred = 0
+        self.cal_pred_update_running = False
 
         # Check for initialization errors:
         if not self.indego_url:
@@ -131,21 +140,12 @@ class Indego(SmartPlugin):
         """
         self.logger.debug("Run method called")
         self.alive = True
-        # get the mowing calendar
-        self.calender = self.items.return_item(self.parent_item + '.' + 'calendar')
-        self.calender(self.get_calendar(), 'indego')
-        calender_list = self.items.return_item(self.parent_item + '.' + 'calendar_list')
-        calender_list(self.parse_cal_2_list(self.calender._value),'indego')
-        
-        # get the predictve calendar for smartmowing
-        self.predictive_calender = self.items.return_item(self.parent_item + '.' + 'calendar_predictive')
-        self.predictive_calender(self.get_predictive_calendar(), 'indego')
-        predictive_calender_list = self.items.return_item(self.parent_item + '.' + 'calendar_predictive_list')
-        predictive_calender_list(self.parse_cal_2_list(self.predictive_calender._value),'indego')
-        
+
+        # start the refresh timers
         self.scheduler_add('state', self.state, cycle = self.cycle)
-        self.scheduler_add('alert', self.alert, cycle=3600)
-        #self.get_sh().scheduler.add('auth', self.auth, cycle=7190)
+        self.scheduler_add('alert', self.alert, cycle=30)
+        self.scheduler_add('get_calendars', self.get_calendars, cycle=30)
+        self.scheduler_add('check_login_state', self.check_login_state, cycle=120)
         self.scheduler_add('device_date', self.device_data, cycle=6000)
         self.scheduler_add('get_weather', self.get_weather, cycle=600)
         self.scheduler_add('get_next_time', self.get_next_time, cycle=300)
@@ -198,11 +198,21 @@ class Indego(SmartPlugin):
         
 
         if item._name ==  self.parent_item+'.calendar_list':
-            
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'calendar_list', self.get_iattr_value(item.conf, 'calendar_list')))
             return self.update_item
-            
+        
+        if item._name ==  self.parent_item+'.calendar_predictive_list':
+            self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'calendar_list', self.get_iattr_value(item.conf, 'calendar_list')))
+            return self.update_item
+        
+        if item._name ==  self.parent_item+'.calendar_sel_cal':
+            self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'calendar_list', self.get_iattr_value(item.conf, 'calendar_list')))
+            return self.update_item
 
+        if item._name ==  self.parent_item+'.calendar_predictive_sel_cal':
+            self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'calendar_list', self.get_iattr_value(item.conf, 'calendar_list')))
+            return self.update_item
+        
         return None
 
     def parse_logic(self, logic):
@@ -229,6 +239,7 @@ class Indego(SmartPlugin):
         :param source: if given it represents the source
         :param dest: if given it represents the dest
         """
+
         if caller != self.get_shortname():
             # code to execute, only if the item has not been changed by this this plugin:
             self.logger.info("Update item: {}, item has been changed outside this plugin".format(item.id()))
@@ -238,27 +249,149 @@ class Indego(SmartPlugin):
             
             if item._name == self.parent_item+'.calendar_list':
                 myList = item()
-                self.parse_list_2_cal(myList, self.calender)
+                ResultItem = self.items.return_item(self.parent_item+'.calendar_result')
+                ResultItem(str("speichern gestartet"),self.get_shortname())
+                self.parse_list_2_cal(myList, self.calendar)
+                # Now Save the Calendar on Bosch-API
+                self.cal_update_count = 0
+                self.auto_mow_cal_update()
 
-    ### Todo: will we ever need this function with indego plugin?
-    ###def poll_device(self):
-    ###    """
-    ###    todo: Do we need to obey naming conventions?
-    ###    Polls for updates of the device
-    ###
-    ###    This method is only needed, if the device (hardware/interface) does not propagate
-    ###    changes on it's own, but has to be polled to get the actual status.
-    ###    It is called by the scheduler.
-    ###    """
-    ###    # # get the value from the device
-    ###    # device_value = ...
-    ###    #
-    ###    # # find the item(s) to update:
-    ###    # for item in self.sh.find_items('...'):
-    ###    #
-    ###    #     # update the item
-    ###    #     item(device_value, self.get_shortname())
-    ###    pass
+            if item._name == self.parent_item+'.calendar_predictive_list':
+                self.set_childitem('calendar_predictive_result',"speichern gestartet")
+                myList = item()
+                self.parse_list_2_cal(myList, self.predictive_calendar)
+                # Now Save the Calendar on Bosch-API
+                self.upate_count_pred = 0
+                self.auto_pred_cal_update()
+            
+            if item._name == self.parent_item+'.calendar_sel_cal':
+                self.set_childitem('.calendar_result',"speichern gestartet")
+                # Now Save the Calendar on Bosch-API
+                self.cal_update_count = 0
+                self.auto_mow_cal_update()
+            
+            if  item._name == self.parent_item+'.calendar_predictive_sel_cal':
+                self.set_childitem('calendar_predictive_result',"speichern gestartet")
+                # Now Save the Calendar on Bosch-API
+                self.upate_count_pred = 0
+                self.auto_pred_cal_update()
+
+    
+    def check_login_state(self):
+        actTimeStamp = time.time()
+        if actTimeStamp-600 > self.expiration_timestamp:
+            self.delete_auth()
+            self.auth()
+            self.logged_in = self.check_auth()
+            self.set_childitem(self.parent_item+'.'+'online', not(self.logged_in))
+            self.logger.info("refreshed Session-ID at : {0}".format(actTimeStamp.strftime('Date: %a, %d %b %H:%M:%S %Z %Y')))
+        else:
+            self.logger.info("Session-ID {0} is still valid".format(self.context_id))
+            
+    def auto_pred_cal_update(self):
+        self.cal_upate_count_pred += 1
+        self.cal_pred_update_running = True
+        
+        actCalendar = self.get_childitem('calendar_predictive_sel_cal')
+        # set actual Calendar in Calendar-structure
+        myCal = self.get_childitem('calendar_predictive')
+        myCal['sel_cal'] = actCalendar
+        self.set_childitem('calendar_predictive',myCal)
+        
+        myResult = self.store_calendar(self.predictive_calendar(),'predictive/calendar')
+        
+        if self.cal_upate_count_pred <=3:
+            if myResult != 200:
+                if self.cal_upate_count_pred == 1:
+                    self.scheduler_add('auto_pred_cal_update', self.auto_pred_cal_update, cycle=60)
+                myMsg = "Mäher konnte nicht erreicht werden"
+                myMsg += "nächster Versuch in 60 Sekunden"
+                myMsg += "Anzahl Versuche : " + str(self.cal_update_count)
+            else:
+                self.cal_pred_update_running = False
+                self.cal_upate_count_pred = 0
+                try:
+                    self.get_sh().scheduler.remove('auto_pred_cal_update')
+                except:
+                    pass
+                myMsg = "Ausschlusskalender wurde gespeichert"
+
+        else: # Bereits drei Versuche getätigt
+            try:
+                self.get_sh().scheduler.remove('auto_pred_cal_update')
+            except:
+                pass
+            myMsg = "Ausschlusskalender konnte nach drei Versuchen nicht"
+            myMsg += "nicht gespeichert werden."
+            myMsg += "Speichern abgebrochen"
+            self.cal_pred_update_running = False
+            self.cal_upate_count_pred = 0
+        
+        self.set_childitem('calendar_predictive_result',myMsg)
+
+            
+
+    def auto_mow_cal_update(self):
+        self.cal_update_count += 1
+        self.cal_update_running = True
+
+        actCalendar = self.get_childitem('calendar_sel_cal')
+        # set actual Calendar in Calendar-structure
+        myCal = self.get_childitem('calendar')
+        myCal['sel_cal'] = actCalendar
+        self.set_childitem('calendar',myCal)
+        
+        myResult = self.store_calendar(self.calendar(),'calendar')
+        if self.cal_update_count <=3:
+            if myResult != 200:
+                if self.cal_update_count == 1:
+                    self.scheduler_add('auto_mow_cal_update', self.auto_mow_cal_update, cycle=60)
+                myMsg = "Mäher konnte nicht erreicht werden"
+                myMsg += "nächster Versuch in 60 Sekunden"
+                myMsg += "Anzahl Versuche : " + str(self.cal_update_count)
+            else:
+                self.cal_update_running = False
+                self.cal_update_count = 0
+                try:
+                    self.get_sh().scheduler.remove('auto_cal_update')
+                except:
+                    pass
+                myMsg = "Mähkalender wurde gespeichert"
+
+        else: # Bereits drei Versuche getätigt
+            try:
+                self.get_sh().scheduler.remove('auto_mow_cal_update')
+            except:
+                pass
+            myMsg = "Mähkalender konnte nach drei Versuchen nicht"
+            myMsg += "nicht gespeichert werden."
+            myMsg += "Speichern abgebrochen"
+            self.cal_update_running = False
+            self.cal_update_count = 0
+        
+        self.set_childitem('calendar_result',myMsg)
+    
+    
+    def get_calendars(self):    
+        try:
+            if not self.cal_update_running:
+                # get the mowing calendar
+                self.calendar = self.items.return_item(self.parent_item + '.' + 'calendar')
+                self.calendar(self.get_calendar(), 'indego')
+                calendar_list = self.items.return_item(self.parent_item + '.' + 'calendar_list')
+                calendar_list(self.parse_cal_2_list(self.calendar._value),'indego')
+                self.act_Calender = self.items.return_item(self.parent_item + '.' + 'calendar_sel_cal')
+                self.act_Calender(self.get_active_calendar(self.calendar()),'indego')
+            if not self.cal_update_running:
+                # get the predictve calendar for smartmowing
+                self.predictive_calendar = self.items.return_item(self.parent_item + '.' + 'calendar_predictive')
+                self.predictive_calendar(self.get_predictive_calendar(), 'indego')
+                predictive_calendar_list = self.items.return_item(self.parent_item + '.' + 'calendar_predictive_list')
+                predictive_calendar_list(self.parse_cal_2_list(self.predictive_calendar._value),'indego')
+                self.act_pred_Calender = self.items.return_item(self.parent_item + '.' + 'calendar_predictive_sel_cal')
+                self.act_pred_Calender(self.get_active_calendar(self.predictive_calendar()),'indego')
+        except Exception as e:
+            self.logger.warning("Problem fetching Calendars: {0}".format(e))
 
     def fetch_url(self, url, username=None, password=None, timeout=2, body=None):
         try:
@@ -279,6 +412,19 @@ class Indego(SmartPlugin):
             content = False
         
         return content,expiration_timestamp
+    
+    def get_childitem(self, itemname):
+        """
+        a shortcut function to get value of an item if it exists
+        :param itemname:
+        :return:
+        """
+        item = self.items.return_item(self.parent_item + '.' + itemname)  
+        if (item != None):
+            return item()
+        else:
+            self.logger.warning("Could not get item '{}'".format(self.parent_item+'.'+itemname))    
+    
     
     def set_childitem(self, itemname, value ):
         """
@@ -416,6 +562,32 @@ class Indego(SmartPlugin):
             self.logger.warning("Log off was not successfull : {0}".format(response.status_code))
             return False
 
+    def store_calendar(self, myCal = None, myName = ""):
+        '''
+        PUT https://api.indego.iot.bosch-si.com/api/v1/alms/{serial}/calendar
+        x-im-context-id: {contextId}
+        '''
+        
+        url = "{}alms/{}/{}".format( self.indego_url, self.alm_sn, myName)
+        
+        headers = {
+                   'x-im-context-id' : self.context_id
+                  }
+
+        try:
+            response = requests.put(url, headers=headers, json=myCal)
+        except err as Exception:
+            self.logger.warning("Error during saving Calendar-Infos Error {}".format(err))
+            return None
+            
+        if response.status_code == 200:
+            self.logger.info("Set correct Calendar settings for {}".format(myName))
+        else:
+            self.logger.info("Error during saving Calendar settings for {} HTTP-Status :{}".format(myName, response.status_code))
+
+        return response.status_code            
+
+        
     
     def check_auth(self):
         '''
@@ -453,7 +625,7 @@ class Indego(SmartPlugin):
         if auth_response == False:
             self.logger.error('AUTHENTICATION INDEGO FAILED! Plugin not working now.')
         else:
-            self.expiration_timestamp
+            self.expiration_timestamp = expiration_timestamp
             self.logger.debug("String Auth: " + str(auth_response))
             self.context_id = auth_response['contextId']
             self.logger.info("context ID received " + self.context_id)
@@ -477,12 +649,12 @@ class Indego(SmartPlugin):
         try:
             response = requests.get(url, headers=headers)
         except err as Exception:
-            self.logger.warning("Error during getting predictive Calender-Infos")
+            self.logger.warning("Error during getting predictive Calendar-Infos")
             return None
             
         if response.status_code == 200 or response.status_code == 201:
             content = response.json()
-            self.logger.info("Got correct predictive Calender settings for smartmowing")
+            self.logger.info("Got correct predictive Calendar settings for smartmowing")
             return content
 
     
@@ -501,12 +673,12 @@ class Indego(SmartPlugin):
         try:
             response = requests.get(url, headers=headers)
         except err as Exception:
-            self.logger.warning("Error during getting Calender-Infos")
+            self.logger.warning("Error during getting Calendar-Infos")
             return None
             
         if response.status_code == 200 or response.status_code == 201:
             content = response.json()
-            self.logger.info("Got correct Calender settings for mowing")
+            self.logger.info("Got correct Calendar settings for mowing")
             return content
     
     def clear_calendar(self, myCal = None):
@@ -526,8 +698,44 @@ class Indego(SmartPlugin):
     
     
     def parse_list_2_cal(self,myList = None, myCal = None):
-        print (myList)
+
+        self.clear_calendar(myCal._value)
         
+        for myKey in myList:
+            Start = ""
+            End = ""
+            Days  = ""
+            myCalNo = 0
+            calEntry = myList[myKey].items()
+            for myEntry in  calEntry:
+                if (myEntry[0] =='Start'):
+                    Start = myEntry[1]
+                elif (myEntry[0] == 'End'):
+                    End = myEntry[1]
+                elif (myEntry[0] == 'Days'):
+                    Days = myEntry[1]
+                elif (myEntry[0] == 'Key'):
+                    myCalNo = int(myEntry[1][0:1])-1
+            # Now Fill the Entry in the Calendar
+            for day in Days.split((',')):
+                if (myCal._value['cals'][0]['days'][int(day)]['slots'][0]['En'] == True):
+                    actSlot = 1
+                else:
+                    actSlot = 0
+                myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['StHr'] = Start[0:2]
+                myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['StMin'] = Start[3:5]
+                myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['EnHr'] = End[0:2]
+                myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['EnMin'] = End[3:5]
+                myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['En'] = True  
+
+        self.logger.debug("Calendar was updated Name :'{}'".format(myCal._name))
+    
+    def get_active_calendar(self, myCal = None):    
+        # First get active Calendar
+        activeCal = myCal['sel_cal']
+        return activeCal
+    
+    
     def parse_cal_2_list(self, myCal = None):
         myList = {}
         for cal_item in myCal['cals']:
@@ -910,12 +1118,12 @@ class Indego(SmartPlugin):
 
             if 'config_change' in states and 'config_change' in self.add_keys:
                 config_change = states['config_change']
-                self.items.return_item(str(self.add_keys['config_change']),config_change)
+                self.items.return_item(str(self.add_keys['config_change']))(config_change)
                 self.logger.debug("config_change " + str(config_change))
 
             if 'mow_trig' in states and 'mow_trig' in self.add_keys:
                 mow_trig = states['mow_trig']
-                self.items.return_item(str(self.add_keys['mow_trig']),mow_trig)
+                self.items.return_item(str(self.add_keys['mow_trig']))(mow_trig)
                 self.logger.debug("mow_trig " + str(mow_trig))
 
             # if 'map_update_available' in states and 'mow_trig' in self.add_keys:
