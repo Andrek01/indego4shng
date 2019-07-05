@@ -145,7 +145,7 @@ class Indego(SmartPlugin):
         self.scheduler_add('state', self.state, cycle = self.cycle)
         self.scheduler_add('alert', self.alert, cycle=30)
         self.scheduler_add('get_calendars', self.get_calendars, cycle=30)
-        self.scheduler_add('check_login_state', self.check_login_state, cycle=300)
+        self.scheduler_add('check_login_state', self.check_login_state, cycle=90)
         self.scheduler_add('device_date', self.device_data, cycle=6000)
         self.scheduler_add('get_weather', self.get_weather, cycle=600)
         self.scheduler_add('get_next_time', self.get_next_time, cycle=300)
@@ -283,7 +283,7 @@ class Indego(SmartPlugin):
             self.delete_auth()
             self.auth()
             self.logged_in = self.check_auth()
-            self.set_childitem(self.parent_item+'.'+'online', not(self.logged_in))
+            self.set_childitem('online', self.logged_in)
             actDate = datetime.datetime.now()
             self.logger.info("refreshed Session-ID at : {}".format(actDate.strftime('Date: %a, %d %b %H:%M:%S %Z %Y')))
         else:
@@ -550,7 +550,6 @@ class Indego(SmartPlugin):
         url = self.indego_url + 'authenticate'
         try:
             response = requests.delete(url,auth=(self.user,self.password), headers=headers)
-            content = response.json()
             
         except Exception as e:
             self.logger.warning("Problem logging off {0}: {1}".format(url, e))
