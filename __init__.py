@@ -28,7 +28,7 @@ from lib.module import Modules
 from lib.model.smartplugin import *
 from lib.item import Items
 from lib.shtime import Shtime
-
+from datetime import datetime
 
 import time
 import base64
@@ -145,7 +145,7 @@ class Indego(SmartPlugin):
         self.scheduler_add('state', self.state, cycle = self.cycle)
         self.scheduler_add('alert', self.alert, cycle=30)
         self.scheduler_add('get_calendars', self.get_calendars, cycle=30)
-        self.scheduler_add('check_login_state', self.check_login_state, cycle=120)
+        self.scheduler_add('check_login_state', self.check_login_state, cycle=300)
         self.scheduler_add('device_date', self.device_data, cycle=6000)
         self.scheduler_add('get_weather', self.get_weather, cycle=600)
         self.scheduler_add('get_next_time', self.get_next_time, cycle=300)
@@ -279,14 +279,15 @@ class Indego(SmartPlugin):
     
     def check_login_state(self):
         actTimeStamp = time.time()
-        if actTimeStamp-600 > self.expiration_timestamp:
+        if self.expiration_timestamp < actTimeStamp+600:
             self.delete_auth()
             self.auth()
             self.logged_in = self.check_auth()
             self.set_childitem(self.parent_item+'.'+'online', not(self.logged_in))
-            self.logger.info("refreshed Session-ID at : {0}".format(actTimeStamp.strftime('Date: %a, %d %b %H:%M:%S %Z %Y')))
+            actDate = datetime.now()
+            self.logger.info("refreshed Session-ID at : {}".format(actDate.strftime('Date: %a, %d %b %H:%M:%S %Z %Y')))
         else:
-            self.logger.info("Session-ID {0} is still valid".format(self.context_id))
+            self.logger.info("Session-ID {} is still valid".format(self.context_id))
             
     def auto_pred_cal_update(self):
         self.cal_upate_count_pred += 1
@@ -611,10 +612,10 @@ class Indego(SmartPlugin):
 
         if response.status_code == 200 or response.status_code == 201:
             content = response.json()
-            self.logger.warning("Your are still logged in to the Bosch-Web-API")
+            self.logger.info("Your are still logged in to the Bosch-Web-API")
             return True
         else:
-            self.logger.warning("Your are not logged in to the Bosch-Web-API")
+            self.logger.info("Your are not logged in to the Bosch-Web-API")
             return False
 
         
