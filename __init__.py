@@ -284,7 +284,7 @@ class Indego(SmartPlugin):
             self.auth()
             self.logged_in = self.check_auth()
             self.set_childitem(self.parent_item+'.'+'online', not(self.logged_in))
-            actDate = datetime.now()
+            actDate = datetime.datetime.now()
             self.logger.info("refreshed Session-ID at : {}".format(actDate.strftime('Date: %a, %d %b %H:%M:%S %Z %Y')))
         else:
             self.logger.info("Session-ID {} is still valid".format(self.context_id))
