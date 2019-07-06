@@ -265,7 +265,7 @@ class Indego(SmartPlugin):
                 self.auto_pred_cal_update()
             
             if item._name == self.parent_item+'.calendar_sel_cal':
-                self.set_childitem('.calendar_result',"speichern gestartet")
+                self.set_childitem('calendar_result',"speichern gestartet")
                 # Now Save the Calendar on Bosch-API
                 self.cal_update_count = 0
                 self.auto_mow_cal_update()
@@ -438,7 +438,7 @@ class Indego(SmartPlugin):
         if (item != None): 
             item(value, 'indego')
         else:
-            self.logger.warning("Could not set item '{}' to '{}'".format(self.parent_item+itemname, value))
+            self.logger.warning("Could not set item '{}' to '{}'".format(self.parent_item+'.'+itemname, value))
 
     def get_url(self, url, contextid=None, timeout=40, method='GET'):
         headers = {'Content-Type': 'application/json'}
@@ -556,10 +556,10 @@ class Indego(SmartPlugin):
             return False
 
         if (response.status_code == 200 or response.status_code == 201): 
-            self.logger.warning("Your logged off successfully")
+            self.logger.info("Your logged off successfully")
             return True
         else:
-            self.logger.warning("Log off was not successfull : {0}".format(response.status_code))
+            self.logger.info("Log off was not successfull : {0}".format(response.status_code))
             return False
 
     def store_calendar(self, myCal = None, myName = ""):
@@ -718,7 +718,7 @@ class Indego(SmartPlugin):
                     myCalNo = int(myEntry[1][0:1])-1
             # Now Fill the Entry in the Calendar
             for day in Days.split((',')):
-                if (myCal._value['cals'][0]['days'][int(day)]['slots'][0]['En'] == True):
+                if (myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][0]['En'] == True):
                     actSlot = 1
                 else:
                     actSlot = 0
@@ -728,7 +728,7 @@ class Indego(SmartPlugin):
                 myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['EnMin'] = End[3:5]
                 myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['En'] = True  
 
-        self.logger.debug("Calendar was updated Name :'{}'".format(myCal._name))
+        self.logger.info("Calendar was updated Name :'{}'".format(myCal._name))
     
     def get_active_calendar(self, myCal = None):    
         # First get active Calendar
@@ -803,11 +803,11 @@ class Indego(SmartPlugin):
     def get_weather(self):
         try:
             weather = self.get_url(self.indego_url +'alms/'+ self.alm_sn +'/predictive/weather',self.context_id,10)
-        except:
+            weather = weather.decode(encoding='UTF-8',errors='ignore')
+            weather = json.loads(weather)
+        except err as Exception:
             return 
         
-        weather = weather.decode(encoding='UTF-8',errors='ignore')
-        weather = json.loads(weather)
         for i in weather['LocationWeather']['forecast']['intervals']:
             position = str(weather['LocationWeather']['forecast']['intervals'].index(i))
             self.logger.debug("POSITION "+str(position))
