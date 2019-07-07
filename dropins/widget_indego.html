@@ -22,23 +22,26 @@
 		   <body>
 		      <form>
 			 <fieldset data-role = "controlgroup" data-type = "horizontal" id="{{uid(type, '_cal_active' )}}">
-			    <input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_1') }}" >
-			    <label for = "{{ uid(type,'cal_1') }}">1</label>
+			    <input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_1') }}" style="display:none">
+			    <label id = "{{ uid(type,'caption_cal_1') }}" for = "{{ uid(type,'cal_1') }}" style="display:none">1</label>
 
-			    <input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_2') }}">
-			    <label for = "{{ uid(type,'cal_2') }}">2</label>
+			    <input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_2') }}" style="display:none">
+			    <label id = "{{ uid(type,'caption_cal_2') }}" for = "{{ uid(type,'cal_2') }}" style="display:none">2</label>
 
-			    <input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_3') }}">
-			    <label for = "{{ uid(type,'cal_3') }}">3</label>
+			    <input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_3') }}" style="display:none">
+			    <label id = "{{ uid(type,'caption_cal_3') }}" for = "{{ uid(type,'cal_3') }}" style="display:none">3</label>
 
-			    <input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_4') }}" >
-			    <label for = "{{ uid(type,'cal_4') }}">4</label>
+			    <input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_4') }}" style="display:none">
+			    <label id = "{{ uid(type,'caption_cal_4') }}" for = "{{ uid(type,'cal_4') }}" style="display:none">4</label>
 
-			    <input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_5') }}" >
-			    <label for = "{{ uid(type,'cal_5') }}">5</label>
+			    <input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_5') }}" style="display:none">
+			    <label id = "{{ uid(type,'caption_cal_5') }}" for = "{{ uid(type,'cal_5') }}" style="display:none">5</label>
+
+			    <input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_6') }}" style="display:none">
+			    <label id = "{{ uid(type,'caption_cal_6') }}" for = "{{ uid(type,'cal_6') }}" style="display:none" >EIN </label>
 
 			    <input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_0') }}" >
-			    <label for = "{{ uid(type,'cal_0') }}">AUS</label>
+			    <label id = "{{ uid(type,'caption_cal_0') }}" for = "{{ uid(type,'cal_0') }}">AUS</label>
 			 </fieldset>
 		      </form>
 		   </body>
@@ -60,14 +63,42 @@
 * @param value (default 1)
 * @param the mode, 'or', 'and' (default 'or')
 */
-{% macro symbol(id, items, pic, val, mode) %}
-
+{% macro symbol(id, items, pic, val, mode,text) %}
+	{% import "basic.html" as basic %}
 	<div id="{{ uid(page, id) }}" data-widget="indego.symbol" data-item="{{ implode(items) }}" data-val="{{ val|default('1') }}"
 		data-mode="{{ mode|default('or') }}" class="symbol hide">
+		<font style="font-size:200%" color="red">
+		<strong>{{  text }}</strong>
+		</font>
+		<br>
+		<br>
 		<img src="{{  pic }}" style="width:40%;height:40%;">
 	</div>
 {% endmacro %}
 
+
+/*********************************************
+*
+*  Widget for the Indego-Status-Text
+*
+*********************************************/
+/**
+* @param unique id for this widget
+* @param one or more item(s). More items in array form: [ item1 , item2 ]
+* @param the pic, shown when item has value val
+* @param value (default 1)
+* @param the mode, 'or', 'and' (default 'or')
+* @param the color #ff for red
+*/
+{% macro text(id, items, text, val, mode) %}
+
+	<div id="{{ uid(page, id) }}" data-widget="indego.text" data-item="{{ implode(items) }}" data-val="{{ val|default('1') }}"
+		data-mode="{{ mode|default('or') }}" class="symbol hide">
+		<font style="font-size:200%">
+		{{  basic.print(id, items, '', text, '', '#FF') }}
+		</font>
+	</div>
+{% endmacro %}
 
 /*********************************************
 *

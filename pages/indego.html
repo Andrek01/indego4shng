@@ -38,16 +38,16 @@
 <!--
 				{{ indego.symbol('state_docked', 'indego.docked','dropins/indego-s-docked.png','','and') }}
 				{{ indego.symbol('state_moving', 'indego.moving','dropins/indego-s-mowing.png','','and') }}
-				{{ indego.symbol('state_pause',  'indego.pause' ,'dropins/indego-s.png','','and') }}
-				{{ indego.symbol('state_help',   'indego.help'  ,'dropins/indego-s-help.png','','and') }}
-				{{ indego.symbol('state_help',   'indego.help'  ,'dropins/indego-s-offline.png','','and') }}
+				{{ indego.symbol('state_pause',  'indego.pause' ,'dropins/indego-s.png','','and','Pause','Pause') }}
+				{{ indego.symbol('state_help',   'indego.help'  ,'dropins/indego-s.png','','and','Need help') }}
+				{{ indego.symbol('state_help',   'indego.help'  ,'dropins/indego-s.png','','and','Offline') }}
 -->
 				<!-- Symbold for the 800/1000/1300er Connect -->
-				{{ indego.symbol('state_offline','indego.online','dropins/indego-offline.png',0,'and') }}
+				{{ indego.symbol('state_offline','indego.online','dropins/indego.png',0,'and','Offline') }}
 				{{ indego.symbol('state_docked', 'indego.docked','dropins/indego-docked.png','','and') }}
 				{{ indego.symbol('state_moving', 'indego.moving','dropins/indego-mowing.png','','and') }}
-				{{ indego.symbol('state_pause',  'indego.pause' ,'dropins/indego-png','','and') }}
-				{{ indego.symbol('state_help',   'indego.help'  ,'dropins/indego-help.png','','and') }}
+				{{ indego.symbol('state_pause',  'indego.pause' ,'dropins/indego-png','','and','Pause') }}
+				{{ indego.symbol('state_help',   'indego.help'  ,'dropins/indego-png','','and','Need Help') }}
 
 <!--
 				{{ basic.symbol('state_docked', 'indego.online','','scene_robo_lawnmower_offline.svg',0,'','#f00') }}
@@ -108,9 +108,9 @@
    					<h3>Response:</h3><br> {{ basic.print('pred_cal_response', 'indego.calendar_result') }}
 				</div>
 			</div>
-			<div data-role="collapsible" data-collapsed="false" >
+			<div id="mow_cal_1" data-role="collapsible" data-collapsed="true"  style="display:none">
 
-				<h3>1. Kalender - Mähzeiten</h3>
+				<h3 id="mow_caption_1">1. Kalender - Mähzeiten</h3>
 				<table width=100% id="indego-calendar-1" font-size=50%> 
 				</table>
 				<br>
@@ -118,8 +118,8 @@
 				</table>
 			</div>
 
-			<div data-role="collapsible" data-collapsed="true" >
-				<h3>2. Kalender - Mähzeiten</h3>
+			<div id="mow_cal_2" data-role="collapsible" data-collapsed="false"  style="display:none" >
+				<h3 id="mow_caption_2">2. Kalender - Mähzeiten</h3>
 				<table width=100% id="indego-calendar-2" style="font-size=50%"> 
 				</table>
 				<br>
@@ -127,8 +127,8 @@
 				</table>
 			</div>
 
-			<div data-role="collapsible" data-collapsed="true" >
-				<h3>3. Kalender - Mähzeiten</h3>
+			<div id="mow_cal_3" data-role="collapsible" data-collapsed="true"  style="display:none" >
+				<h3 id="mow_caption_3">3. Kalender - Mähzeiten</h3>
 				<table width=100% id="indego-calendar-3" style="font-size=50%"> 
 				</table>
 				<br>
@@ -136,16 +136,16 @@
 				</table>
 			</div>
 
-			<div data-role="collapsible" data-collapsed="true" >
-				<h3>4. Kalender - Mähzeiten</h3>
+			<div id="mow_cal_4" data-role="collapsible" data-collapsed="true"  style="display:none">
+				<h3 id="mow_caption_4">4. Kalender - Mähzeiten</h3>
 				<table width=100% id="indego-calendar-4" style="font-size=50%"> 
 				</table>
 				<table class="indego_cal" width=100% id="indego-draw-calendar-4" style="border:1px solid #000000;border-collapse: collapse;"> 
 				</table>
 			</div>
 
-			<div data-role="collapsible" data-collapsed="true" >
-				<h3>5. Kalender - Mähzeiten</h3>
+			<div id="mow_cal_5" data-role="collapsible" data-collapsed="true" style="display:none" >
+				<h3 id="mow_caption_5">5. Kalender - Mähzeiten</h3>
 				<table width=100% id="indego-calendar-5" style="font-size=50%"> 
 				</table>
 				<br>
@@ -172,40 +172,40 @@
 
 				</div>
 			</div>
-			<div data-role="collapsible" data-collapsed="false" >
-				<h3>1. Kalender - Ausschlusszeiten für SmartMow</h3>
+			<div  id="pred_cal_1" data-role="collapsible" data-collapsed="false" >
+				<h3 id="pred_caption_1">1. Kalender - Ausschlusszeiten für SmartMow</h3>
 				<table width=100% id="indego-pred-calendar-1" style="font-size=50%"> 
 				</table>
 				<br>
 				<table class="indego_cal" width=100% id="indego-pred-draw-calendar-1" style="border:1px solid #000000;border-collapse: collapse;"> 
 				</table>
 			</div>
-			<div data-role="collapsible" data-collapsed="true" >
-				<h3>2. Kalender - Ausschlusszeiten für SmartMow</h3>
+			<div  id="pred_cal_2" data-role="collapsible" data-collapsed="true" >
+				<h3 id="pred_caption_2">2. Kalender - Ausschlusszeiten für SmartMow</h3>
 				<table width=100% id="indego-pred-calendar-2" style="font-size=50%"> 
 				</table>
 				<br>
 				<table class="indego_cal" width=100% id="indego-pred-draw-calendar-2" style="border:1px solid #000000;border-collapse: collapse;"> 
 				</table>
 			</div>
-			<div data-role="collapsible" data-collapsed="true" >
+			<div  id="pred_cal_3" data-role="collapsible" data-collapsed="true" >
 				<table width=100% id="indego-pred-calendar-3" style="font-size=50%"> 
 				</table>
 				<br>
-				<h3>3. Kalender - Ausschlusszeiten für SmartMow</h3>
+				<h3 id="pred_caption_3">3. Kalender - Ausschlusszeiten für SmartMow</h3>
 				<table class="indego_cal" width=100% id="indego-pred-draw-calendar-3" style="border:1px solid #000000;border-collapse: collapse;"> 
 				</table>
 			</div>
-			<div data-role="collapsible" data-collapsed="true" >
-				<h3>4. Kalender - Ausschlusszeiten für SmartMow</h3>
+			<div  id="pred_cal_4" data-role="collapsible" data-collapsed="true" >
+				<h3 id="pred_caption_5"">4. Kalender - Ausschlusszeiten für SmartMow</h3>
 				<table width=100% id="indego-pred-calendar-4" style="font-size=50%"> 
 				</table>
 				<br>
 				<table class="indego_cal" width=100% id="indego-pred-draw-calendar-4" style="border:1px solid #000000;border-collapse: collapse;"> 
 				</table>
 			</div>
-			<div data-role="collapsible" data-collapsed="true" >
-				<h3>5. Kalender - Ausschlusszeiten für SmartMow</h3>
+			<div  id="pred_cal_5" data-role="collapsible" data-collapsed="true" >
+				<h3 id="pred_caption_5">5. Kalender - Ausschlusszeiten für SmartMow</h3>
 				<table width=100% id="indego-pred-calendar-5" style="font-size=50%"> 
 				</table>
 				<br>

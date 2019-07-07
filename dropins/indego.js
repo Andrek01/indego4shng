@@ -23,7 +23,39 @@ var activeOrgPredictive = 0
 var activeOrgCalendar = 0
 var activeNewPredictive = 0
 var activeNewCalendar = 0
-	
+
+var CalCount = 0
+
+
+
+function EnableCalendar(calType)
+{
+	// document.getElementById("myH3").firstChild.textContent = "Mähkalender"
+	for (actCal in CalCount)
+		{
+		 var strActCal = CalCount[actCal]
+		 if (calType == 'M')
+			 { var myCal = "mow_cal_"+strActCal }
+		 else
+			 { var myCal = "pred_cal_"+strActCal }
+		 // Show Collapsible for transmitted Calendars
+		 document.getElementById(myCal).style.display="block"
+		 document.getElementById("mow_caption_"+strActCal).firstChild.textContent = "Mähkalender ("+strActCal+")"
+		 if (CalCount.length > 1)
+			{
+			 // Show labels for transmitted Calendars
+			 var strCaption = calType + '-caption_cal_'+strActCal
+			 document.getElementById(strCaption).style.display="block"			
+			}
+		}
+	if (CalCount.length == 1)
+		{
+		 var strActCal = CalCount[0]
+		 var strCaption = calType + '-caption_cal_6'
+		 document.getElementById(strCaption).style.display="block"			
+		 document.getElementById(strCaption).value = CalCount[0]
+		}
+}
 	
 function DrawCalendar(TableName, CalNo, preFix)
 {
@@ -59,8 +91,10 @@ function DrawCalendar(TableName, CalNo, preFix)
 
 function ReDrawActCalendar(actCal, type)
 {
+
+
 	i=0
-	while (i <= 5)
+	while (i <= 6)
 		{
 	  	 var activeDay = type + "-cal_"+parseInt(i)
 	  	 if (actCal == i)
@@ -72,16 +106,33 @@ function ReDrawActCalendar(actCal, type)
 		 i += 1
 		}
 
+	if (CalCount.length == 1 && CalCount[0] != "0")
+	{
+	  	 var activeDay = type + "-cal_6"
+  		 document.getElementById(activeDay).checked = true 
+	     $(document.getElementById(activeDay)).checkboxradio("refresh")
+
+	  	 var activeDay = type + "-caption_cal_6"	     
+	     document.getElementById(activeDay).classList.add("ui-first-child")
+	     //$(document.getElementById(activeDay)).checkboxradio("refresh")
+	     
+
+	}
+
 }
 
 function GetActCalendar(type)
 {
 	i=0
-	while (i <= 5)
+	while (i <= 6)
 		{
 	  	 var activeDay = type + "-cal_"+parseInt(i)
 	  	 if ( document.getElementById(activeDay).checked == true)
-	  		 { break}
+	  		 {
+	  		  if (i == 6) 		// Spezialfall - nur ein Kalender EIN/AUS
+	  		  i = CalCount[0]
+	  		  break
+	  		 }
 		 i += 1
 		}
 	return i
@@ -148,8 +199,8 @@ function CancelChanges_mow()
 
 function SaveChanges_mow()
 {
-	var ActCal = GetActCalendar('M')
-	io.write('indego.calendar_sel_cal',ActCal)
+	activeNewCalendar = GetActCalendar('M')
+	io.write('indego.calendar_sel_cal',activeNewCalendar)
 	activeOrgCalendar = activeNewCalendar
 	
 	io.write('indego.calendar_list',newCalendar[0])
@@ -169,8 +220,8 @@ function CancelChanges_pred()
 
 function SaveChanges_pred()
 {
-	var ActCal = GetActCalendar('P')
-	io.write('indego.calendar_predictive_sel_cal',ActCal)
+	activeNewPredictive = GetActCalendar('P')
+	io.write('indego.calendar_predictive_sel_cal',activeNewPredictive)
     activeOrgPredictive = activeNewPredictive
 
 	
@@ -333,6 +384,10 @@ function FillDrawingCalendar(myCal,myColour, preFix)
       {
     	 if (calendar.hasOwnProperty(key))
 	        {
+    		 if (key == 'Params')
+        	 {
+        	  continue
+        	 }
     		 myIndex = parseInt(key[0]) // which Calendar 1/2/3/4/5
     		 myArray = calendar[key].Days.split(",")
              for (var numberOfEntry = 0; numberOfEntry < myArray.length; numberOfEntry++)
@@ -367,7 +422,11 @@ function UpdateTable(myCal,preFixDrawCalender, preFixEntryCalendar, preFix)
       {
     	 if (calendar.hasOwnProperty(key))
 	        {
-	          myIndex = parseInt(key[0])
+             if (key == 'Params')
+            	 {
+            	  continue
+            	 }
+    		  myIndex = parseInt(key[0])
 	          retValTime = '<tr><td>'+calendar[key].Start + '-' + calendar[key].End+'</td>' ;
 	          retvalDays = '<td>'
 			  if (calendar[key].Days.search("0") != -1) { retvalDays +=  'Mo ' }
@@ -448,9 +507,21 @@ $.widget("sv.indego_calendar", $.sv.widget, {
       notify.error("Indego widget", "No Calendar found ");
       return;
     }
+
+    for (var key in response[0])
+     {
+  	 if (response[0].hasOwnProperty(key))
+        {
+          if (key = 'Params')
+        	  {
+        	   CalCount = response[0][key]['CalCount']
+        	  }
+        }
+
+     }
     orgCalendar = $.extend( true, [], response );     
     newCalendar = $.extend( true, [], response );
-
+    EnableCalendar('M')
     UpdateTable(orgCalendar,'indego-draw-calendar','indego-calendar','m')
   }
 });
@@ -477,10 +548,23 @@ _update: function(response)
    notify.error("Indego widget", "No predictive Calendar found ");
    return;
  }
+ 
+ for (var key in response[0])
+ {
+	 if (response[0].hasOwnProperty(key))
+    {
+      if (key = 'Params')
+    	  {
+    	   CalCount = response[0][key]['CalCount']
+    	  }
+    }
+
+ }
+
  orgPredictiveCalendar = $.extend( true, [], response );     
  newPredictiveCalendar = $.extend( true, [], response );
 
-
+ EnableCalendar('P')
  UpdateTable(orgPredictiveCalendar,'indego-pred-draw-calendar','indego-pred-calendar','p')
 
 }

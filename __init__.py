@@ -113,6 +113,8 @@ class Indego(SmartPlugin):
         
         self.cal_upate_count_pred = 0
         self.cal_pred_update_running = False
+        
+        self.calendar_count = []
 
         # Check for initialization errors:
         if not self.indego_url:
@@ -378,6 +380,9 @@ class Indego(SmartPlugin):
             if not self.cal_update_running:
                 # get the mowing calendar
                 self.calendar = self.items.return_item(self.parent_item + '.' + 'calendar')
+                # Only for Tests
+                #myTest = {'cals': [{'cal': 2, 'days': [{'slots': [{'EnMin': 30, 'En': True, 'StHr': 12, 'EnHr': 19, 'StMin': 0}, {'En': False}], 'day': 0}, {'slots': [{'EnMin': 0, 'En': True, 'StHr': 11, 'EnHr': 19, 'StMin': 30}, {'EnMin': 0, 'En': True, 'StHr': 6, 'EnHr': 9, 'StMin': 30}], 'day': 2}, {'slots': [{'EnMin': 0, 'En': True, 'StHr': 12, 'EnHr': 20, 'StMin': 0}, {'En': False}], 'day': 4}]}], 'sel_cal': 2}
+                #self.calendar(myTest, 'indego')
                 self.calendar(self.get_calendar(), 'indego')
                 calendar_list = self.items.return_item(self.parent_item + '.' + 'calendar_list')
                 calendar_list(self.parse_cal_2_list(self.calendar._value),'indego')
@@ -694,19 +699,28 @@ class Indego(SmartPlugin):
                     slots['EnMin'] = "00"
 
         return myCal
+    
             
-    
-    
-    def parse_list_2_cal(self,myList = None, myCal = None):
-
-        self.clear_calendar(myCal._value)
+    def build_new_calendar(self, myList = None):
         
+        selected_calendar = self.get_childitem('calendar_sel_cal')
+        newCal = {}
+        newCal['sel_cal'] = selected_calendar
+        newCal['cals'] = []
+        newCal['cals'].append({'cal':selected_calendar})  #['cal'] = selected_calendar
+        newCal['cals'][0]['days'] = []
+    
         for myKey in myList:
+            if (myKey == "Params"):
+                continue
+            NewEntry = {}
             Start = ""
             End = ""
             Days  = ""
             myCalNo = 0
+    
             calEntry = myList[myKey].items()
+    
             for myEntry in  calEntry:
                 if (myEntry[0] =='Start'):
                     Start = myEntry[1]
@@ -716,17 +730,64 @@ class Indego(SmartPlugin):
                     Days = myEntry[1]
                 elif (myEntry[0] == 'Key'):
                     myCalNo = int(myEntry[1][0:1])-1
-            # Now Fill the Entry in the Calendar
             for day in Days.split((',')):
-                if (myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][0]['En'] == True):
-                    actSlot = 1
-                else:
-                    actSlot = 0
-                myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['StHr'] = Start[0:2]
-                myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['StMin'] = Start[3:5]
-                myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['EnHr'] = End[0:2]
-                myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['EnMin'] = End[3:5]
-                myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['En'] = True  
+                newSlot = {
+                            'StHr' : Start[0:2],
+                            'StMin' : Start[3:5],
+                            'EnHr' : End[0:2],
+                            'EnMin' : End[3:5],
+                            'En' : True
+                           }
+                newDay = {
+                            'slots': [newSlot],
+                            'day' : int(day)
+                         }
+                dayFound = False
+                for x in newCal['cals'][0]['days']:
+                    if x['day'] == int(day):
+                        oldSlot = x['slots']
+                        x['slots'].append(newSlot)
+                        dayFound = True
+                        break
+                if not dayFound:
+                    newCal['cals'][0]['days'].append(newDay)
+
+        return newCal
+            
+    def parse_list_2_cal(self,myList = None, myCal = None):
+        if (len(self.calendar_count) < 5):
+            myCal._value = self.build_new_calendar(myList)
+            print ('Breakpoint')
+        else:
+            self.clear_calendar(myCal._value)
+            for myKey in myList:
+                if (myKey == "Params"):
+                    continue
+                Start = ""
+                End = ""
+                Days  = ""
+                myCalNo = 0
+                calEntry = myList[myKey].items()
+                for myEntry in  calEntry:
+                    if (myEntry[0] =='Start'):
+                        Start = myEntry[1]
+                    elif (myEntry[0] == 'End'):
+                        End = myEntry[1]
+                    elif (myEntry[0] == 'Days'):
+                        Days = myEntry[1]
+                    elif (myEntry[0] == 'Key'):
+                        myCalNo = int(myEntry[1][0:1])-1
+                # Now Fill the Entry in the Calendar
+                for day in Days.split((',')):
+                    if (myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][0]['En'] == True):
+                        actSlot = 1
+                    else:
+                        actSlot = 0
+                    myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['StHr'] = Start[0:2]
+                    myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['StMin'] = Start[3:5]
+                    myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['EnHr'] = End[0:2]
+                    myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['EnMin'] = End[3:5]
+                    myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['En'] = True  
 
         self.logger.info("Calendar was updated Name :'{}'".format(myCal._name))
     
@@ -738,9 +799,13 @@ class Indego(SmartPlugin):
     
     def parse_cal_2_list(self, myCal = None):
         myList = {}
+        myList['Params']={}
+        myCalList = []
         for cal_item in myCal['cals']:
             print (cal_item)
             myCalendarNo = cal_item['cal']
+            if not(myCalendarNo in myCalList):
+                myCalList.append(int(myCalendarNo))
             for days in cal_item['days']:
                 myDay = days['day']
                 print (days)
@@ -771,8 +836,9 @@ class Indego(SmartPlugin):
                         else:
                             if (myStartTime1 != '00:00:' and myEndTime1 != '00:00'):
                                 myList[myKey]['Days'] = myList[myKey]['Days']+','+str(myDay)
-                            pass
-    
+
+        myList['Params']['CalCount'] = myCalList
+        self.calendar_count = myCalList
         return myList
     
     def get_next_time(self):
