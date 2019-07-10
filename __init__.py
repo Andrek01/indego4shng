@@ -144,6 +144,7 @@ class Indego(SmartPlugin):
         self.alive = True
 
         # start the refresh timers
+#        self.scheduler_add('operating_data',self.get_operating_data,cycle = 30)
         self.scheduler_add('state', self.state, cycle = self.cycle)
         self.scheduler_add('alert', self.alert, cycle=30)
         self.scheduler_add('get_calendars', self.get_calendars, cycle=30)
@@ -414,7 +415,7 @@ class Indego(SmartPlugin):
             except:
                 pass
         else:
-            self.logger.warning("Problem fetching {0}: {1} {2}".format(url, resp.status, resp.reason))
+            self.logger.warning("Problem fetching {}: HTTP : {}".format(url,  response.status_code))
             content = False
         
         return content,expiration_timestamp
@@ -445,7 +446,57 @@ class Indego(SmartPlugin):
         else:
             self.logger.warning("Could not set item '{}' to '{}'".format(self.parent_item+'.'+itemname, value))
 
+    
+    def delete_url(self, url, contextid=None, timeout=40, method='DELETE'):
+        headers = {
+                   'x-im-context-id' : self.context_id
+                  }
+        try:
+            response = requests.delete(url, headers=headers)
+        except Exception as e:
+            self.logger.warning("Problem deleting {}: {}".format(url, e))
+            return False
+
+        if response.status_code == 200 or response.status_code == 201:
+            try:
+                content = response.json()
+            except:
+                content = False
+                pass
+        else:
+            self.logger.warning("Problem deleting {}: HTTP : {}".format(url, response.status_code))
+            content = False
+        
+        return content
+
+        
     def get_url(self, url, contextid=None, timeout=40, method='GET'):
+        headers = {
+                   'x-im-context-id' : self.context_id
+                  }
+        try:
+            response = requests.get(url, headers=headers)
+        except Exception as e:
+            self.logger.warning("Problem fetching {}: {}".format(url, e))
+            return False
+
+        if response.status_code == 200 or response.status_code == 201:
+            try:
+                if str(response.headers).find("json") > -1:
+                    content = response.json()
+                elif str(response.headers).find("svg") > -1:
+                    content = response.content
+                    
+            except:
+                content = False
+                pass
+        else:
+            self.logger.warning("Problem fetching {}: HTTP : {}".format(url, response.status_code))
+            content = False
+        
+        return content
+        
+        '''
         headers = {'Content-Type': 'application/json'}
         headers['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
         headers['x-im-context-id'] = contextid
@@ -486,7 +537,7 @@ class Indego(SmartPlugin):
             content = False
         conn.close()
         return content
-
+        '''
     def put_url(self, url, contextid=None, state=None, timeout=2):
         headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'}
         headers = {'Content-Type': 'application/json'}
@@ -841,36 +892,42 @@ class Indego(SmartPlugin):
         self.calendar_count = myCalList
         return myList
     
+    def get_operating_data(self):
+        url = "{}alms/{}/operatingData".format( self.indego_url, self.alm_sn)
+        try:
+            operating_data = self.get_url( url, self.context_id, 10)    
+            print (operating_data)
+        except Exception as e:
+            self.logger.warning("Problem fetching {}: {}".format(url, e))            
+            print (operating_data)
+    
     def get_next_time(self):
             url = "{}alms/{}/predictive/nextcutting?last=YYYY-MM-DDTHH:MM:SS%2BHH:MM".format( self.indego_url, self.alm_sn)
             try:
-                result = self.get_url( url, self.context_id, 10)
+                next_time = self.get_url( url, self.context_id, 10)
             except Exception as e:
                 self.logger.warning("Problem fetching {0}: {1}".format(url, e))        
+            if next_time == False:
+                self.set_childitem('next_time','!! Communication Error !!')
+                self.logger.error("Error getting next smartmow time")
             else:
                 try:
-                    self.logger.debug("Next time raw" + str(result)) # net_time was here
-                    next_time = result.decode(encoding='UTF-8', errors='ignore')
-                    next_time = json.loads(next_time)
+                    self.logger.debug("Next time raw" + str(json.dumps(next_time))) # net_time was here
                     next_time = next_time['mow_next']
-    
-                    self.logger.debug("Next time raw 2: " + str(next_time))
-                    # next_time = next_time[:-6]
-                    # next_time = datetime.datetime.strptime(next_time,'%Y-%m-%dT%H:%M:%S').replace(tzinfo=tz.gettz('UTC')).astimezone(self.get_sh().tzinfo())
-                    # #datetime.datetime.strptime(next_time,'%Y-%m-%dT%H:%M:%S+02:00').replace(tzinfo=self.get_sh().tzinfo())
                     next_time = next_time.replace(":", "")
                     next_time = datetime.datetime.strptime(next_time, '%Y-%m-%dT%H%M%S%z')
                     self.logger.debug("Next time final " + str(next_time))
                     self.set_childitem('next_time',next_time)
                 except Exception as e:
-                    self.logger.warning("Problem to decode {0} in function get_next_time(): {1}".format(result, e))
+                    self.set_childitem('next_time','kein Mähen geplant')
+                    self.logger.warning("Problem to decode {0} in function get_next_time(): {1}".format(next_time, e))
                     
                 
     def get_weather(self):
         try:
             weather = self.get_url(self.indego_url +'alms/'+ self.alm_sn +'/predictive/weather',self.context_id,10)
-            weather = weather.decode(encoding='UTF-8',errors='ignore')
-            weather = json.loads(weather)
+            #weather = weather.decode(encoding='UTF-8',errors='ignore')
+            #weather = json.loads(weather)
         except err as Exception:
             return 
         
@@ -948,10 +1005,9 @@ class Indego(SmartPlugin):
             self.alert_reset = False
         else:
             self.logger.debug("ALARM ELSE")
-            alert_response = alert_response.decode(encoding='UTF-8', errors='ignore')
-            self.logger.debug("Alärmchen: " + str(alert_response))
-            alert_response = json.loads(alert_response)
-            self.logger.debug("Alärmchen 2: " + str(alert_response))
+            #alert_response = alert_response.decode(encoding='UTF-8', errors='ignore')
+            #alert_response = json.loads(alert_response)
+            self.logger.debug("Alärmchen 2: " + json.dumps(alert_response))
             if len(alert_response) == 0:
                 self.logger.debug("No new Alert Messages")
 
@@ -997,15 +1053,18 @@ class Indego(SmartPlugin):
         self.logger.debug("getting smart frequency")
         smart_frequency_response = self.get_url(self.indego_url + 'alms/' + self.alm_sn + '/predictive/useradjustment',
                                                 self.context_id)
-        smart_frequency_response = smart_frequency_response.decode(encoding='UTF-8', errors='strict')
-        smart_frequency_response = json.loads(smart_frequency_response)
+        #smart_frequency_response = smart_frequency_response.decode(encoding='UTF-8', errors='strict')
+        #smart_frequency_response = json.loads(smart_frequency_response)
+        if smart_frequency_response == False:
+            self.logger.debug('got no smart-frequency')
+            return
         frequency = smart_frequency_response['user_adjustment']
         self.set_childitem('SMART.frequenz',frequency)
         self.logger.debug("smart_frequenz " + str(frequency))
 
     def alert_delete(self, alert_id):
         self.logger.debug("deleting alert_id " + str(alert_id))
-        self.get_url(self.indego_url + 'alerts/' + alert_id, self.context_id, 50, 'DELETE')
+        result = self.delete_url(self.indego_url + 'alerts/' + alert_id, self.context_id, 50, 'DELETE')
 
     def device_data(self):
         self.logger.debug('device_date')
@@ -1013,11 +1072,9 @@ class Indego(SmartPlugin):
         if device_data_response == False:
             self.logger.error('Device Data disconnected')
         else:
-            self.logger.debug('device data RAW: ' + str(device_data_response))
-            device_data_response = device_data_response.decode(encoding='UTF-8', errors='ignore')
-            self.logger.debug('device date stringtanga: ' + device_data_response)
-            # device_data_response = str(device_data_response).replace('false','False').replace('true','True')
-            device_data_response = json.loads(device_data_response)
+            self.logger.debug('device date stringtanga: ' + json.dumps(device_data_response))
+            #device_data_response = device_data_response.decode(encoding='UTF-8', errors='ignore')
+            #device_data_response = json.loads(device_data_response)
             self.logger.debug('device date JASON: ' + str(device_data_response))
 
             alm_sn = device_data_response['alm_sn']
@@ -1079,18 +1136,13 @@ class Indego(SmartPlugin):
                       1537: ['Stromsparmodus','dock'],
                       64513:['wacht auf','dock']}
         state_response = self.get_url(self.indego_url + 'alms/' + self.alm_sn + '/state', self.context_id)
-
-        # now reconnection in get_url directly
-        # if state_response == False:
-        #	self.logger.error('Indego disconnected')
-        #	self.set_childitem('online',False)
-        #	self.auth()
-
+        states = state_response
         if state_response != False:
-            state_response = state_response.decode(encoding='UTF-8', errors='ignore')
+            #state_response = state_response.decode(encoding='UTF-8', errors='ignore')
+            #states = json.loads(state_response)            
             self.set_childitem('online', True)
             self.logger.debug("indego state received " + str(state_response))
-            states = json.loads(state_response)
+
 
             if 'error' in states:
                 error_code = states['error']
@@ -1200,6 +1252,7 @@ class Indego(SmartPlugin):
             map_update = states['map_update_available']
             self.logger.debug("map_update " + str(map_update))
             self.set_childitem('mapUpdateAvailable',map_update)
+
             if map_update:
                 self.logger.debug('lade neue Karte')
                 garden = self.get_url(self.indego_url + 'alms/' + self.alm_sn + '/map', self.context_id, 120)

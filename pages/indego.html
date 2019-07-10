@@ -46,8 +46,8 @@
 				{{ indego.symbol('state_offline','indego.online','dropins/indego.png',0,'and','Offline') }}
 				{{ indego.symbol('state_docked', 'indego.docked','dropins/indego-docked.png','','and') }}
 				{{ indego.symbol('state_moving', 'indego.moving','dropins/indego-mowing.png','','and') }}
-				{{ indego.symbol('state_pause',  'indego.pause' ,'dropins/indego-png','','and','Pause') }}
-				{{ indego.symbol('state_help',   'indego.help'  ,'dropins/indego-png','','and','Need Help') }}
+				{{ indego.symbol('state_pause',  'indego.pause' ,'dropins/indego.png','','and','Pause') }}
+				{{ indego.symbol('state_help',   'indego.help'  ,'dropins/indego.png','','and','Need Help') }}
 
 <!--
 				{{ basic.symbol('state_docked', 'indego.online','','scene_robo_lawnmower_offline.svg',0,'','#f00') }}
@@ -256,7 +256,7 @@
 			</div>
 		</div>
     </div>
-	
+/** # Geräte-Daten  ---------------------------------------------------------- */	
 	<div class="block" >
 		<div class="set-2" data-role="collapsible-set" data-theme="c" data-content-theme="a" data-mini="true">
 			<div data-role="collapsible" data-collapsed="false">
@@ -294,7 +294,7 @@
 			</div>
 		</div>
 	</div>
-
+/** # Alarme  ---------------------------------------------------------- */
 	<div class="block" >
 		<div class="set-2" data-role="collapsible-set" data-theme="c" data-content-theme="a" data-mini="true">
 			<div data-role="collapsible" data-collapsed="false">
@@ -311,6 +311,20 @@
 			</div>
 		</div>
 	</div>
+
+/** # Mäheffizienz  ---------------------------------------------------------- */
+	<div class="block">
+		<div class="set-2" data-role="collapsible-set" data-theme="c" data-content-theme="a" data-mini="true">
+
+			<div data-role="collapsible" data-collapsed="false">
+				<h3>Mäh-Effizienz</h3>
+            <!--{{ plot.period(id, item, mode, tmin, tmax, ymin, ymax, count, label, color, exposure, axis, zoom) }}-->
+				{{ plot.period('indego.mowedPercent-plot', ['indego.mowedPercent','indego.mowedPercent_soll'], 'avg','48	h','','','','',['gemäht-Ist','Mähen Soll']) }}
+			</div>
+
+		</div>
+	</div>
+
 
 	<div class="block">
 		<div class="set-2" data-role="collapsible-set" data-theme="c" data-content-theme="a" data-mini="true">

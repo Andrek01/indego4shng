@@ -114,9 +114,6 @@ function ReDrawActCalendar(actCal, type)
 
 	  	 var activeDay = type + "-caption_cal_6"	     
 	     document.getElementById(activeDay).classList.add("ui-first-child")
-	     //$(document.getElementById(activeDay)).checkboxradio("refresh")
-	     
-
 	}
 
 }
