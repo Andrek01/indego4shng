@@ -77,28 +77,7 @@
 {% endmacro %}
 
 
-/*********************************************
-*
-*  Widget for the Indego-Status-Text
-*
-*********************************************/
-/**
-* @param unique id for this widget
-* @param one or more item(s). More items in array form: [ item1 , item2 ]
-* @param the pic, shown when item has value val
-* @param value (default 1)
-* @param the mode, 'or', 'and' (default 'or')
-* @param the color #ff for red
-*/
-{% macro text(id, items, text, val, mode) %}
 
-	<div id="{{ uid(page, id) }}" data-widget="indego.text" data-item="{{ implode(items) }}" data-val="{{ val|default('1') }}"
-		data-mode="{{ mode|default('or') }}" class="symbol hide">
-		<font style="font-size:200%">
-		{{  basic.print(id, items, '', text, '', '#FF') }}
-		</font>
-	</div>
-{% endmacro %}
 
 /*********************************************
 *
@@ -173,10 +152,10 @@ main {
 		    <input type = "checkbox" id = "day_0" >
 		    <label for = "day_0">Mo</label>
 
-		    <input type = "checkbox" id = "day_1" value = 1 >
+		    <input type = "checkbox" id = "day_1">
 		    <label for = "day_1">Di</label>
 
-		    <input type = "checkbox" id = "day_2" value = 0>
+		    <input type = "checkbox" id = "day_2">
 		    <label for = "day_2">Mi</label>
 
 		    <input type = "checkbox" id = "day_3" >

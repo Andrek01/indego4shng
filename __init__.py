@@ -902,14 +902,14 @@ class Indego(SmartPlugin):
             print (operating_data)
     
     def get_next_time(self):
-            url = "{}alms/{}/predictive/nextcutting?last=YYYY-MM-DDTHH:MM:SS%2BHH:MM".format( self.indego_url, self.alm_sn)
+            url = "{}alms/{}/predictive/nextcutting?last=YYYY-MM-DD-HH:MM:SS%2BHH:MM".format( self.indego_url, self.alm_sn)
             try:
                 next_time = self.get_url( url, self.context_id, 10)
             except Exception as e:
                 self.logger.warning("Problem fetching {0}: {1}".format(url, e))        
             if next_time == False:
-                self.set_childitem('next_time','!! Communication Error !!')
-                self.logger.error("Error getting next smartmow time")
+                self.set_childitem('next_time','kein Mähen geplant')
+                self.logger.info("Got next-time - nothign scheduled")
             else:
                 try:
                     self.logger.debug("Next time raw" + str(json.dumps(next_time))) # net_time was here
