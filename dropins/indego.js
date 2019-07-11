@@ -40,7 +40,7 @@ function EnableCalendar(calType)
 			 { var myCal = "pred_cal_"+strActCal }
 		 // Show Collapsible for transmitted Calendars
 		 document.getElementById(myCal).style.display="block"
-	     if {calType == 'M'}
+	     if (calType == 'M')
 		 { document.getElementById("mow_caption_"+strActCal).firstChild.textContent = "Mähkalender ("+strActCal+")"}
 		 else
 		 { document.getElementById("mow_caption_"+strActCal).firstChild.textContent = "Ausschlusskalender ("+strActCal+")"}
