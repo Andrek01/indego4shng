@@ -477,8 +477,12 @@ class Indego(SmartPlugin):
         try:
             response = requests.get(url, headers=headers)
         except Exception as e:
-            self.logger.warning("Problem fetching {}: {}".format(url, e))
-            return False
+            if response.status_code == 204:                  # No content
+                self.logger.info("Got no Content {}: {}".format(url, e))
+                return False
+            else:
+                self.logger.warning("Problem fetching {}: {}".format(url, e))
+                return False
 
         if response.status_code == 200 or response.status_code == 201:
             try:

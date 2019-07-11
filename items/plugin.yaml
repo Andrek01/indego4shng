@@ -95,1399 +95,1399 @@ plugin_functions: NONE
     # Definition of function interface of the plugin
 
 item_structs:
-    child:
-        name: Vorlage Struktur Indego Mower
+indego_child:
+    name: Vorlage Struktur Indego Mower
 
-        online:
-            type: bool
+    online:
+        type: bool
 
-        stateCode:
+    stateCode:
+        type: num
+
+    state_str:
+        type: str
+
+    stateError:
+        type: num
+
+    config_change:
+        type: bool
+        indego_add_key: config_change
+
+    mow_trig:
+        type: bool
+        indego_add_key: mow_trig
+
+    stateLevel:
+        type: num
+
+    docked:
+        type: bool
+        database: 'yes'
+
+    moving:
+        type: bool
+        database: 'yes'
+
+    pause:
+        type: bool
+        database: 'yes'
+
+    help:
+        type: bool
+        database: 'yes'
+
+    mowedPercent:
+        type: num
+        database: 'yes'
+
+    mowedPercent_soll:
+        type: num
+        database: 'yes'
+        initial_value: 100
+
+    mapSvgCacheDate:
+        type: foo
+        cache: 'on'
+
+    mapUpdateAvailable:
+        type: bool
+
+    mowedDate:
+        type: foo
+        cache: 'on'
+
+    xPos:
+        type: num
+
+    yPos:
+        type: num
+
+    svg_xPos:
+        type: num
+
+    svg_yPos:
+        type: num
+
+    mowmode:
+        type: num
+
+    next_time:
+        type: foo
+        cache: 'on'
+
+    runtimeTotalOperationMins:
+        type: num
+        database: 'yes'
+
+        hours:
             type: num
+            database: 'yes'
 
-        state_str:
+
+
+    runtimeTotalChargeMins:
+        type: num
+        database: 'yes'
+
+        hours:
+            type: num
+            database: 'yes'
+
+
+
+    runtimeSessionOperationMins:
+        type: num
+        database: 'yes'
+
+    runtimeSessionChargeMins:
+        type: num
+        database: 'yes'
+
+    SMART:
+        type: bool
+        visu_acl: rw
+        indego_smart: 'yes'
+        cache: 'on'
+
+        frequenz:
+            type: num
+            indego_frequency: 'yes'
+            cache: 'on'
+
+    MOW:
+        type: bool
+        visu_acl: rw
+        indego_command: 'state_mow'
+
+
+    PAUSE:
+        type: bool
+        visu_acl: rw
+        indego_command: 'state_pause'
+
+
+    RETURN:
+        type: bool
+        visu_acl: rw
+        indego_command: 'state_returnToDock'
+
+
+    alm_sn:
+        type: num
+
+    alm_name:
+        type: str
+
+    service_counter:
+        type: num
+
+    needs_service:
+        type: bool
+
+    alm_mode:
+        type: str
+
+    bareToolnumber:
+        type: str
+
+    alm_firmware_version:
+        type: str
+        cache: 'on'
+
+        before:
             type: str
+            cache: 'on'
 
-        stateError:
-            type: num
-
-        config_change:
-            type: bool
-            indego_add_key: config_change
-
-        mow_trig:
-            type: bool
-            indego_add_key: mow_trig
-
-        stateLevel:
-            type: num
-
-        docked:
-            type: bool
-            database: 'yes'
-
-        moving:
-            type: bool
-            database: 'yes'
-
-        pause:
-            type: bool
-            database: 'yes'
-
-        help:
-            type: bool
-            database: 'yes'
-
-        mowedPercent:
-            type: num
-            database: 'yes'
-
-        mowedPercent_soll:
-            type: num
-            database: 'yes'
-            initial_value: 100
-
-        mapSvgCacheDate:
+        changed:
             type: foo
             cache: 'on'
 
-        mapUpdateAvailable:
-            type: bool
+    alert_message:
+        type: str
+        cache: 'on'
 
-        mowedDate:
-            type: foo
-            cache: 'on'
+    alert_id:
+        type: str
+        cache: 'on'
 
-        xPos:
-            type: num
+    alert_id_send:
+        type: str
+        cache: 'on'
 
-        yPos:
-            type: num
+    alert_flag:
+        type: str
+        cache: 'on'
 
-        svg_xPos:
-            type: num
+    alert_headline:
+        type: str
+        cache: 'on'
 
-        svg_yPos:
-            type: num
+    alert_date:
+        type: foo
+        cache: 'on'
 
-        mowmode:
-            type: num
+    calendar:
+        type: dict
+        visu_acl: rw
 
-        next_time:
-            type: foo
-            cache: 'on'
+    calendar_list:
+        type: dict
+        visu_acl: rw
 
-        runtimeTotalOperationMins:
-            type: num
-            database: 'yes'
+    calendar_sel_cal:
+        type: num
+        visu_acl: rw
 
-            hours:
+    calendar_result:
+        type: str
+        visu_acl: rw
+
+    calendar_predictive:
+        type: dict
+        visu_acl: rw
+
+    calendar_predictive_list:
+        type: dict
+        visu_acl: rw
+
+    calendar_predictive_sel_cal:
+        type: num
+        visu_acl: rw
+
+    calendar_predictive_result:
+        type: str
+        visu_acl: rw
+
+    weather:
+
+        int_0:
+
+            wwsymbol_mg2008:
                 type: num
-                database: 'yes'
-
-
-
-        runtimeTotalChargeMins:
-            type: num
-            database: 'yes'
-
-            hours:
-                type: num
-                database: 'yes'
-
-
-
-        runtimeSessionOperationMins:
-            type: num
-            database: 'yes'
-
-        runtimeSessionChargeMins:
-            type: num
-            database: 'yes'
-
-        SMART:
-            type: bool
-            visu_acl: rw
-            indego_smart: 'yes'
-            cache: 'on'
-
-            frequenz:
-                type: num
-                indego_frequency: 'yes'
                 cache: 'on'
 
-        MOW:
-            type: bool
-            visu_acl: rw
-            indego_command: 'state_mow'
-
-
-        PAUSE:
-            type: bool
-            visu_acl: rw
-            indego_command: 'state_pause'
-
-
-        RETURN:
-            type: bool
-            visu_acl: rw
-            indego_command: 'state_returnToDock'
-
-
-        alm_sn:
-            type: num
-
-        alm_name:
-            type: str
-
-        service_counter:
-            type: num
-
-        needs_service:
-            type: bool
-
-        alm_mode:
-            type: str
-
-        bareToolnumber:
-            type: str
-
-        alm_firmware_version:
-            type: str
-            cache: 'on'
-
-            before:
-                type: str
+            td:
+                type: num
                 cache: 'on'
 
-            changed:
+            dateTime:
                 type: foo
                 cache: 'on'
 
-        alert_message:
-            type: str
-            cache: 'on'
+            tt:
+                type: num
+                cache: 'on'
 
-        alert_id:
-            type: str
-            cache: 'on'
+            wwtext:
+                type: str
 
-        alert_id_send:
-            type: str
-            cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-        alert_flag:
-            type: str
-            cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-        alert_headline:
-            type: str
-            cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-        alert_date:
-            type: foo
-            cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-        calendar:
-            type: dict
-            visu_acl: rw
+            Sonne:
+                type: bool
+                cache: 'on'
 
-        calendar_list:
-            type: dict
-            visu_acl: rw
+            Wolken:
+                type: bool
+                cache: 'on'
 
-        calendar_sel_cal:
-            type: num
-            visu_acl: rw
+            Regen:
+                type: bool
+                cache: 'on'
 
-        calendar_result:
-            type: str
-            visu_acl: rw
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-        calendar_predictive:
-            type: dict
-            visu_acl: rw
+        int_1:
 
-        calendar_predictive_list:
-            type: dict
-            visu_acl: rw
+            wwsymbol_mg2008:
+                type: num
+                cache: 'on'
 
-        calendar_predictive_sel_cal:
-            type: num
-            visu_acl: rw
+            td:
+                type: num
+                cache: 'on'
 
-        calendar_predictive_result:
-            type: str
-            visu_acl: rw
+            dateTime:
+                type: foo
+                cache: 'on'
 
-        weather:
+            tt:
+                type: num
+                cache: 'on'
 
-            int_0:
+            wwtext:
+                type: str
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            Sonne:
+                type: bool
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            Wolken:
+                type: bool
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+            Regen:
+                type: bool
+                cache: 'on'
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+        int_2:
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            wwsymbol_mg2008:
+                type: num
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            td:
+                type: num
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            dateTime:
+                type: foo
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+            tt:
+                type: num
+                cache: 'on'
 
-            int_1:
+            wwtext:
+                type: str
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            Sonne:
+                type: bool
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            Wolken:
+                type: bool
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+            Regen:
+                type: bool
+                cache: 'on'
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+        int_3:
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            wwsymbol_mg2008:
+                type: num
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            td:
+                type: num
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            dateTime:
+                type: foo
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+            tt:
+                type: num
+                cache: 'on'
 
-            int_2:
+            wwtext:
+                type: str
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            Sonne:
+                type: bool
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            Wolken:
+                type: bool
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+            Regen:
+                type: bool
+                cache: 'on'
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+        int_4:
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            wwsymbol_mg2008:
+                type: num
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            td:
+                type: num
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            dateTime:
+                type: foo
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+            tt:
+                type: num
+                cache: 'on'
 
-            int_3:
+            wwtext:
+                type: str
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            Sonne:
+                type: bool
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            Wolken:
+                type: bool
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+            Regen:
+                type: bool
+                cache: 'on'
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+        int_5:
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            wwsymbol_mg2008:
+                type: num
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            td:
+                type: num
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            dateTime:
+                type: foo
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+            tt:
+                type: num
+                cache: 'on'
 
-            int_4:
+            wwtext:
+                type: str
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            Sonne:
+                type: bool
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            Wolken:
+                type: bool
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+            Regen:
+                type: bool
+                cache: 'on'
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+        int_6:
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            wwsymbol_mg2008:
+                type: num
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            td:
+                type: num
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            dateTime:
+                type: foo
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+            tt:
+                type: num
+                cache: 'on'
 
-            int_5:
+            wwtext:
+                type: str
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            Sonne:
+                type: bool
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            Wolken:
+                type: bool
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+            Regen:
+                type: bool
+                cache: 'on'
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+        int_7:
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            wwsymbol_mg2008:
+                type: num
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            td:
+                type: num
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            dateTime:
+                type: foo
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+            tt:
+                type: num
+                cache: 'on'
 
-            int_6:
+            wwtext:
+                type: str
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            Sonne:
+                type: bool
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            Wolken:
+                type: bool
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+            Regen:
+                type: bool
+                cache: 'on'
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+        int_8:
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            wwsymbol_mg2008:
+                type: num
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            td:
+                type: num
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            dateTime:
+                type: foo
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+            tt:
+                type: num
+                cache: 'on'
 
-            int_7:
+            wwtext:
+                type: str
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            Sonne:
+                type: bool
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            Wolken:
+                type: bool
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+            Regen:
+                type: bool
+                cache: 'on'
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+        int_9:
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            wwsymbol_mg2008:
+                type: num
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            td:
+                type: num
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            dateTime:
+                type: foo
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+            tt:
+                type: num
+                cache: 'on'
 
-            int_8:
+            wwtext:
+                type: str
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            Sonne:
+                type: bool
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            Wolken:
+                type: bool
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+            Regen:
+                type: bool
+                cache: 'on'
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+        int_10:
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            wwsymbol_mg2008:
+                type: num
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            td:
+                type: num
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            dateTime:
+                type: foo
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+            tt:
+                type: num
+                cache: 'on'
 
-            int_9:
+            wwtext:
+                type: str
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            Sonne:
+                type: bool
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            Wolken:
+                type: bool
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+            Regen:
+                type: bool
+                cache: 'on'
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+        int_11:
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            wwsymbol_mg2008:
+                type: num
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            td:
+                type: num
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            dateTime:
+                type: foo
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+            tt:
+                type: num
+                cache: 'on'
 
-            int_10:
+            wwtext:
+                type: str
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            Sonne:
+                type: bool
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            Wolken:
+                type: bool
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+            Regen:
+                type: bool
+                cache: 'on'
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+        int_12:
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            wwsymbol_mg2008:
+                type: num
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            td:
+                type: num
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            dateTime:
+                type: foo
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+            tt:
+                type: num
+                cache: 'on'
 
-            int_11:
+            wwtext:
+                type: str
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            Sonne:
+                type: bool
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            Wolken:
+                type: bool
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+            Regen:
+                type: bool
+                cache: 'on'
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+        int_13:
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            wwsymbol_mg2008:
+                type: num
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            td:
+                type: num
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            dateTime:
+                type: foo
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+            tt:
+                type: num
+                cache: 'on'
 
-            int_12:
+            wwtext:
+                type: str
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            Sonne:
+                type: bool
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            Wolken:
+                type: bool
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+            Regen:
+                type: bool
+                cache: 'on'
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+        int_14:
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            wwsymbol_mg2008:
+                type: num
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            td:
+                type: num
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            dateTime:
+                type: foo
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+            tt:
+                type: num
+                cache: 'on'
 
-            int_13:
+            wwtext:
+                type: str
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            Sonne:
+                type: bool
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            Wolken:
+                type: bool
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+            Regen:
+                type: bool
+                cache: 'on'
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+        int_15:
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            wwsymbol_mg2008:
+                type: num
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            td:
+                type: num
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            dateTime:
+                type: foo
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+            tt:
+                type: num
+                cache: 'on'
 
-            int_14:
+            wwtext:
+                type: str
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            Sonne:
+                type: bool
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            Wolken:
+                type: bool
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+            Regen:
+                type: bool
+                cache: 'on'
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+        int_16:
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            wwsymbol_mg2008:
+                type: num
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            td:
+                type: num
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            dateTime:
+                type: foo
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+            tt:
+                type: num
+                cache: 'on'
 
-            int_15:
+            wwtext:
+                type: str
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            Sonne:
+                type: bool
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            Wolken:
+                type: bool
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+            Regen:
+                type: bool
+                cache: 'on'
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+        int_17:
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            wwsymbol_mg2008:
+                type: num
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            td:
+                type: num
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            dateTime:
+                type: foo
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+            tt:
+                type: num
+                cache: 'on'
 
-            int_16:
+            wwtext:
+                type: str
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            Sonne:
+                type: bool
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            Wolken:
+                type: bool
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+            Regen:
+                type: bool
+                cache: 'on'
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+        int_18:
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            wwsymbol_mg2008:
+                type: num
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            td:
+                type: num
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            dateTime:
+                type: foo
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+            tt:
+                type: num
+                cache: 'on'
 
-            int_17:
+            wwtext:
+                type: str
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            Sonne:
+                type: bool
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            Wolken:
+                type: bool
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+            Regen:
+                type: bool
+                cache: 'on'
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+        int_19:
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            wwsymbol_mg2008:
+                type: num
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            td:
+                type: num
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            dateTime:
+                type: foo
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+            tt:
+                type: num
+                cache: 'on'
 
-            int_18:
+            wwtext:
+                type: str
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+            rrr:
+                type: num
+                cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
+            prrr:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            intervalLength:
+                type: num
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            spells:
+                type: bool
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            Sonne:
+                type: bool
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            Wolken:
+                type: bool
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+            Regen:
+                type: bool
+                cache: 'on'
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            Gewitter:
+                type: bool
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+        day_0:
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            tx:
+                type: num
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            date:
+                type: foo
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            wochentag:
+                type: str
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+            sun:
+                type: num
+                cache: 'on'
 
-            int_19:
+            tn:
+                type: num
+                cache: 'on'
 
-                wwsymbol_mg2008:
-                    type: num
-                    cache: 'on'
+        day_1:
 
-                td:
-                    type: num
-                    cache: 'on'
+            tx:
+                type: num
+                cache: 'on'
 
-                dateTime:
-                    type: foo
-                    cache: 'on'
+            date:
+                type: foo
+                cache: 'on'
 
-                tt:
-                    type: num
-                    cache: 'on'
+            wochentag:
+                type: str
+                cache: 'on'
 
-                wwtext:
-                    type: str
+            sun:
+                type: num
+                cache: 'on'
 
-                rrr:
-                    type: num
-                    cache: 'on'
+            tn:
+                type: num
+                cache: 'on'
 
-                prrr:
-                    type: num
-                    cache: 'on'
+        day_2:
 
-                intervalLength:
-                    type: num
-                    cache: 'on'
+            tx:
+                type: num
+                cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
+            date:
+                type: foo
+                cache: 'on'
 
-                Sonne:
-                    type: bool
-                    cache: 'on'
+            wochentag:
+                type: str
+                cache: 'on'
 
-                Wolken:
-                    type: bool
-                    cache: 'on'
+            sun:
+                type: num
+                cache: 'on'
 
-                Regen:
-                    type: bool
-                    cache: 'on'
+            tn:
+                type: num
+                cache: 'on'
 
-                Gewitter:
-                    type: bool
-                    cache: 'on'
+        day_3:
 
-            day_0:
+            tx:
+                type: num
+                cache: 'on'
 
-                tx:
-                    type: num
-                    cache: 'on'
+            date:
+                type: foo
+                cache: 'on'
 
-                date:
-                    type: foo
-                    cache: 'on'
+            wochentag:
+                type: str
+                cache: 'on'
 
-                wochentag:
-                    type: str
-                    cache: 'on'
+            sun:
+                type: num
+                cache: 'on'
 
-                sun:
-                    type: num
-                    cache: 'on'
+            tn:
+                type: num
+                cache: 'on'
 
-                tn:
-                    type: num
-                    cache: 'on'
+        day_4:
 
-            day_1:
+            tx:
+                type: num
+                cache: 'on'
 
-                tx:
-                    type: num
-                    cache: 'on'
+            date:
+                type: foo
+                cache: 'on'
 
-                date:
-                    type: foo
-                    cache: 'on'
+            wochentag:
+                type: str
+                cache: 'on'
 
-                wochentag:
-                    type: str
-                    cache: 'on'
+            sun:
+                type: num
+                cache: 'on'
 
-                sun:
-                    type: num
-                    cache: 'on'
-
-                tn:
-                    type: num
-                    cache: 'on'
-
-            day_2:
-
-                tx:
-                    type: num
-                    cache: 'on'
-
-                date:
-                    type: foo
-                    cache: 'on'
-
-                wochentag:
-                    type: str
-                    cache: 'on'
-
-                sun:
-                    type: num
-                    cache: 'on'
-
-                tn:
-                    type: num
-                    cache: 'on'
-
-            day_3:
-
-                tx:
-                    type: num
-                    cache: 'on'
-
-                date:
-                    type: foo
-                    cache: 'on'
-
-                wochentag:
-                    type: str
-                    cache: 'on'
-
-                sun:
-                    type: num
-                    cache: 'on'
-
-                tn:
-                    type: num
-                    cache: 'on'
-
-            day_4:
-
-                tx:
-                    type: num
-                    cache: 'on'
-
-                date:
-                    type: foo
-                    cache: 'on'
-
-                wochentag:
-                    type: str
-                    cache: 'on'
-
-                sun:
-                    type: num
-                    cache: 'on'
-
-                tn:
-                    type: num
-                    cache: 'on'
+            tn:
+                type: num
+                cache: 'on'
 
