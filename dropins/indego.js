@@ -25,12 +25,19 @@ var activeNewPredictive = 0
 var activeNewCalendar = 0
 
 var CalCount = 0
+var m_CalCount = 0
+var p_CalCount = 0
 
 
 
 function EnableCalendar(calType)
 {
 	// document.getElementById("myH3").firstChild.textContent = "Mähkalender"
+	if (calType == 'M')
+		{ CalCount = m_CalCount}
+	else
+		{ CalCount = p_CalCount }
+			
 	for (actCal in CalCount)
 		{
 		 var strActCal = CalCount[actCal]
@@ -94,13 +101,26 @@ function DrawCalendar(TableName, CalNo, preFix)
 
 function ReDrawActCalendar(actCal, type)
 {
+	if (type == 'M')
+		{
+		  CalCount = m_CalCount
+		  activeCalendar = activeNewCalendar
+		}
+	else
+		{
+		  CalCount = p_CalCount
+		  activeCalendar = activeNewPredictive
+		}
 
-
+	// Create round Corner for ON
+    var activeDay = type + "-caption_cal_6"	     
+    document.getElementById(activeDay).classList.add("ui-first-child")
+	
 	i=0
 	while (i <= 6)
 		{
 	  	 var activeDay = type + "-cal_"+parseInt(i)
-	  	 if (actCal == i)
+	  	 if (activeCalendar == i)
 	  		 { document.getElementById(activeDay).checked = true }
 	  	 else
 			 { document.getElementById(activeDay).checked = false }
@@ -109,14 +129,11 @@ function ReDrawActCalendar(actCal, type)
 		 i += 1
 		}
 
-	if (CalCount.length == 1 && CalCount[0] != "0")
+	if (CalCount.length == 1 && activeCalendar != "0")
 	{
 	  	 var activeDay = type + "-cal_6"
   		 document.getElementById(activeDay).checked = true 
 	     $(document.getElementById(activeDay)).checkboxradio("refresh")
-
-	  	 var activeDay = type + "-caption_cal_6"	     
-	     document.getElementById(activeDay).classList.add("ui-first-child")
 	}
 
 }
@@ -201,10 +218,11 @@ function SaveChanges_mow()
 {
 	activeNewCalendar = GetActCalendar('M')
 	io.write('indego.calendar_sel_cal',activeNewCalendar)
-	activeOrgCalendar = activeNewCalendar
+	//activeOrgCalendar = activeNewCalendar
 	
 	io.write('indego.calendar_list',newCalendar[0])
-    orgCalendar = $.extend( true, [], newCalendar );
+    //orgCalendar = $.extend( true, [], newCalendar );
+	io.write('indego.calendar_save', true)
 }
 
 // Functions for Predictive Calendar
@@ -222,11 +240,12 @@ function SaveChanges_pred()
 {
 	activeNewPredictive = GetActCalendar('P')
 	io.write('indego.calendar_predictive_sel_cal',activeNewPredictive)
-    activeOrgPredictive = activeNewPredictive
+    //activeOrgPredictive = activeNewPredictive
 
 	
 	io.write('indego.calendar_predictive_list',newPredictiveCalendar[0])
-    orgPredictiveCalendar = $.extend( true, [], newPredictiveCalendar );
+    //orgPredictiveCalendar = $.extend( true, [], newPredictiveCalendar );
+	io.write('indego.calendar_predictive_save', true)
 }
 
 function InitWindow()
@@ -514,7 +533,7 @@ $.widget("sv.indego_calendar", $.sv.widget, {
         {
           if (key = 'Params')
         	  {
-        	   CalCount = response[0][key]['CalCount']
+        	   m_CalCount = response[0][key]['CalCount']
         	  }
         }
 
@@ -523,6 +542,7 @@ $.widget("sv.indego_calendar", $.sv.widget, {
     newCalendar = $.extend( true, [], response );
     EnableCalendar('M')
     UpdateTable(orgCalendar,'indego-draw-calendar','indego-calendar','m')
+    ReDrawActCalendar(activeNewCalendar, 'M')
   }
 });
 
@@ -555,7 +575,7 @@ _update: function(response)
     {
       if (key = 'Params')
     	  {
-    	   CalCount = response[0][key]['CalCount']
+    	   p_CalCount = response[0][key]['CalCount']
     	  }
     }
 
@@ -566,6 +586,7 @@ _update: function(response)
 
  EnableCalendar('P')
  UpdateTable(orgPredictiveCalendar,'indego-pred-draw-calendar','indego-pred-calendar','p')
+ ReDrawActCalendar(activeNewPredictive, 'P')
 
 }
 });

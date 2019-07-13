@@ -1,7 +1,46 @@
+/*********************************************
+*
+*  Widget for the selected Modus
+*
+* id         = unique ID for the Widget
+* item       = item of shNG
+* headline   = Headline for the Fieldset
+*********************************************/
+
+{% macro mode_active(id, item, headline, _backend ) %}
+
+{% import "basic.html" as basic %}
+	<div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.run_mode" data-item="{{ item }}"
+	       data-mode="{{ type|default('P') }}" data-designType="{{ _backend }}">
+
+        <div class="mode_active">
+
+	<html>
+		<h4>{{ headline }}</h4>
+		   <body>
+		      <form>
+			 <fieldset data-role = "controlgroup" data-type = "horizontal" id="{{uid(type, '_mod_active' )}}">
+			    <input type = "radio" name=uid(type,'act_mode') id = "{{ uid(type,'mode_1') }}">
+			    <label id = "{{ uid(type,'caption_mode_1') }}" for = "{{ uid(type,'mode_1') }}">Kalender</label>
+
+			    <input type = "radio" name=uid(type,'act_mode') id = "{{ uid(type,'mode_2') }}">
+			    <label id = "{{ uid(type,'caption_mode_2') }}" for = "{{ uid(type,'mode_2') }}">AUS</label>
+
+			    <input type = "radio" name=uid(type,'act_mode') id = "{{ uid(type,'mode_3') }}">
+			    <label id = "{{ uid(type,'caption_mode_3') }}" for = "{{ uid(type,'mode_3') }}">SmartMow</label>
+			 </fieldset>
+		      </form>
+		   </body>
+	</html>
+        </div>
+	</div>
+{% endmacro %}
+
+
 
 /*********************************************
 *
-*  Widget for the active predictive Calender
+*  Widget for the active  Calender
 *
 * id         = unique ID for the Widget
 * item       = item of shNG

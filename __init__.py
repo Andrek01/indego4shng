@@ -114,7 +114,8 @@ class Indego(SmartPlugin):
         self.cal_upate_count_pred = 0
         self.cal_pred_update_running = False
         
-        self.calendar_count = []
+        self.calendar_count_mow = []
+        self.calendar_count_pred = []
 
         # Check for initialization errors:
         if not self.indego_url:
@@ -144,12 +145,12 @@ class Indego(SmartPlugin):
         self.alive = True
 
         # start the refresh timers
-#        self.scheduler_add('operating_data',self.get_operating_data,cycle = 30)
+        self.scheduler_add('operating_data',self.get_operating_data,cycle = 3600)
         self.scheduler_add('state', self.state, cycle = self.cycle)
         self.scheduler_add('alert', self.alert, cycle=30)
-        self.scheduler_add('get_calendars', self.get_calendars, cycle=30)
+        self.scheduler_add('get_calendars', self.get_calendars, cycle=300)
         self.scheduler_add('check_login_state', self.check_login_state, cycle=90)
-        self.scheduler_add('device_date', self.device_data, cycle=6000)
+        self.scheduler_add('device_date', self.device_data, cycle=120)
         self.scheduler_add('get_weather', self.get_weather, cycle=600)
         self.scheduler_add('get_next_time', self.get_next_time, cycle=300)
         self.scheduler_add('get_smart_frequency', self.get_smart_frequency, cycle=500)
@@ -208,11 +209,11 @@ class Indego(SmartPlugin):
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'calendar_list', self.get_iattr_value(item.conf, 'calendar_list')))
             return self.update_item
         
-        if item._name ==  self.parent_item+'.calendar_sel_cal':
+        if item._name ==  self.parent_item+'.calendar_save':
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'calendar_list', self.get_iattr_value(item.conf, 'calendar_list')))
             return self.update_item
-
-        if item._name ==  self.parent_item+'.calendar_predictive_sel_cal':
+        
+        if item._name ==  self.parent_item+'.calendar_predictive_save':
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'calendar_list', self.get_iattr_value(item.conf, 'calendar_list')))
             return self.update_item
         
@@ -243,7 +244,7 @@ class Indego(SmartPlugin):
         :param dest: if given it represents the dest
         """
 
-        if caller != self.get_shortname():
+        if caller != self.get_shortname() and caller != 'Autotimer':
             # code to execute, only if the item has not been changed by this this plugin:
             self.logger.info("Update item: {}, item has been changed outside this plugin".format(item.id()))
     
@@ -252,29 +253,26 @@ class Indego(SmartPlugin):
             
             if item._name == self.parent_item+'.calendar_list':
                 myList = item()
-                ResultItem = self.items.return_item(self.parent_item+'.calendar_result')
-                ResultItem(str("speichern gestartet"),self.get_shortname())
-                self.parse_list_2_cal(myList, self.calendar)
+                self.parse_list_2_cal(myList, self.calendar,'MOW')
                 # Now Save the Calendar on Bosch-API
-                self.cal_update_count = 0
-                self.auto_mow_cal_update()
 
             if item._name == self.parent_item+'.calendar_predictive_list':
                 self.set_childitem('calendar_predictive_result',"speichern gestartet")
                 myList = item()
-                self.parse_list_2_cal(myList, self.predictive_calendar)
+                self.parse_list_2_cal(myList, self.predictive_calendar,'PRED')
                 # Now Save the Calendar on Bosch-API
-                self.upate_count_pred = 0
-                self.auto_pred_cal_update()
-            
-            if item._name == self.parent_item+'.calendar_sel_cal':
-                self.set_childitem('calendar_result',"speichern gestartet")
+
+            if item._name == self.parent_item+'.calendar_save':
+                self.set_childitem('calendar_result', "speichern gestartet")
+
                 # Now Save the Calendar on Bosch-API
                 self.cal_update_count = 0
                 self.auto_mow_cal_update()
-            
-            if  item._name == self.parent_item+'.calendar_predictive_sel_cal':
-                self.set_childitem('calendar_predictive_result',"speichern gestartet")
+
+
+            if item._name == self.parent_item+'.calendar_predictive_save':
+                self.set_childitem('calendar_predictive_result', "speichern gestartet")
+
                 # Now Save the Calendar on Bosch-API
                 self.upate_count_pred = 0
                 self.auto_pred_cal_update()
@@ -308,12 +306,13 @@ class Indego(SmartPlugin):
             if myResult != 200:
                 if self.cal_upate_count_pred == 1:
                     self.scheduler_add('auto_pred_cal_update', self.auto_pred_cal_update, cycle=60)
-                myMsg = "Mäher konnte nicht erreicht werden"
-                myMsg += "nächster Versuch in 60 Sekunden"
-                myMsg += "Anzahl Versuche : " + str(self.cal_update_count)
+                myMsg = "Mäher konnte nicht erreicht werden "
+                myMsg += "nächster Versuch in 60 Sekunden "
+                myMsg += "Anzahl Versuche : " + str(self.cal_upate_count_pred)
             else:
                 self.cal_pred_update_running = False
                 self.cal_upate_count_pred = 0
+                self.set_childitem('calendar_predictive_save', False)
                 try:
                     self.get_sh().scheduler.remove('auto_pred_cal_update')
                 except:
@@ -325,11 +324,12 @@ class Indego(SmartPlugin):
                 self.get_sh().scheduler.remove('auto_pred_cal_update')
             except:
                 pass
-            myMsg = "Ausschlusskalender konnte nach drei Versuchen nicht"
-            myMsg += "nicht gespeichert werden."
+            myMsg = "Ausschlusskalender konnte nach drei Versuchen nicht "
+            myMsg += "nicht gespeichert werden. "
             myMsg += "Speichern abgebrochen"
             self.cal_pred_update_running = False
             self.cal_upate_count_pred = 0
+            self.set_childitem('calendar_predictive_save', False)
         
         self.set_childitem('calendar_predictive_result',myMsg)
 
@@ -350,12 +350,13 @@ class Indego(SmartPlugin):
             if myResult != 200:
                 if self.cal_update_count == 1:
                     self.scheduler_add('auto_mow_cal_update', self.auto_mow_cal_update, cycle=60)
-                myMsg = "Mäher konnte nicht erreicht werden"
-                myMsg += "nächster Versuch in 60 Sekunden"
+                myMsg = "Mäher konnte nicht erreicht werden "
+                myMsg += "nächster Versuch in 60 Sekunden "
                 myMsg += "Anzahl Versuche : " + str(self.cal_update_count)
             else:
                 self.cal_update_running = False
                 self.cal_update_count = 0
+                self.set_childitem('calendar_save', False)
                 try:
                     self.get_sh().scheduler.remove('auto_cal_update')
                 except:
@@ -367,11 +368,12 @@ class Indego(SmartPlugin):
                 self.get_sh().scheduler.remove('auto_mow_cal_update')
             except:
                 pass
-            myMsg = "Mähkalender konnte nach drei Versuchen nicht"
-            myMsg += "nicht gespeichert werden."
+            myMsg = "Mähkalender konnte nach drei Versuchen nicht "
+            myMsg += "nicht gespeichert werden. "
             myMsg += "Speichern abgebrochen"
             self.cal_update_running = False
             self.cal_update_count = 0
+            self.set_childitem('calendar_save', False)
         
         self.set_childitem('calendar_result',myMsg)
     
@@ -382,19 +384,22 @@ class Indego(SmartPlugin):
                 # get the mowing calendar
                 self.calendar = self.items.return_item(self.parent_item + '.' + 'calendar')
                 # Only for Tests
-                #myTest = {'cals': [{'cal': 2, 'days': [{'slots': [{'EnMin': 30, 'En': True, 'StHr': 12, 'EnHr': 19, 'StMin': 0}, {'En': False}], 'day': 0}, {'slots': [{'EnMin': 0, 'En': True, 'StHr': 11, 'EnHr': 19, 'StMin': 30}, {'EnMin': 0, 'En': True, 'StHr': 6, 'EnHr': 9, 'StMin': 30}], 'day': 2}, {'slots': [{'EnMin': 0, 'En': True, 'StHr': 12, 'EnHr': 20, 'StMin': 0}, {'En': False}], 'day': 4}]}], 'sel_cal': 2}
+                #myTest = {'cals': [{'cal': 2, 'days': [{'day': 0, 'slots': [{'StHr': 12, 'StMin': 0, 'EnHr': 19, 'En': True, 'EnMin': 30}, {'StHr': 12, 'StMin': 0, 'EnHr': 17, 'En': True, 'EnMin': 0}]}, {'day': 1, 'slots': [{'StHr': 9, 'StMin': 0, 'EnHr': 13, 'En': True, 'EnMin': 0}, {'StHr': 12, 'StMin': 0, 'EnHr': 17, 'En': True, 'EnMin': 0}]}, {'day': 2, 'slots': [{'StHr': 20, 'StMin': 30, 'EnHr': 23, 'En': True, 'EnMin': 0}, {'StHr': 12, 'StMin': 0, 'EnHr': 17, 'En': True, 'EnMin': 0}]}, {'day': 3, 'slots': [{'StHr': 12, 'StMin': 0, 'EnHr': 17, 'En': True, 'EnMin': 0}, {'En': False}]}, {'day': 4, 'slots': [{'StHr': 12, 'StMin': 0, 'EnHr': 23, 'En': True, 'EnMin': 50}, {'En': False}]}]}, {'cal': 3, 'days': [{'day': 0, 'slots': [{'StHr': 12, 'StMin': 0, 'EnHr': 17, 'En': True, 'EnMin': 0}, {'En': False}]}, {'day': 1, 'slots': [{'StHr': 12, 'StMin': 0, 'EnHr': 17, 'En': True, 'EnMin': 0}, {'En': False}]}, {'day': 2, 'slots': [{'StHr': 12, 'StMin': 0, 'EnHr': 17, 'En': True, 'EnMin': 0}, {'En': False}]}, {'day': 3, 'slots': [{'StHr': 12, 'StMin': 0, 'EnHr': 17, 'En': True, 'EnMin': 0}, {'En': False}]}]}], 'sel_cal': 3}
                 #self.calendar(myTest, 'indego')
                 self.calendar(self.get_calendar(), 'indego')
                 calendar_list = self.items.return_item(self.parent_item + '.' + 'calendar_list')
-                calendar_list(self.parse_cal_2_list(self.calendar._value),'indego')
+                calendar_list(self.parse_cal_2_list(self.calendar._value,'MOW'),'indego')
                 self.act_Calender = self.items.return_item(self.parent_item + '.' + 'calendar_sel_cal')
                 self.act_Calender(self.get_active_calendar(self.calendar()),'indego')
             if not self.cal_update_running:
                 # get the predictve calendar for smartmowing
                 self.predictive_calendar = self.items.return_item(self.parent_item + '.' + 'calendar_predictive')
+                # Only for Tests
+                #myTest ={'cals': [{'cal': 1, 'days': [{'day': 0, 'slots': [{'StHr': 0, 'StMin': 0, 'EnHr': 12, 'En': True, 'EnMin': 0}, {'StHr': 20, 'StMin': 30, 'EnHr': 23, 'En': True, 'EnMin': 59}]}, {'day': 1, 'slots': [{'StHr': 0, 'StMin': 0, 'EnHr': 12, 'En': True, 'EnMin': 0}, {'StHr': 20, 'StMin': 30, 'EnHr': 23, 'En': True, 'EnMin': 59}]}, {'day': 2, 'slots': [{'StHr': 0, 'StMin': 0, 'EnHr': 12, 'En': True, 'EnMin': 0}, {'StHr': 20, 'StMin': 30, 'EnHr': 23, 'En': True, 'EnMin': 59}]}, {'day': 3, 'slots': [{'StHr': 0, 'StMin': 0, 'EnHr': 12, 'En': True, 'EnMin': 0}, {'StHr': 20, 'StMin': 30, 'EnHr': 23, 'En': True, 'EnMin': 59}]}, {'day': 4, 'slots': [{'StHr': 0, 'StMin': 0, 'EnHr': 12, 'En': True, 'EnMin': 0}, {'StHr': 20, 'StMin': 30, 'EnHr': 23, 'En': True, 'EnMin': 59}]}, {'day': 5, 'slots': [{'StHr': 0, 'StMin': 0, 'EnHr': 12, 'En': True, 'EnMin': 0}, {'StHr': 20, 'StMin': 30, 'EnHr': 23, 'En': True, 'EnMin': 59}]}, {'day': 6, 'slots': [{'StHr': 0, 'StMin': 0, 'EnHr': 23, 'En': True, 'EnMin': 59}]}]}], 'sel_cal': 1}
+                #self.predictive_calendar(myTest, 'indego')
                 self.predictive_calendar(self.get_predictive_calendar(), 'indego')
                 predictive_calendar_list = self.items.return_item(self.parent_item + '.' + 'calendar_predictive_list')
-                predictive_calendar_list(self.parse_cal_2_list(self.predictive_calendar._value),'indego')
+                predictive_calendar_list(self.parse_cal_2_list(self.predictive_calendar._value,'PRED'),'indego')
                 self.act_pred_Calender = self.items.return_item(self.parent_item + '.' + 'calendar_predictive_sel_cal')
                 self.act_pred_Calender(self.get_active_calendar(self.predictive_calendar()),'indego')
         except Exception as e:
@@ -477,14 +482,14 @@ class Indego(SmartPlugin):
         try:
             response = requests.get(url, headers=headers)
         except Exception as e:
-            if response.status_code == 204:                  # No content
-                self.logger.info("Got no Content {}: {}".format(url, e))
-                return False
-            else:
-                self.logger.warning("Problem fetching {}: {}".format(url, e))
+            self.logger.warning("Problem fetching {}: {}".format(url, e))
+            return False
+        
+        if response.status_code == 204:                  # No content
+                self.logger.info("Got no Content : {}".format(url))
                 return False
 
-        if response.status_code == 200 or response.status_code == 201:
+        elif response.status_code == 200 or response.status_code == 201:
             try:
                 if str(response.headers).find("json") > -1:
                     content = response.json()
@@ -809,10 +814,18 @@ class Indego(SmartPlugin):
 
         return newCal
             
-    def parse_list_2_cal(self,myList = None, myCal = None):
-        if (len(self.calendar_count) < 5):
+    def parse_list_2_cal(self,myList = None, myCal = None,type = None):
+        if (type == 'MOW' and len(self.calendar_count_mow) == 5):
+            self.clear_calendar(myCal._value)
+
+        if (type == 'PRED' and len(self.calendar_count_pred) == 5):
+            self.clear_calendar(myCal._value)
+                
+        if (type == 'MOW' and len(self.calendar_count_mow) < 5):
             myCal._value = self.build_new_calendar(myList)
-            print ('Breakpoint')
+        elif (type == 'PRED' and len(self.calendar_count_pred) < 5):
+            myCal._value = self.build_new_calendar(myList)
+        
         else:
             self.clear_calendar(myCal._value)
             for myKey in myList:
@@ -852,7 +865,7 @@ class Indego(SmartPlugin):
         return activeCal
     
     
-    def parse_cal_2_list(self, myCal = None):
+    def parse_cal_2_list(self, myCal = None, type=None):
         myList = {}
         myList['Params']={}
         myCalList = []
@@ -893,33 +906,56 @@ class Indego(SmartPlugin):
                                 myList[myKey]['Days'] = myList[myKey]['Days']+','+str(myDay)
 
         myList['Params']['CalCount'] = myCalList
-        self.calendar_count = myCalList
+        if (type == 'MOW'):
+            self.calendar_count_mow = myCalList
+        else:
+            self.calendar_count_pred = myCalList
+        
         return myList
+    
+    
+    def parse_dict_2_item(self,myDict, keyEntry):
+        for m in myDict:
+            if type(myDict[m]) != dict:
+                self.set_childitem(keyEntry+m, myDict[m])
+            else:
+                self.parse_dict_2_item(myDict[m],keyEntry+m+'.')
+    
     
     def get_operating_data(self):
         url = "{}alms/{}/operatingData".format( self.indego_url, self.alm_sn)
         try:
             operating_data = self.get_url( url, self.context_id, 10)    
-            print (operating_data)
         except Exception as e:
-            self.logger.warning("Problem fetching {}: {}".format(url, e))            
-            print (operating_data)
+            self.logger.warning("Problem fetching {}: {}".format(url, e))
+            
+        self.parse_dict_2_item(operating_data,'operatingInfo.')            
     
     def get_next_time(self):
             url = "{}alms/{}/predictive/nextcutting?last=YYYY-MM-DD-HH:MM:SS%2BHH:MM".format( self.indego_url, self.alm_sn)
+
             try:
                 next_time = self.get_url( url, self.context_id, 10)
             except Exception as e:
+                next_time = False
                 self.logger.warning("Problem fetching {0}: {1}".format(url, e))        
             if next_time == False:
                 self.set_childitem('next_time','kein Mähen geplant')
-                self.logger.info("Got next-time - nothign scheduled")
+                self.logger.info("Got next-time - nothing scheduled")
             else:
                 try:
+                    
                     self.logger.debug("Next time raw" + str(json.dumps(next_time))) # net_time was here
-                    next_time = next_time['mow_next']
-                    next_time = next_time.replace(":", "")
-                    next_time = datetime.datetime.strptime(next_time, '%Y-%m-%dT%H%M%S%z')
+                    new_time = next_time['mow_next']
+                    new_time = new_time.replace(':', '')
+                        
+                    time_text  = new_time[8:10] + '.'
+                    time_text += new_time[5:7] + '.'
+                    time_text += new_time[0:4] + ' - '
+                    time_text += new_time[11:13] + ':'
+                    time_text += new_time[13:15]
+                    next_time = str(time_text)
+
                     self.logger.debug("Next time final " + str(next_time))
                     self.set_childitem('next_time',next_time)
                 except Exception as e:

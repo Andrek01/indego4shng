@@ -72,6 +72,8 @@
 				<br />
 				/** Für den Indego 350/400 nicht verfügbar */
 
+    			{{ indego.mode_active('Indego_calendar_mode','indego.MOW','Modus') }} 
+<!--
 				<table height="90%" width="95%" align="center">
 					<tr>
 						<td></td>
@@ -80,6 +82,7 @@
 						<td></td>
 					</tr>
 				</table>
+-->
 				<table height="90%" width="95%" align="center">
 					<tr>
 						<td></td>
@@ -246,7 +249,7 @@
 							<td align="right">{{ basic.print('mowmode', 'indego.mowmode') }}</td>
 						</tr><tr>
 							<td align="left" style="padding-left: 10px;">Nächste Fahrzeit:</td>
-							<td align="right">{{ basic.print('next_time_smartmow', 'indego.next_time', 'short') }}</td>
+							<td align="right">{{ basic.print('next_time_smartmow', 'indego.next_time', 'text') }}</td>
 						</tr><tr>
 							<td align="left" style="padding-left: 10px;">Letztes Karten Update:</td>
 							<td align="right">{{ basic.print('MapDate', 'indego.mapSvgCacheDate', 'short') }}</td>
@@ -294,6 +297,63 @@
 			</div>
 		</div>
 	</div>
+
+/** # Indego Inside----------------------------------------------------- */
+    <div class="block" {border-style: solid;}>
+		<div class="set-3" data-role="collapsible-set" data-theme="c" data-content-theme="a" data-mini="true">
+			<div  data-role="collapsible" data-collapsed="false">
+				<h3>Indego Inside - Batterie-Daten</h3>
+				<table width=100% id="indego-inside-1" style="font-size=50%"> 
+                    <tr>
+                        <td align="left">Spannung</td>
+                        <td>
+							<td align="right">{{ basic.print('txt_voltage', 'indego.operatingInfo.battery.voltage') }}</td>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="left">Batterie in Prozent</td>
+                        <td>
+							<td align="right">{{ basic.print('txt_battery_percent', 'indego.operatingInfo.battery.percent') }}</td>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="left">Batterie Enladung</td>
+                        <td>
+							<td align="right">{{ basic.print('txt_battery_discharge', 'indego.operatingInfo.battery.discharge') }}</td>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="left">Batterie Temparatur</td>
+                        <td>
+							<td align="right">{{ basic.print('txt_battery_temp', 'indego.operatingInfo.battery.battery_temp') }}</td>
+                        </td>
+                    </tr>
+				</table>
+				{{ plot.period('indego.battery-discharge', 'indego.operatingInfo.battery.discharge', 'avg','24h','','','','','Batterie - Entladung') }}
+				{{ plot.period('indego.battery-Temp', 'indego.operatingInfo.battery.battery_temp', 'avg','24h','','','','','Batterie - Temparatur') }}
+				{{ plot.period('indego.battery-Voltage', 'indego.operatingInfo.battery.voltage', 'avg','24h','','','','','Batterie - Spannung') }}
+
+			</div>
+			<div  data-role="collapsible" data-collapsed="true">
+				<h3>Indego Inside - Gartendaten</h3>
+				<table width=100% id="indego-inside-1" style="font-size=50%"> 
+				</table>
+				<br>
+			</div>
+			<div  data-role="collapsible" data-collapsed="true">
+				<h3>Indego Inside - Runtime</h3>
+				<table width=100% id="indego-inside-1" style="font-size=50%"> 
+				</table>
+				<br>
+			</div>
+		</div>
+
+
+
+
+    </div>
+
+
 /** # Alarme  ---------------------------------------------------------- */
 	<div class="block" >
 		<div class="set-2" data-role="collapsible-set" data-theme="c" data-content-theme="a" data-mini="true">

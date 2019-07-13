@@ -303,6 +303,12 @@ item_structs:
             type: str
             visu_acl: rw
 
+        calendar_save:
+            type: bool
+            visu_acl: rw
+            autotimer: 50 = False
+
+
         calendar_predictive:
             type: dict
             visu_acl: rw
@@ -318,6 +324,12 @@ item_structs:
         calendar_predictive_result:
             type: str
             visu_acl: rw
+
+
+        calendar_predictive_save:
+            type: bool
+            visu_acl: rw
+            autotimer: 50 = False
 
         weather:
 
@@ -1490,4 +1502,95 @@ item_structs:
                 tn:
                     type: num
                     cache: 'on'
+
+
+        operatingInfo:
+            hmiKeys:
+                type : num
+                cache: 'on'
+            garden:
+                charge: 
+                    type : num
+                    database: 'yes'
+                    cache: 'on'
+                last_mow: 
+                    type : num
+                    database: 'yes'
+                    cache: 'on'
+                runtime: 
+                    type : num
+                    database: 'yes'
+                    cache: 'on'
+                id: 
+                    type : num
+                    cache: 'on'
+                size: 
+                    type : num
+                    cache: 'on'
+                inner_bounds: 
+                    type : num
+                    cache: 'on'
+                name: 
+                    type : num
+                    cache: 'on'
+                stops: 
+                    type : num
+                    database: 'yes'
+                    cache: 'on'
+                bumps: 
+                    type : num
+                    database: 'yes'
+                    cache: 'on'
+                cuts: 
+                    type : num
+                    database: 'yes'
+                    cache: 'on'
+
+                signal_id: 
+                    type : num
+            runtime:
+                total:
+                    charge:
+                        type : num
+                        database: 'yes'
+                        cache: 'on'
+                    operate:
+                        type : num
+                        database: 'yes'
+                        cache: 'on'
+                session:
+                    charge:
+                        type : num
+                        database: 'yes'
+                        cache: 'on'
+                    operate:
+                        type : num
+                        database: 'yes'
+                        cache: 'on'
+            battery:
+                voltage:
+                    type : num
+                    database: 'yes'
+                    cache: 'on'
+                cycles: 
+                    type : num
+                    database: 'yes'
+                    cache: 'on'
+                battery_temp:
+                    type : num
+                    database: 'yes'
+                    cache: 'on'
+                discharge:
+                    type : num
+                    database: 'yes'
+                    cache: 'on'
+                percent:
+                    type : num
+                    database: 'yes'
+                    cache: 'on'
+                ambient_temp:
+                    type : num
+                    database: 'yes'
+                    cache: 'on'
+
 
