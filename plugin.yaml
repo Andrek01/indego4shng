@@ -98,6 +98,10 @@ item_structs:
     child:
         name: Vorlage Struktur Indego-Mower
 
+        active_mode:
+            type: num
+            cache: 'on'
+
         online:
             type: bool
 
@@ -139,11 +143,13 @@ item_structs:
 
         mowedPercent:
             type: num
+            cache: 'on'
             database: 'yes'
 
         mowedPercent_soll:
             type: num
             database: 'yes'
+            cache: 'on'
             initial_value: 100
 
         mapSvgCacheDate:
@@ -1545,6 +1551,10 @@ item_structs:
                     type : num
                     database: 'yes'
                     cache: 'on'
+                map_cell_size:
+                    type: num
+                    database: 'yes'
+                    cache: 'on'                    
 
                 signal_id: 
                     type : num

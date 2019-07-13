@@ -10,28 +10,25 @@
 {% macro mode_active(id, item, headline, _backend ) %}
 
 {% import "basic.html" as basic %}
-	<div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.run_mode" data-item="{{ item }}"
-	       data-mode="{{ type|default('P') }}" data-designType="{{ _backend }}">
-
+	<div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.run_mode" data-item="{{ item }}" data-designType="{{ _backend }}">
         <div class="mode_active">
+	    <html>
+		    <h4>{{ headline }}</h4>
+		       <body>
+		          <form>
+			     <fieldset data-role = "controlgroup" data-type = "horizontal" id="{{uid(type, '_mod_active' )}}">
+			        <input type = "radio" name=uid('act_mode') id = "{{ uid(type,'mode_1') }}">
+			        <label id = "{{ uid(type,'caption_mode_1') }}" for = "{{ uid(type,'mode_1') }}">Kalender</label>
 
-	<html>
-		<h4>{{ headline }}</h4>
-		   <body>
-		      <form>
-			 <fieldset data-role = "controlgroup" data-type = "horizontal" id="{{uid(type, '_mod_active' )}}">
-			    <input type = "radio" name=uid(type,'act_mode') id = "{{ uid(type,'mode_1') }}">
-			    <label id = "{{ uid(type,'caption_mode_1') }}" for = "{{ uid(type,'mode_1') }}">Kalender</label>
+			        <input type = "radio" name=uid('act_mode') id = "{{ uid(type,'mode_0') }}">
+			        <label id = "{{ uid(type,'caption_mode_0') }}" for = "{{ uid(type,'mode_0') }}">AUS</label>
 
-			    <input type = "radio" name=uid(type,'act_mode') id = "{{ uid(type,'mode_2') }}">
-			    <label id = "{{ uid(type,'caption_mode_2') }}" for = "{{ uid(type,'mode_2') }}">AUS</label>
-
-			    <input type = "radio" name=uid(type,'act_mode') id = "{{ uid(type,'mode_3') }}">
-			    <label id = "{{ uid(type,'caption_mode_3') }}" for = "{{ uid(type,'mode_3') }}">SmartMow</label>
-			 </fieldset>
-		      </form>
-		   </body>
-	</html>
+			        <input type = "radio" name=uid('act_mode') id = "{{ uid(type,'mode_2') }}">
+			        <label id = "{{ uid(type,'caption_mode_2') }}" for = "{{ uid(type,'mode_2') }}">SmartMow</label>
+			     </fieldset>
+		          </form>
+		       </body>
+	    </html>
         </div>
 	</div>
 {% endmacro %}

@@ -145,7 +145,7 @@ class Indego(SmartPlugin):
         self.alive = True
 
         # start the refresh timers
-        self.scheduler_add('operating_data',self.get_operating_data,cycle = 3600)
+        self.scheduler_add('operating_data',self.get_operating_data,cycle = 300)
         self.scheduler_add('state', self.state, cycle = self.cycle)
         self.scheduler_add('alert', self.alert, cycle=30)
         self.scheduler_add('get_calendars', self.get_calendars, cycle=300)
@@ -216,6 +216,10 @@ class Indego(SmartPlugin):
         if item._name ==  self.parent_item+'.calendar_predictive_save':
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'calendar_list', self.get_iattr_value(item.conf, 'calendar_list')))
             return self.update_item
+
+        if item._name ==  self.parent_item+'.alm_mode':
+            self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'calendar_list', self.get_iattr_value(item.conf, 'calendar_list')))
+            return self.update_item        
         
         return None
 
@@ -243,7 +247,7 @@ class Indego(SmartPlugin):
         :param source: if given it represents the source
         :param dest: if given it represents the dest
         """
-
+        # Function when item is triggered by VISU
         if caller != self.get_shortname() and caller != 'Autotimer':
             # code to execute, only if the item has not been changed by this this plugin:
             self.logger.info("Update item: {}, item has been changed outside this plugin".format(item.id()))
@@ -254,17 +258,16 @@ class Indego(SmartPlugin):
             if item._name == self.parent_item+'.calendar_list':
                 myList = item()
                 self.parse_list_2_cal(myList, self.calendar,'MOW')
-                # Now Save the Calendar on Bosch-API
+
 
             if item._name == self.parent_item+'.calendar_predictive_list':
                 self.set_childitem('calendar_predictive_result',"speichern gestartet")
                 myList = item()
                 self.parse_list_2_cal(myList, self.predictive_calendar,'PRED')
-                # Now Save the Calendar on Bosch-API
+
 
             if item._name == self.parent_item+'.calendar_save':
                 self.set_childitem('calendar_result', "speichern gestartet")
-
                 # Now Save the Calendar on Bosch-API
                 self.cal_update_count = 0
                 self.auto_mow_cal_update()
@@ -272,11 +275,25 @@ class Indego(SmartPlugin):
 
             if item._name == self.parent_item+'.calendar_predictive_save':
                 self.set_childitem('calendar_predictive_result', "speichern gestartet")
-
                 # Now Save the Calendar on Bosch-API
                 self.upate_count_pred = 0
                 self.auto_pred_cal_update()
-
+            
+            
+            if item._name == self.parent_item+'.alm_mode':
+                
+                
+        # Function when item is triggered by anybody
+        else:
+            if item._name == self.parent_item+'.alm_mode':
+                if   (item() == 'smart'):
+                    self.set_childitem('active_mode', 2)                
+                elif (item() == 'calendar'):
+                    self.set_childitem('active_mode', 1)                    
+                elif (item() == 'manual'):
+                    self.set_childitem('active_mode', 0)
+                
+            
     
     def check_login_state(self):
         actTimeStamp = time.time()

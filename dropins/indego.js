@@ -657,7 +657,6 @@ $.widget("sv.symbol", $.sv.widget, {
 	},
 	_update: function(response)
     {
-		//event.stopPropagation();
 		// response will be an array, if more then one item is requested
 		var bit = (this.options.mode == 'and');
 		if (response instanceof Array) {
@@ -682,3 +681,91 @@ $.widget("sv.symbol", $.sv.widget, {
 		}
 	}
 });
+//*****************************************************
+//Widget for Mow-Mode (Calendar = 1, off = 0, smart = 2
+//*****************************************************
+$.widget("sv.mode_active", $.sv.widget, {
+
+	initSelector: 'span[data-widget="indego.run_mode"]',
+
+	options: {
+		mode : 0
+	},
+
+	_create: function() {
+		this._super();
+
+		var shortpressEvent = function(event) {
+			// get the list of values
+			var list_val = String(this.options.vals).explode();
+			// get the index of the memorised value
+			var old_idx = list_val.indexOf(this._current_val);
+			// compute the next index
+			var new_idx = (old_idx + 1) % list_val.length;
+			// get next value
+			var new_val = list_val[new_idx];
+			// send the value to driver
+			io.write(this.options.item, new_val);
+			// memorise the value for next use
+			this._current_val = new_val;
+			/*
+			// activity indicator
+			var target = $(event.delegateTarget);
+			var indicatorType = this.options['indicator-type'];
+			var indicatorDuration = this.options['indicator-duration'];
+			if(indicatorType && indicatorDuration > 0) {
+				// add one time event to stop indicator
+				target.one('stopIndicator',function(event) {
+					clearTimeout(target.data('indicator-timer'));
+					event.stopPropagation();
+					var prevColor = target.attr('data-col');
+					if(prevColor != null) {
+						if(prevColor != 'icon1')
+							target.removeClass('icon1').find('svg').removeClass('icon1');
+						if(prevColor != 'blink')
+							target.removeClass('blink').find('svg').removeClass('blink');
+						if(prevColor == 'icon1' || prevColor == 'icon0')
+							prevColor = '';
+						target.css('color', prevColor).find('svg').css('fill', prevColor).css('stroke', prevColor);
+					}
+				})
+				// set timer to stop indicator after timeout
+				.data('indicator-timer', setTimeout(function() { target.trigger('stopIndicator') }, indicatorDuration*1000 ));
+				// start indicator
+				if(indicatorType == 'icon1' || indicatorType == 'icon0' || indicatorType == 'blink') {
+					target.addClass(indicatorType).find('svg').addClass(indicatorType);
+					indicatorType = '';
+				}
+				target.css('color', indicatorType).find('svg').css('fill', indicatorType).css('stroke', indicatorType);
+			}
+			*/
+		}
+
+		/*
+		// replicate ui-first-child and ui-last-child if first resp. last sibling of tag 'a' has it
+		if(this.element.children('a:first').hasClass('ui-first-child'))
+			this.element.children('a').addClass('ui-first-child');
+		if(this.element.children('a:last').hasClass('ui-last-child'))
+			this.element.children('a').addClass('ui-last-child');
+		// display first control as default
+		this.element.after(this.element.children('a[data-widget="basic.stateswitch"]:first'));
+		*/
+	},
+
+	_update: function(response) {
+		// get list of values
+		var list_val = String(this.options.vals).explode();
+		// get received value
+		var val = response.toString().trim();
+		// hide all states
+		this.element.next('a[data-widget="basic.stateswitch"][data-index]').insertBefore(this.element.children('a:eq(' + this.element.next('a[data-widget="basic.stateswitch"][data-index]').attr('data-index') + ')'));
+		// stop activity indicator
+		this.element.children('a[data-widget="basic.stateswitch"]').trigger('stopIndicator');
+		// show the first corrseponding to value. If none corrseponds, the last one will be shown by using .addBack(':last') and .first()
+		this.element.after(this.element.children('a[data-widget="basic.stateswitch"]').filter('[data-val="' + val + '"]:first').addBack(':last').first());
+		// memorise the value for next use
+		this._current_val = val;
+	},
+
+});
+
