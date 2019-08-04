@@ -279,21 +279,7 @@ class Indego(SmartPlugin):
                 self.set_childitem('calendar_predictive_result',"speichern gestartet")
                 myList = item()
                 self.parse_list_2_cal(myList, self.predictive_calendar,'PRED')
-
-
-            if item._name == self.parent_item+'.calendar_save':
-                self.set_childitem('calendar_result', "speichern gestartet")
-                # Now Save the Calendar on Bosch-API
-                self.cal_update_count = 0
-                self.auto_mow_cal_update()
-
-
-            if item._name == self.parent_item+'.calendar_predictive_save':
-                self.set_childitem('calendar_predictive_result', "speichern gestartet")
-                # Now Save the Calendar on Bosch-API
-                self.upate_count_pred = 0
-                self.auto_pred_cal_update()
-            
+                     
             if item._name == self.parent_item+'.visu.refresh':
                 self.set_childitem('update_active_mode', True)
                 self.get_calendars()
@@ -360,7 +346,21 @@ class Indego(SmartPlugin):
                     self.set_childitem('active_mode.aus', True)
                     self.set_childitem('active_mode.kalender', False)          
                     self.set_childitem('active_mode.smart', False)
-                
+                    
+                    
+            if item._name == self.parent_item+'.calendar_save':
+                self.set_childitem('calendar_result', "speichern gestartet")
+                # Now Save the Calendar on Bosch-API
+                self.cal_update_count = 0
+                self.auto_mow_cal_update()
+
+
+            if item._name == self.parent_item+'.calendar_predictive_save':
+                self.set_childitem('calendar_predictive_result', "speichern gestartet")
+                # Now Save the Calendar on Bosch-API
+                self.upate_count_pred = 0
+                self.auto_pred_cal_update()
+  
             
     
     def check_login_state(self):
