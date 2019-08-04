@@ -28,6 +28,127 @@ var CalCount = 0
 var m_CalCount = 0
 var p_CalCount = 0
 
+var activeMode = 0
+
+var htmlPopUp = "<div data-role='popup' data-overlay-theme='b' data-theme='a' class='messagePopup' id='uzsuIndegoContent' data-dismissible = 'false' data-history='false' data-position-to='window'>" +
+				"<button data-rel='back' data-icon='delete' data-iconpos='notext' class='ui-btn-right' id='indegoClose'></button>" +
+				"<div class='uzsuPopupHeader id=popHeader'></div>" +  
+				// Body
+				"<table>" +
+					"<tr>" +
+						"<td width=100px>" +
+							"<input type='time' id='t_von' name='Time_von'  min='0:00' max='23:59' required step=600 width=80px>"+
+						"</td>" +
+						"<td width=100px>"+
+							"<input type='time' id='t_bis' name='Time_bis'  min='0:00' max='23:59' required step=600 width=80px>"+
+						"</td>" +
+						"<td width=150px></td>" +
+					"</tr>" +
+					"<tr>" +
+					"</tr>" +		
+					"<tr>" +
+					"<td colspan='3'>" +
+					      "<form>" +
+					      "<fieldset data-role = 'controlgroup' data-type = 'horizontal' id='Weekdays'>" +
+					      "<label title='Mo'><input id = 'day_0' checked_0 type='checkbox' value='0'>Mo</label>" +
+				    	  "<label title='Di'><input id = 'day_1' checked_1 type='checkbox' value='1'>Di</label>" +
+				    	  "<label title='Mi'><input id = 'day_2' checked_2 type='checkbox' value='2'>Mi</label>" +
+				    	  "<label title='Do'><input id = 'day_3' checked_3 type='checkbox' value='3'>Do</label>" +
+				    	  "<label title='Fr'><input id = 'day_4' checked_4 type='checkbox' value='4'>Fr</label>" +
+				    	  "<label title='Sa'><input id = 'day_5' checked_5 type='checkbox' value='5'>Sa</label>" +
+				    	  "<label title='So'><input id = 'day_6' checked_6 type='checkbox' value='6'>So</label>" +
+				    	  "</fieldset>" +
+				    	  "</form>" +					
+						"</div>" +
+						"</div>" +
+					"</td>" +
+					"</tr>" +
+					"</table>" +
+				// Footer
+				"<div class='uzsuTableFooter'>" +
+		        	"<div class='uzsuRowFooter'>" +
+		          		"<span style='float:right'>" + 
+		          			"<div class='uzsuCell' style='float: right'>" +
+				      			"<div data-role='controlgroup' data-type='horizontal' data-inline='true' data-mini='true'>" +
+				      				"<button id='indegoCancel'>" + sv_lang.uzsu.cancel + "</button>" +
+				      				"<button id='indegoSave'>" + sv_lang.uzsu.ok + "</button>" +
+				      			"</div>" +
+				      		"</div>" +
+				      	"</span>" +
+      			"</div>" +
+				      
+			"</div>";					
+
+function ShowPopUp(calType, myKey)
+{
+ // Append to actual site
+ var indegoPopup = $(htmlPopUp).appendTo(".indegoadd").enhanceWithin().popup().on({
+   popupbeforeposition: function(ev, ui) {
+     var maxHeight = $(window).height() - 230; // 180
+     document.getElementById("uzsuIndegoContent-popup").style.width = "400px"
+   },
+   popupafteropen: function(ev, ui) {
+     $(this).popup('reposition', {y: 30})
+   },
+   popupafterclose: function(ev, ui) {
+     $(indegoPopup).remove();
+     $(window).off('resize', self._onresize);
+   }
+ });
+ 
+ // Fill values on Edit-Mode
+ if (mode == "Edit")
+	 {
+		 if (calType == 'm')
+			 { myObj = newCalendar[0][myKey] }
+		 else
+		 	 { myObj = newPredictiveCalendar[0][myKey] }
+
+		 document.getElementById("t_von").value = myObj.Start
+		 document.getElementById("t_bis").value = myObj.End
+		 i=0
+		 while (i <= 6)
+		 	{
+			 actDay = "day_"+String(i)
+
+			 if (myObj.Days.search(String(i)) != -1)
+			 {
+				 document.getElementById(actDay).checked = true
+				 $('#'+actDay).prop('checked',true);
+				 $("#"+actDay).checkboxradio("refresh")
+		     }
+			 else
+			 {
+				 document.getElementById(actDay).checked = false
+				 $('#'+actDay).prop('checked',false);
+				 $("#"+actDay).checkboxradio("refresh")
+		     }
+
+			 i += 1
+		 	}
+
+	 }
+
+ 
+ // Close Popup by X or cancel
+ indegoPopup.find('#indegoClose, #indegoCancel').bind('click',
+ function(e)
+ {
+	 indegoPopup.popup('close');
+ });
+
+ // save Values by OK
+ indegoPopup.find('#indegoSave').bind('click',
+ function(e) 
+ {
+   CloseEntryWindowByOK()
+   indegoPopup.popup('close');
+ });
+ 
+ // Popup zeigen
+ indegoPopup.popup('open');//.css({ position: 'fixed', top: '30px' });
+}
+
 
 
 function EnableCalendar(calType)
@@ -37,7 +158,7 @@ function EnableCalendar(calType)
 		{ CalCount = m_CalCount}
 	else
 		{ CalCount = p_CalCount }
-			
+	var FirstDay = 5
 	for (actCal in CalCount)
 		{
 		 var strActCal = CalCount[actCal]
@@ -53,11 +174,18 @@ function EnableCalendar(calType)
 		 { document.getElementById("pred_caption_"+strActCal).firstChild.textContent = "Ausschlusskalender ("+strActCal+")"}
 		 if (CalCount.length > 1)
 			{
+			 if (strActCal < FirstDay)
+				{
+				 FirstDay = strActCal
+				}
 			 // Show labels for transmitted Calendars
 			 var strCaption = calType + '-caption_cal_'+strActCal
 			 document.getElementById(strCaption).style.display="block"			
 			}
 		}
+	var firstDay2Show = calType + "-caption_cal_" + FirstDay
+	document.getElementById(firstDay2Show).classList.add("ui-first-child")
+	
 	if (CalCount.length == 1)
 		{
 		 var strActCal = CalCount[0]
@@ -99,7 +227,7 @@ function DrawCalendar(TableName, CalNo, preFix)
 	$("#"+TableName).html(myHtml)
 }
 
-function ReDrawActCalendar(actCal, type)
+function ReDrawActCalendar(type)
 {
 	if (type == 'M')
 		{
@@ -115,13 +243,26 @@ function ReDrawActCalendar(actCal, type)
 	// Create round Corner for ON
     var activeDay = type + "-caption_cal_6"	     
     document.getElementById(activeDay).classList.add("ui-first-child")
-	
+	var ll_first = false
 	i=0
 	while (i <= 6)
 		{
 	  	 var activeDay = type + "-cal_"+parseInt(i)
-	  	 if (activeCalendar == i)
-	  		 { document.getElementById(activeDay).checked = true }
+	  	 if (activeCalendar == i && i != 0)
+	  		 {
+	  		 	document.getElementById(activeDay).checked = true
+	  		 	if (ll_first == false)
+	  		 		{
+	  		 		    //var firstDay = type + "-caption_cal_"+parseInt(i)
+	  		 			//document.getElementById(firstDay).classList.add("ui-first-child")
+	  		 			//ll_first = true
+	  		 		}
+	  		 	else
+	  		 		{
+		  		 	    //var firstDay = type + "-caption_cal_"+parseInt(i)
+	  		 			//document.getElementById(firstDay).classList.remove("ui-first-child")
+	  		 		}
+	  		 }
 	  	 else
 			 { document.getElementById(activeDay).checked = false }
 
@@ -211,7 +352,7 @@ function CancelChanges_mow()
 	UpdateTable(orgCalendar,'indego-draw-calendar','indego-calendar','m')	
 	
     activeNewCalendar =  activeOrgCalendar
-	ReDrawActCalendar(activeNewCalendar, 'M');
+	ReDrawActCalendar('M');
 }
 
 function SaveChanges_mow()
@@ -232,7 +373,7 @@ function CancelChanges_pred()
     UpdateTable(orgPredictiveCalendar,'indego-pred-draw-calendar','indego-pred-calendar','p')
 
     activeNewPredictive = activeOrgPredictive
-	ReDrawActCalendar(activeNewPredictive, 'P');
+	ReDrawActCalendar('P');
 
 }
 
@@ -260,19 +401,12 @@ function InitWindow()
     	}
 }
 
-function ShowEntryWindow()
-{ 
-    popup.className = 'overlay';
-}
-
-function CloseEntryWindowByCancel()
-{
-    popup.className = 'overlayHidden';
-}
 
 // Stores the given values to the list
 function CloseEntryWindowByOK()
 {
+	myTest = this
+	
     StartTime = document.getElementById("t_von").value
     EndTime   = document.getElementById("t_bis").value
     myKey = actCalendar+"-"+StartTime+"-"+EndTime
@@ -318,7 +452,7 @@ function CloseEntryWindowByOK()
 		}
 	
 	
-    popup.className = 'overlayHidden';
+    
 
 }
 
@@ -332,34 +466,8 @@ function BtnEdit(click_item)
  oldKey = myKey
  actCalendar = click_item.substring(6,7)
  calType = click_item.substring(0,1)
- if (calType == 'm')
-	 { myObj = newCalendar[0][myKey] }
- else
- 	 { myObj = newPredictiveCalendar[0][myKey] }
-
- document.getElementById("t_von").value = myObj.Start
- document.getElementById("t_bis").value = myObj.End
- i=0
- while (i <= 6)
- 	{
-	 actDay = "day_"+String(i)
-	 if (myObj.Days.search(String(i)) != -1)
-	 {
-		 document.getElementById(actDay).checked = true
-		 $('#'+actDay).prop('checked',true);
-		 $("#"+actDay).checkboxradio("refresh")
-     }
-	 else
-	 {
-		 document.getElementById(actDay).checked = false
-		 $('#'+actDay).prop('checked',false);
-		 $("#"+actDay).checkboxradio("refresh")
-     }
-	 
-	 i += 1
- 	}
  mode = "Edit"
- ShowEntryWindow();
+ ShowPopUp(calType, myKey)
 }
 
 function BtnDelete(click_item)
@@ -380,14 +488,16 @@ function BtnDelete(click_item)
  
 }
 
+
 function BtnAdd(click_item)
 {
  console.log("BtnAdd from element :"+click_item);
- InitWindow()
+ // **************************
  actCalendar = click_item.substring(5,6)
  calType = click_item.substring(0,1)
  mode = "Add"
- ShowEntryWindow();
+	 
+ ShowPopUp(calType, '')
 }
 
 function FillDrawingCalendar(myCal,myColour, preFix)
@@ -542,7 +652,7 @@ $.widget("sv.indego_calendar", $.sv.widget, {
     newCalendar = $.extend( true, [], response );
     EnableCalendar('M')
     UpdateTable(orgCalendar,'indego-draw-calendar','indego-calendar','m')
-    ReDrawActCalendar(activeNewCalendar, 'M')
+    ReDrawActCalendar('M')
   }
 });
 
@@ -586,7 +696,7 @@ _update: function(response)
 
  EnableCalendar('P')
  UpdateTable(orgPredictiveCalendar,'indego-pred-draw-calendar','indego-pred-calendar','p')
- ReDrawActCalendar(activeNewPredictive, 'P')
+ ReDrawActCalendar('P')
 
 }
 });
@@ -623,13 +733,13 @@ if (type == 'P')
 	{
   	 activeOrgPredictive = parseInt(response[0]);     
   	 activeNewPredictive = parseInt(response[0]);     
-  	 ReDrawActCalendar(activeNewPredictive, type)
+  	 ReDrawActCalendar(type)
 	}
 else 
 	{
 	 activeOrgCalendar = parseInt(response[0]);     
   	 activeNewCalendar = parseInt(response[0]);     
-  	 ReDrawActCalendar(activeNewCalendar, type);
+  	 ReDrawActCalendar(type);
 	}
 
 
@@ -653,7 +763,6 @@ $.widget("sv.symbol", $.sv.widget, {
 	_create: function()
 	{
 		this._super()
-  	    var id = this.options.id;
 	},
 	_update: function(response)
     {
@@ -681,12 +790,139 @@ $.widget("sv.symbol", $.sv.widget, {
 		}
 	}
 });
+
+
+
+
+function onclickChangeMode(myID)
+{
+	console.log("Change arrived - switched to "+ myID)
+	activeMode = myID
+	if (myID == 0)								// Modus = AUS
+		{
+		 activeMode = 0
+		 //activeNewPredictive = 0
+		 activeNewCalendar = 0
+		 // write via WebSocket to shng
+		 
+		 io.write('indego.active_mode',activeMode)
+		 
+		 /*
+		 activeNewPredictive = 0
+		 io.write('indego.calendar_predictive_sel_cal',activeNewPredictive)
+ 		 io.write('indego.calendar_predictive_list',newPredictiveCalendar[0])
+  		 io.write('indego.calendar_predictive_save', true)
+		 */
+		 
+		 io.write('indego.calendar_sel_cal',activeNewCalendar)
+	     io.write('indego.calendar_list',newCalendar[0])
+		 io.write('indego.calendar_save', true)
+		 
+		 
+		
+		}
+	else if (myID == 1)								// Modus = Calendar
+		{
+		 activeMode = 1
+		 //activeNewPredictive = 0
+		 activeNewCalendar = 2
+		 // write via WebSocket to shng
+
+		 io.write('indego.active_mode',activeMode)
+		 
+		 /*
+		 activeNewPredictive = 0
+		 io.write('indego.calendar_predictive_sel_cal',activeNewPredictive)
+ 		 io.write('indego.calendar_predictive_list',newPredictiveCalendar[0])
+  		 io.write('indego.calendar_predictive_save', true)
+		 */
+		 
+		 io.write('indego.calendar_sel_cal',activeNewCalendar)
+	     io.write('indego.calendar_list',newCalendar[0])
+		 io.write('indego.calendar_save', true)
+		 
+
+		 
+		}
+	else if (myID == 2)								// Modus = SmartMow
+		{
+		 activeMode = 2
+		 activeNewPredictive = 1
+		 activeNewCalendar = 3
+		 // write via WebSocket to shng
+		 
+		 io.write('indego.active_mode',activeMode)
+		 
+		 activeNewPredictive = 1
+		 io.write('indego.calendar_predictive_sel_cal',activeNewPredictive)
+ 		 io.write('indego.calendar_predictive_list',newPredictiveCalendar[0])
+  		 io.write('indego.calendar_predictive_save', true)
+
+		 /*
+		 io.write('indego.calendar_sel_cal',activeNewCalendar)
+	     io.write('indego.calendar_list',newCalendar[0])
+		 io.write('indego.calendar_save', true)
+		 */
+		 
+
+		}
+	 //document.getElementById("overlay-Indego_Spinner_1").className="overlayloader"
+	 //document.getElementById("spinner-Indego_Spinner_1").className="loader"
+	 //document.getElementById("overlay_mow_state").className="spinnerHidden"
+	 //document.getElementById("-_mod_active").disabled = true
+	
+	 //document.getElementById("overlay_mow_state").className="spinnerHidden"
+	 //document.getElementById("spinner").className="spinnerHidden"
+}
+
+
+//*****************************************************
+//Widget for Spinners
+//*****************************************************
+$.widget("sv.spinner", $.sv.widget, {
+
+	initSelector: '[data-widget="indego.spinner"]',
+
+	options: {
+		id : ''
+	},
+
+	_create: function() {
+		this._super();
+		this.options.id = this.element[0].id;
+		
+
+	},
+
+	_update: function(response) {
+		// get list of values
+		var myVal = response.toString().trim();
+		myObj = this.options.id.substring(7,50)
+		if (myVal == 0)
+			{
+			document.getElementById("overlay-"+myObj).className ="spinnerHidden"
+			//this.element.removeClass('overlayloader').show()
+			//this.element.addClass('spinnerHidden').show()
+			}
+		else
+			{
+			 document.getElementById("overlay-"+myObj).className ="overlayloader"
+			 //this.element.removeClass('spinnerHidden').show()
+			 //this.element.addClass('overlayloader').show()
+			}
+		
+		
+	},
+
+});
+
+
 //*****************************************************
 //Widget for Mow-Mode (Calendar = 1, off = 0, smart = 2
 //*****************************************************
 $.widget("sv.mode_active", $.sv.widget, {
 
-	initSelector: 'span[data-widget="indego.run_mode"]',
+	initSelector: '[data-widget="indego.mode_active"]',
 
 	options: {
 		mode : 0
@@ -694,77 +930,28 @@ $.widget("sv.mode_active", $.sv.widget, {
 
 	_create: function() {
 		this._super();
+		this.id = 'ModeSwitch';
+		
 
-		var shortpressEvent = function(event) {
-			// get the list of values
-			var list_val = String(this.options.vals).explode();
-			// get the index of the memorised value
-			var old_idx = list_val.indexOf(this._current_val);
-			// compute the next index
-			var new_idx = (old_idx + 1) % list_val.length;
-			// get next value
-			var new_val = list_val[new_idx];
-			// send the value to driver
-			io.write(this.options.item, new_val);
-			// memorise the value for next use
-			this._current_val = new_val;
-			/*
-			// activity indicator
-			var target = $(event.delegateTarget);
-			var indicatorType = this.options['indicator-type'];
-			var indicatorDuration = this.options['indicator-duration'];
-			if(indicatorType && indicatorDuration > 0) {
-				// add one time event to stop indicator
-				target.one('stopIndicator',function(event) {
-					clearTimeout(target.data('indicator-timer'));
-					event.stopPropagation();
-					var prevColor = target.attr('data-col');
-					if(prevColor != null) {
-						if(prevColor != 'icon1')
-							target.removeClass('icon1').find('svg').removeClass('icon1');
-						if(prevColor != 'blink')
-							target.removeClass('blink').find('svg').removeClass('blink');
-						if(prevColor == 'icon1' || prevColor == 'icon0')
-							prevColor = '';
-						target.css('color', prevColor).find('svg').css('fill', prevColor).css('stroke', prevColor);
-					}
-				})
-				// set timer to stop indicator after timeout
-				.data('indicator-timer', setTimeout(function() { target.trigger('stopIndicator') }, indicatorDuration*1000 ));
-				// start indicator
-				if(indicatorType == 'icon1' || indicatorType == 'icon0' || indicatorType == 'blink') {
-					target.addClass(indicatorType).find('svg').addClass(indicatorType);
-					indicatorType = '';
-				}
-				target.css('color', indicatorType).find('svg').css('fill', indicatorType).css('stroke', indicatorType);
-			}
-			*/
-		}
-
-		/*
-		// replicate ui-first-child and ui-last-child if first resp. last sibling of tag 'a' has it
-		if(this.element.children('a:first').hasClass('ui-first-child'))
-			this.element.children('a').addClass('ui-first-child');
-		if(this.element.children('a:last').hasClass('ui-last-child'))
-			this.element.children('a').addClass('ui-last-child');
-		// display first control as default
-		this.element.after(this.element.children('a[data-widget="basic.stateswitch"]:first'));
-		*/
 	},
 
 	_update: function(response) {
 		// get list of values
-		var list_val = String(this.options.vals).explode();
-		// get received value
-		var val = response.toString().trim();
-		// hide all states
-		this.element.next('a[data-widget="basic.stateswitch"][data-index]').insertBefore(this.element.children('a:eq(' + this.element.next('a[data-widget="basic.stateswitch"][data-index]').attr('data-index') + ')'));
-		// stop activity indicator
-		this.element.children('a[data-widget="basic.stateswitch"]').trigger('stopIndicator');
-		// show the first corrseponding to value. If none corrseponds, the last one will be shown by using .addBack(':last') and .first()
-		this.element.after(this.element.children('a[data-widget="basic.stateswitch"]').filter('[data-val="' + val + '"]:first').addBack(':last').first());
-		// memorise the value for next use
-		this._current_val = val;
+		this.options.mode = response.toString().trim();
+		activeMode = this.options.mode
+		/*
+		document.getElementById("indego--mode_0").checked = false
+		$(document.getElementById("indego--mode_0")).checkboxradio("refresh")
+		document.getElementById("indego--mode_1").checked = false
+		$(document.getElementById("indego--mode_1")).checkboxradio("refresh")
+		document.getElementById("indego--mode_2").checked = false
+		$(document.getElementById("indego--mode_2")).checkboxradio("refresh")
+		
+		var myMode = "indego--mode_"+parseInt(activeMode)
+		document.getElementById(myMode).checked = true
+	    $(document.getElementById(myMode)).checkboxradio("refresh")
+	    */		
+		
 	},
 
 });

@@ -42,7 +42,8 @@ import sys
 
 
 import requests
-from _ast import Or
+#from _ast import Or
+#from calendar import calendar
 
 
 
@@ -94,8 +95,11 @@ class Indego(SmartPlugin):
         self.indego_url = self.get_parameter_value('indego_url')
         self.parent_item = self.get_parameter_value('parent_item')
         
+        
         self.items = Items.get_instance()
         self.shtime = Shtime.get_instance()
+        
+        self.image_file=self.get_sh().get_basedir()+"/plugins/indego/webif/static/img/garden.svg"
 
         self.expiration_timestamp = 0
         self.logged_in = False
@@ -143,6 +147,8 @@ class Indego(SmartPlugin):
         """
         self.logger.debug("Run method called")
         self.alive = True
+        # Set Symlink for garden-map
+        # ln /var/www/html/smartVISU2.9/dropins/garden.svg /usr/local/smarthome/plugins/indego/webif/static/img/garden.svg
 
         # start the refresh timers
         self.scheduler_add('operating_data',self.get_operating_data,cycle = 300)
@@ -153,7 +159,7 @@ class Indego(SmartPlugin):
         self.scheduler_add('device_date', self.device_data, cycle=120)
         self.scheduler_add('get_weather', self.get_weather, cycle=600)
         self.scheduler_add('get_next_time', self.get_next_time, cycle=300)
-        self.scheduler_add('get_smart_frequency', self.get_smart_frequency, cycle=500)
+        #self.scheduler_add('get_smart_frequency', self.get_smart_frequency, cycle=500)
         # if you need to create child threads, do not make them daemon = True!
         # They will not shutdown properly. (It's a python bug)
 
@@ -188,9 +194,6 @@ class Indego(SmartPlugin):
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format( item, 'indego_command', self.get_iattr_value(item.conf, 'indego_command')))
             return self.send_command
 
-        if self.has_iattr(item.conf, 'indego_smart'):
-            self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'indego_smart', self.get_iattr_value(item.conf, 'indego_smart')))
-            return self.set_smart
 
         if self.has_iattr(item.conf, 'indego_frequency'):
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'indego_frequency',self.get_iattr_value(item.conf, 'indego_frequency')))
@@ -221,6 +224,18 @@ class Indego(SmartPlugin):
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'calendar_list', self.get_iattr_value(item.conf, 'calendar_list')))
             return self.update_item        
         
+        if item._name == self.parent_item+'.active_mode':
+                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'active_mode', self.get_iattr_value(item.conf, 'active_mode')))
+                return self.update_item
+        
+        if "active_mode" in item._name:
+                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
+                return self.update_item
+        
+        if "refresh" in item._name:
+                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
+                return self.update_item
+            
         return None
 
     def parse_logic(self, logic):
@@ -279,19 +294,72 @@ class Indego(SmartPlugin):
                 self.upate_count_pred = 0
                 self.auto_pred_cal_update()
             
+            if item._name == self.parent_item+'.visu.refresh':
+                self.set_childitem('update_active_mode', True)
+                self.get_calendars()
+                self.state()
+                self.alert()
+                self.device_data()
+                self.get_next_time()
+                self.get_weather()
+                self.set_childitem('update_active_mode', False)
+                item(False)
+                
+
+            if item._name == self.parent_item+'.active_mode.kalender' and item() == True:
+                self.set_childitem('update_active_mode', True)
+                self.set_childitem('active_mode', 1)
+                self.set_childitem('active_mode.smart', False)
+                self.set_childitem('active_mode.aus', False)
+                self.set_smart(False)
+                self.set_childitem('calendar_sel_cal', 2)
+                self.set_childitem('calendar_save', True)
+                
+                self.set_childitem('alm_mode','calendar')
+                self.set_childitem('update_active_mode', False)
+                
+            if item._name == self.parent_item+'.active_mode.aus' and item() == True:
+                self.set_childitem('update_active_mode', True)
+                self.set_childitem('active_mode', 3)
+                self.set_childitem('active_mode.kalender', False)
+                self.set_childitem('active_mode.smart', False)
+                self.set_smart(False)
+                self.set_childitem('calendar_sel_cal', 0)
+                self.set_childitem('calendar_save', True)
+                self.set_childitem('alm_mode','manual')
+                self.set_childitem('update_active_mode', False)
             
-            if item._name == self.parent_item+'.alm_mode':
+            if item._name == self.parent_item+'.active_mode.smart' and item() == True:
+                self.set_childitem('update_active_mode', True)
+                self.set_childitem('active_mode', 2)
+                self.set_childitem('active_mode.aus', False)
+                self.set_childitem('active_mode.kalender', False)
+                self.set_smart(True)
+                self.set_childitem('calendar_sel_cal', 3)
+                self.set_childitem('calendar_save', True)
+                self.set_childitem('alm_mode','smart')
+                self.set_childitem('update_active_mode', False)
                 
                 
-        # Function when item is triggered by anybody
+                
+        # Function when item is triggered by anybody, also by plugin
         else:
             if item._name == self.parent_item+'.alm_mode':
                 if   (item() == 'smart'):
-                    self.set_childitem('active_mode', 2)                
+                    self.set_childitem('active_mode', 2)      
+                    self.set_childitem('active_mode.aus', False)
+                    self.set_childitem('active_mode.kalender', False)          
+                    self.set_childitem('active_mode.smart', True)
                 elif (item() == 'calendar'):
-                    self.set_childitem('active_mode', 1)                    
+                    self.set_childitem('active_mode', 1)
+                    self.set_childitem('active_mode.aus', False)
+                    self.set_childitem('active_mode.kalender', True)          
+                    self.set_childitem('active_mode.smart', False)       
                 elif (item() == 'manual'):
-                    self.set_childitem('active_mode', 0)
+                    self.set_childitem('active_mode', 3)
+                    self.set_childitem('active_mode.aus', True)
+                    self.set_childitem('active_mode.kalender', False)          
+                    self.set_childitem('active_mode.smart', False)
                 
             
     
@@ -408,7 +476,7 @@ class Indego(SmartPlugin):
                 calendar_list(self.parse_cal_2_list(self.calendar._value,'MOW'),'indego')
                 self.act_Calender = self.items.return_item(self.parent_item + '.' + 'calendar_sel_cal')
                 self.act_Calender(self.get_active_calendar(self.calendar()),'indego')
-            if not self.cal_update_running:
+            if not self.cal_pred_update_running:
                 # get the predictve calendar for smartmowing
                 self.predictive_calendar = self.items.return_item(self.parent_item + '.' + 'calendar_predictive')
                 # Only for Tests
@@ -522,49 +590,50 @@ class Indego(SmartPlugin):
         
         return content
         
-        '''
-        headers = {'Content-Type': 'application/json'}
-        headers['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-        headers['x-im-context-id'] = contextid
-        plain = True
-        if url.startswith('https'):
-            plain = False
-        lurl = url.split('/')
-        host = lurl[2]
-        purl = '/' + '/'.join(lurl[3:])
-        if plain:
-            conn = http.client.HTTPConnection(host, timeout=timeout)
-        else:
-            conn = http.client.HTTPSConnection(host, timeout=timeout)
+    def post_url(self, url, contextid=None, body=None, timeout=2):
+        headers = {
+                   'x-im-context-id' : self.context_id
+                  }
+        
         try:
-            conn.request(method, purl, headers=headers)
+            response = requests.post(url, headers=headers, data=body)
         except Exception as e:
-            self.logger.warning("Problem fetching {0}: {1}".format(url, e))
-            conn.close()
+            self.logger.warning("Problem putting {}: {}".format(url, e))
             return False
-        resp = conn.getresponse()
-        if resp.status == 401:
-            self.logger.warning("get_url returned 401, reconnecting and trying again")
-            self.set_childitem('online', False)
-            self.auth()
-            try:
-                conn.request(method, purl, headers=headers)
-                resp = conn.getresponse()
-            except Exception as e:
-                self.logger.warning("Problem fetching {0}: {1}".format(url, e))
-                conn.close()
-                return False
-            
-            
-        if resp.status == 200 or resp.status == 201:
-            content = resp.read()
+        self.logger.debug('put gesendet an URL: {} context-ID: {} json : {}'.format(url,self.context_id,json.dumps(body)))
+        
+        if response.status_code == 200:
+            self.logger.info("Set correct put for {}".format(url))
+            return True
         else:
-            self.logger.warning("Problem fetching {0}: {1} {2}".format(url, resp.status, resp.reason))
-            content = False
-        conn.close()
-        return content
+            self.logger.info("Error during put for {} HTTP-Status :{}".format(url, response.status_code))
+            return False
+            
+    
+    
+    def put_url(self, url, contextid=None, body=None, timeout=2):
+        headers = {
+                   'x-im-context-id' : contextid,
+                   'Content-Type': 'application/json',
+                   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+                  }
+        
+        try:
+            response = requests.put(url, headers=headers, json=body)
+        except Exception as e:
+            self.logger.warning("Problem putting {}: {}".format(url, e))
+            return False
+        self.logger.debug('put gesendet an URL: {} context-ID: {} json : {}'.format(url,self.context_id,json.dumps(body)))
+        
+        if response.status_code == 200:
+            self.logger.info("Set correct put for {}".format(url))
+            return True
+        else:
+            self.logger.info("Error during put for {} HTTP-Status :{}".format(url, response.status_code))
+            return False
+        
+        
         '''
-    def put_url(self, url, contextid=None, state=None, timeout=2):
         headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'}
         headers = {'Content-Type': 'application/json'}
         plain = True
@@ -591,18 +660,18 @@ class Indego(SmartPlugin):
         self.logger.debug(
             'put gesendet an URL: ' + str(url) + 'context id: ' + str(contextid) + 'command: ' + str(state))
         return True
-
+        '''
     def send_command(self, item, command=None, caller=None, source=None, dest=None):
         if self.has_iattr(item.conf, 'indego_command'):
-            command = self.get_iattr_value(item.conf,'indego_command')
-            self.logger.debug("Function Command " + command + ' ' + str(item()))
+            command = json.loads(self.get_iattr_value(item.conf,'indego_command'))
+            self.logger.debug("Function Command " + json.dumps(command) + ' ' + str(item()))
             if item():
                 message = self.put_url(self.indego_url + 'alms/' + self.alm_sn + '/state', self.context_id, command, 10)
-                self.logger.debug("Command " + command + ' gesendet! ' + str(message))
+                self.logger.debug("Command " + json.dumps(command) + ' gesendet! ' + str(message))
 
-    def set_smart(self, item, command=None, caller=None, source=None, dest=None):
-        self.logger.debug("Smart Mode Command " + str(item()))
-        if item():
+    def set_smart(self, enable=None):
+        self.logger.debug("Smart Mode Command " + str(enable))
+        if enable:
             self.logger.debug("SMAAAAAAAAAAAAAAAAAAAAART aktivieren")
             command = '{"enabled": true}'
         else:
@@ -649,7 +718,6 @@ class Indego(SmartPlugin):
         PUT https://api.indego.iot.bosch-si.com/api/v1/alms/{serial}/calendar
         x-im-context-id: {contextId}
         '''
-        
         url = "{}alms/{}/{}".format( self.indego_url, self.alm_sn, myName)
         
         headers = {
@@ -778,8 +846,7 @@ class Indego(SmartPlugin):
         return myCal
     
             
-    def build_new_calendar(self, myList = None):
-        
+    def build_new_calendar(self, myList = None,type = None):
         selected_calendar = self.get_childitem('calendar_sel_cal')
         newCal = {}
         newCal['sel_cal'] = selected_calendar
@@ -806,7 +873,9 @@ class Indego(SmartPlugin):
                 elif (myEntry[0] == 'Days'):
                     Days = myEntry[1]
                 elif (myEntry[0] == 'Key'):
-                    myCalNo = int(myEntry[1][0:1])-1
+                    myCalNo = int(myEntry[1][0:1])
+            if (myCalNo != 1 and type =='PRED') or (myCalNo != 2 and type =='MOW'):
+                continue
             for day in Days.split((',')):
                 newSlot = {
                             'StHr' : Start[0:2],
@@ -839,9 +908,9 @@ class Indego(SmartPlugin):
             self.clear_calendar(myCal._value)
                 
         if (type == 'MOW' and len(self.calendar_count_mow) < 5):
-            myCal._value = self.build_new_calendar(myList)
+            myCal._value = self.build_new_calendar(myList,type)
         elif (type == 'PRED' and len(self.calendar_count_pred) < 5):
-            myCal._value = self.build_new_calendar(myList)
+            myCal._value = self.build_new_calendar(myList,type)
         
         else:
             self.clear_calendar(myCal._value)
@@ -940,13 +1009,72 @@ class Indego(SmartPlugin):
     
     
     def get_operating_data(self):
+        # Get Operating-Info
         url = "{}alms/{}/operatingData".format( self.indego_url, self.alm_sn)
         try:
             operating_data = self.get_url( url, self.context_id, 10)    
         except Exception as e:
             self.logger.warning("Problem fetching {}: {}".format(url, e))
+        if operating_data != False:
+            self.parse_dict_2_item(operating_data,'operatingInfo.')
+        # Set Visu-Items
+        try:
+            myBatteryVoltage = self.get_childitem('operatingInfo.battery.voltage')
+            if myBatteryVoltage > 35.0:
+                myBatteryVoltage = 35.0
+            myVoltage = myBatteryVoltage - 30.0
+            myLoad_percent = myVoltage/5.0 * 100.0
+            self.set_childitem('visu.battery_load', myLoad_percent)
+            myLoad_icon = myVoltage/5.0*255.0
+            self.set_childitem('visu.battery_load_icon', myLoad_icon)
+        except err as Exception:
+            self.logger.warning("Problem to calculate Battery load")
+
+
+        # Get Network-Info
+        url = "{}alms/{}/network".format( self.indego_url, self.alm_sn)
+        try:
+            network_data = self.get_url( url, self.context_id, 10)    
+        except Exception as e:
+            self.logger.warning("Problem fetching {}: {}".format(url, e))
+        if network_data != False:
+            try:
+                self.parse_dict_2_item(network_data,'network.')
+            except err as Exception:
+                self.logger.warning("Problem parsing Network-Info : {}".format(err))
+        Providers = {
+                    "26217"  :"E-Plus",
+                    "26210"  :"DB Netz AG",
+                    "26205"  :"E-Plus",
+                    "26277"  :"E-Plus",
+                    "26203"  :"E-Plus",
+                    "26212"  :"E-Plus",
+                    "26220"  :"E-Plus",
+                    "26214"  :"Group 3G UMTS",
+                    "26243"  :"Lycamobile",
+                    "26213"  :"Mobilcom",
+                    "26208"  :"O2",
+                    "26211"  :"O2",
+                    "26207"  :"O2",
+                    "26206"  :"T-mobile/Telekom",
+                    "26201"  :"T-mobile/Telekom",
+                    "26216"  :"Telogic/ViStream",
+                    "26202"  :"Vodafone D2",
+                    "26242"  :"Vodafone D2",
+                    "26209"  :"Vodafone D2",
+                    "26204"  :"Vodafone D2"
+                    }
+        myMcc = self.get_childitem('network.mcc')
+        myMnc = self.get_childitem('network.mnc')
+        actProvider = Providers[str(myMcc)+str(myMnc)]
+        self.set_childitem('visu.network.act_provider', actProvider)
+        ProviderLst = self.get_childitem('network.networks')
+        myLst = ""
+        for entry in ProviderLst:
+            myLst += Providers[str(entry)]+', '
             
-        self.parse_dict_2_item(operating_data,'operatingInfo.')            
+        self.set_childitem('visu.network.available_provider', myLst[0:-2]) 
+                            
     
     def get_next_time(self):
             url = "{}alms/{}/predictive/nextcutting?last=YYYY-MM-DD-HH:MM:SS%2BHH:MM".format( self.indego_url, self.alm_sn)
@@ -987,7 +1115,8 @@ class Indego(SmartPlugin):
             #weather = json.loads(weather)
         except err as Exception:
             return 
-        
+        if weather == False:
+            return
         for i in weather['LocationWeather']['forecast']['intervals']:
             position = str(weather['LocationWeather']['forecast']['intervals'].index(i))
             self.logger.debug("POSITION "+str(position))
@@ -1104,7 +1233,7 @@ class Indego(SmartPlugin):
                 self.set_childitem('alert_flag',alert_flag)
                 self.logger.debug("alert_flag " + str(alert_flag))
 
-                self.alert_delete(alert_id)
+                #self.alert_delete(alert_id)
 
     def get_smart_frequency(self):
         self.logger.debug("getting smart frequency")
@@ -1178,6 +1307,15 @@ class Indego(SmartPlugin):
                 self.logger.debug("alm_firmware_version " + str(alm_firmware_version))
 
     def state(self):
+        
+        
+        # Test for SmartMow-Mode
+        #"alms/{alm_serial}/predictive/setup"
+        #state_response = self.get_url(self.indego_url + 'alms/' + self.alm_sn + '/predictive/setup', self.context_id)
+        #states = state_response
+        #body = {"count":1,"interval":1}
+        #state_response = self.post_url(self.indego_url + 'alms/' + self.alm_sn + '/requestPosition', self.context_id, body)
+        #states = state_response
         state__str = {0: ['Lese Status', 'unknown'], 257: ['lädt', 'dock'], 258: ['docked', 'dock'],
                       259: ['Docked-Softwareupdate', 'dock'], 260: ['Docked', 'dock'], 261: ['docked', 'dock'],
                       262: ['docked - lädt Karte', 'dock'], 263: ['docked-speichert Karte', 'dock'],
@@ -1387,6 +1525,9 @@ class WebInterface(SmartPluginWebIf):
         self.webif_dir = webif_dir
         self.plugin = plugin
         self.tplenv = self.init_template_environment()
+        self.items = Items.get_instance()
+        
+        
 
     @cherrypy.expose
     def index(self, reload=None):
@@ -1398,7 +1539,18 @@ class WebInterface(SmartPluginWebIf):
         :return: contents of the template after beeing rendered 
         """
         tmpl = self.tplenv.get_template('index.html')
+        
+        item_count = 0
+        plgitems = []
+        for item in self.items.return_items():
+            if ('indego' in item._name):
+                plgitems.append(item)
+                item_count += 1
+                
+        
         # add values to be passed to the Jinja2 template eg: tmpl.render(p=self.plugin, interface=interface, ...)
-        return tmpl.render(p=self.plugin)
+        return tmpl.render(p=self.plugin,
+                           items=sorted(plgitems, key=lambda k: str.lower(k['_path'])),
+                           item_count=item_count)
 
 

@@ -65,6 +65,7 @@ parameters:
             de: 'Das Eltern Item für alle Kinditems, die diese Instanz betreffen'
             en: 'The parent item for all children relating to this instance'
 
+
 item_attributes:
     # Definition of item attributes defined by this plugin
     indego_command:
@@ -98,9 +99,51 @@ item_structs:
     child:
         name: Vorlage Struktur Indego-Mower
 
+
+# Start - Definitions for the VISU-Items
+        visu:
+            battery_load:
+                type: num
+                cache: 'on'
+
+            battery_load_icon:
+                type: num
+                cache: 'on'
+
+            refresh:
+                type: bool
+                visu_acl: rw
+
+            network:
+                act_provider:
+                    type: str
+                available_provider:
+                    type: str
+
+# End - Definitions for the VISU-Items
         active_mode:
             type: num
             cache: 'on'
+            visu_acl: rw
+
+            kalender:
+                type: bool
+                visu_acl: rw
+
+
+            aus:
+                type: bool
+                visu_acl: rw
+
+
+            smart:
+                type: bool
+                visu_acl: rw
+
+        update_active_mode:
+            type: bool
+            initial_value: false
+
 
         online:
             type: bool
@@ -1603,4 +1646,36 @@ item_structs:
                     database: 'yes'
                     cache: 'on'
 
-
+        network:
+            mcc:
+                type: num
+                database: 'yes'
+                cache: 'on'        
+            mnc:
+                type: num
+                database: 'yes'
+                cache: 'on'        
+            rssi:
+                type: num
+                database: 'yes'
+                cache: 'on'        
+            currMode:
+                type: str
+                database: 'yes'
+                cache: 'on'        
+            configMode:
+                type: str
+                database: 'yes'
+                cache: 'on'        
+            steeredRssi:
+                type: num
+                database: 'yes'
+                cache: 'on'        
+            networkCount:
+                type: num
+                database: 'yes'
+                cache: 'on'        
+            networks:
+                type: list
+                database: 'yes'
+                cache: 'on'        

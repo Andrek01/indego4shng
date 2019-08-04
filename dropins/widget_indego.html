@@ -1,5 +1,40 @@
 /*********************************************
 *
+*  Widget for the Spinner
+*
+*********************************************/
+
+{% macro spinner(id, item,_backend ) %}
+
+{% import "basic.html" as basic %}
+<div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.spinner" data-item="{{ item }}" data-designType="{{ _backend }}">
+
+<html>
+<head>
+
+</head>
+<body>
+
+  <div id="{{uid('overlay', id) }}" class="spinnerHidden">
+      <div id="{{uid('spinner', id) }}" class="loader"></div>
+  </div>
+
+
+<script>
+
+  spinner = document.getElementById("{{uid('spinner', id) }}");
+
+</script>
+ 
+</body>
+</html>
+
+
+{% endmacro %}
+
+
+/*********************************************
+*
 *  Widget for the selected Modus
 *
 * id         = unique ID for the Widget
@@ -10,26 +45,29 @@
 {% macro mode_active(id, item, headline, _backend ) %}
 
 {% import "basic.html" as basic %}
-	<div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.run_mode" data-item="{{ item }}" data-designType="{{ _backend }}">
-        <div class="mode_active">
+	<div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.mode_active" data-item="{{ item }}" data-designType="{{ _backend }}">
+
 	    <html>
 		    <h4>{{ headline }}</h4>
-		       <body>
-		          <form>
-			     <fieldset data-role = "controlgroup" data-type = "horizontal" id="{{uid(type, '_mod_active' )}}">
-			        <input type = "radio" name=uid('act_mode') id = "{{ uid(type,'mode_1') }}">
-			        <label id = "{{ uid(type,'caption_mode_1') }}" for = "{{ uid(type,'mode_1') }}">Kalender</label>
 
-			        <input type = "radio" name=uid('act_mode') id = "{{ uid(type,'mode_0') }}">
-			        <label id = "{{ uid(type,'caption_mode_0') }}" for = "{{ uid(type,'mode_0') }}">AUS</label>
+						<div data-role="controlgroup" data-type="horizontal">
 
-			        <input type = "radio" name=uid('act_mode') id = "{{ uid(type,'mode_2') }}">
-			        <label id = "{{ uid(type,'caption_mode_2') }}" for = "{{ uid(type,'mode_2') }}">SmartMow</label>
-			     </fieldset>
-		          </form>
-		       </body>
+                        {{ basic.stateswitch('1', 'indego.active_mode.kalender', 'midi', '', basic.symbol('', 'indego.active_mode', '', ['jquery_calendar','jquery_calendar','jquery_calendar'], [3,1,2], '', ['icon0','icon1','icon0']) , 'Kalender',['icon0','icon1']) }}
+
+                        {{ basic.stateswitch('2', 'indego.active_mode.aus'     , 'midi', '', basic.symbol('', 'indego.active_mode', '', ['jquery_delete','jquery_delete','jquery_delete'], [3,1,2], '', ['icon1','icon0','icon0']) , 'Aus'     ,['icon0','icon1']) }}
+
+                        {{ basic.stateswitch('3', 'indego.active_mode.smart'   , 'midi', '', basic.symbol('', 'indego.active_mode', '', ['jquery_recycle','jquery_recycle','jquery_recycle'],  [3,1,2], '', ['icon0','icon0','icon1']) , 'Smart'   , ['icon0','icon1'] ) }}
+
+						</div>
+
+<!--
+{{ basic.stateswitch('-mode_1', 'indego.active_mode', 'midi',[1,0,2], 'jquery_calendar.svg', 'Kalender',['icon0', 'icon1']) }}
+{{ basic.stateswitch('-mode_0', 'indego.active_mode', 'midi',[1,0,2], 'jquery_delete.svg', 'AUS',['icon0', 'icon1']) }}
+{{ basic.stateswitch('-mode_2', 'indego.active_mode', 'midi',[1,0,2], 'jquery_recycle.svg','Smart',['icon0', 'icon1']) }}
+-->
+
 	    </html>
-        </div>
+
 	</div>
 {% endmacro %}
 
@@ -108,7 +146,7 @@
 		</font>
 		<br>
 		<br>
-		<img src="{{  pic }}" style="width:40%;height:40%;">
+		<img src="{{  pic }}" style="width:100%;height:100%;">
 	</div>
 {% endmacro %}
 
@@ -173,10 +211,10 @@ main {
 
 	<tr>
 		<td width=60px>
-		<input type="time" id="t_von" name="Time_von" min="0:00" max="23:59" required>
+		<input type="time" id="t2_von" name="Time_von" min="0:00" max="23:59" required>
 		</td>
 		<td width=60px>
-		<input type="time" id="t_bis" name="Time_bis" min="0:00" max="23:59" required>
+		<input type="time" id="t2_bis" name="Time_bis" min="0:00" max="23:59" required>
 		</td>
 		<td width=150px></td>
 	</tr>
@@ -185,26 +223,26 @@ main {
 	   <body>
 	      <form>
 		 <fieldset data-role = "controlgroup" data-type = "horizontal" id="Weekdays">
-		    <input type = "checkbox" id = "day_0" >
-		    <label for = "day_0">Mo</label>
+		    <input type = "checkbox" id = "day_10" >
+		    <label for = "day_10">Mo</label>
 
-		    <input type = "checkbox" id = "day_1">
-		    <label for = "day_1">Di</label>
+		    <input type = "checkbox" id = "day_11">
+		    <label for = "day_11">Di</label>
 
-		    <input type = "checkbox" id = "day_2">
-		    <label for = "day_2">Mi</label>
+		    <input type = "checkbox" id = "day_12">
+		    <label for = "day_12">Mi</label>
 
-		    <input type = "checkbox" id = "day_3" >
-		    <label for = "day_3">Do</label>
+		    <input type = "checkbox" id = "day_13" >
+		    <label for = "day_13">Do</label>
 
-		    <input type = "checkbox" id = "day_4" >
-		    <label for = "day_4">Fr</label>
+		    <input type = "checkbox" id = "day_14" >
+		    <label for = "day_14">Fr</label>
 
-		    <input type = "checkbox" id = "day_5" >
-		    <label for = "day_5">Sa</label>
+		    <input type = "checkbox" id = "day_15" >
+		    <label for = "day_15">Sa</label>
 
-		    <input type = "checkbox" id = "day_6" >
-		    <label for = "day_6">So</label>
+		    <input type = "checkbox" id = "day_16" >
+		    <label for = "day_16">So</label>
 		 </fieldset>
 	      </form>
 	   </body>
@@ -222,11 +260,13 @@ main {
   </main>
  
 <script>
+/*
   var CancelBtn = document.getElementById('cancel');
   OkBtn = document.getElementById('OK');
   popup = document.getElementById('popup');
   CancelBtn.addEventListener('click',CloseEntryWindowByCancel);
   OkBtn.addEventListener('click',CloseEntryWindowByOK);
+*/
 </script>
 
 </body>
@@ -296,10 +336,10 @@ main {
 
 	<tr>
 		<td width=60px>
-		<input type="time" id="t_von" name="Time_von" min="0:00" max="23:59" required>
+		<input type="time" id="t1_von" name="Time_von" min="0:00" max="23:59" required>
 		</td>
 		<td width=60px>
-		<input type="time" id="t_bis" name="Time_bis" min="0:00" max="23:59" required>
+		<input type="time" id="t1_bis" name="Time_bis" min="0:00" max="23:59" required>
 		</td>
 		<td width=150px></td>
 	</tr>
@@ -308,26 +348,26 @@ main {
 	   <body>
 	      <form>
 		 <fieldset data-role = "controlgroup" data-type = "horizontal" id="Weekdays">
-		    <input type = "checkbox" id = "pred_day_0" >
-		    <label for = "day_0">Mo</label>
+		    <input type = "checkbox" id = "pred_day_10" >
+		    <label for = "day_10">Mo</label>
 
-		    <input type = "checkbox" id = "pred_day_1" value = 1 >
-		    <label for = "day_1">Di</label>
+		    <input type = "checkbox" id = "pred_day_11" value = 1 >
+		    <label for = "day_11">Di</label>
 
-		    <input type = "checkbox" id = "pred_day_2" value = 0>
-		    <label for = "day_2">Mi</label>
+		    <input type = "checkbox" id = "pred_day_12" value = 0>
+		    <label for = "day_12">Mi</label>
 
-		    <input type = "checkbox" id = "pred_day_3" >
-		    <label for = "day_3">Do</label>
+		    <input type = "checkbox" id = "pred_day_13" >
+		    <label for = "day_13">Do</label>
 
-		    <input type = "checkbox" id = "pred_day_4" >
-		    <label for = "day_4">Fr</label>
+		    <input type = "checkbox" id = "pred_day_14" >
+		    <label for = "day_14">Fr</label>
 
-		    <input type = "checkbox" id = "pred_day_5" >
-		    <label for = "day_5">Sa</label>
+		    <input type = "checkbox" id = "pred_day_15" >
+		    <label for = "day_15">Sa</label>
 
-		    <input type = "checkbox" id = "pred_day_6" >
-		    <label for = "day_6">So</label>
+		    <input type = "checkbox" id = "pred_day_16" >
+		    <label for = "day_16">So</label>
 		 </fieldset>
 	      </form>
 	   </body>
@@ -345,11 +385,13 @@ main {
   </main>
  
 <script>
+/*
   var CancelBtn = document.getElementById('cancel');
   OkBtn = document.getElementById('OK');
   popup = document.getElementById('popup');
   CancelBtn.addEventListener('click',CloseEntryWindowByCancel);
   OkBtn.addEventListener('click',CloseEntryWindowByOK);
+*/
 </script>
 
 </body>
