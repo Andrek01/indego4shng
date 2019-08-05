@@ -1066,7 +1066,11 @@ class Indego(SmartPlugin):
                     }
         myMcc = self.get_childitem('network.mcc')
         myMnc = self.get_childitem('network.mnc')
-        actProvider = Providers[str(myMcc)+str(myMnc)]
+        try:
+            actProvider = Providers[str(myMcc)+str('%0.2d' %myMnc)]
+        except:
+            actProvider = 'unknown('+str(myMcc)+str('%0.2d' %myMnc)+')'
+            
         self.set_childitem('visu.network.act_provider', actProvider)
         ProviderLst = self.get_childitem('network.networks')
         myLst = ""
