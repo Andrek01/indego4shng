@@ -102,6 +102,7 @@ item_structs:
 
 # Start - Definitions for the VISU-Items
         visu:
+
             battery_load:
                 type: num
                 cache: 'on'
@@ -115,8 +116,10 @@ item_structs:
                 visu_acl: rw
 
             network:
+
                 act_provider:
                     type: str
+
                 available_provider:
                     type: str
 
@@ -130,11 +133,9 @@ item_structs:
                 type: bool
                 visu_acl: rw
 
-
             aus:
                 type: bool
                 visu_acl: rw
-
 
             smart:
                 type: bool
@@ -143,7 +144,6 @@ item_structs:
         update_active_mode:
             type: bool
             initial_value: false
-
 
         online:
             type: bool
@@ -357,7 +357,6 @@ item_structs:
             visu_acl: rw
             autotimer: 50 = False
 
-
         calendar_predictive:
             type: dict
             visu_acl: rw
@@ -373,7 +372,6 @@ item_structs:
         calendar_predictive_result:
             type: str
             visu_acl: rw
-
 
         calendar_predictive_save:
             type: bool
@@ -1552,12 +1550,14 @@ item_structs:
                     type: num
                     cache: 'on'
 
-
         operatingInfo:
+
             hmiKeys:
                 type : num
                 cache: 'on'
+
             garden:
+
                 charge: 
                     type : num
                     database: 'yes'
@@ -1601,17 +1601,23 @@ item_structs:
 
                 signal_id: 
                     type : num
+
             runtime:
+
                 total:
+
                     charge:
                         type : num
                         database: 'yes'
                         cache: 'on'
+
                     operate:
                         type : num
                         database: 'yes'
                         cache: 'on'
+
                 session:
+
                     charge:
                         type : num
                         database: 'yes'
@@ -1620,61 +1626,76 @@ item_structs:
                         type : num
                         database: 'yes'
                         cache: 'on'
+
             battery:
+
                 voltage:
                     type : num
                     database: 'yes'
                     cache: 'on'
+
                 cycles: 
                     type : num
                     database: 'yes'
                     cache: 'on'
+
                 battery_temp:
                     type : num
                     database: 'yes'
                     cache: 'on'
+
                 discharge:
                     type : num
                     database: 'yes'
                     cache: 'on'
+
                 percent:
                     type : num
                     database: 'yes'
                     cache: 'on'
+
                 ambient_temp:
                     type : num
                     database: 'yes'
                     cache: 'on'
 
         network:
+
             mcc:
                 type: num
                 database: 'yes'
-                cache: 'on'        
+                cache: 'on'
+                
             mnc:
                 type: num
                 database: 'yes'
-                cache: 'on'        
+                cache: 'on'
+
             rssi:
                 type: num
                 database: 'yes'
-                cache: 'on'        
+                cache: 'on'   
+
             currMode:
                 type: str
                 database: 'yes'
-                cache: 'on'        
+                cache: 'on'  
+
             configMode:
                 type: str
                 database: 'yes'
-                cache: 'on'        
+                cache: 'on'
+
             steeredRssi:
                 type: num
                 database: 'yes'
-                cache: 'on'        
+                cache: 'on'   
+
             networkCount:
                 type: num
                 database: 'yes'
-                cache: 'on'        
+                cache: 'on'   
+
             networks:
                 type: list
                 database: 'yes'

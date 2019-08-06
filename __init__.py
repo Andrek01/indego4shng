@@ -348,18 +348,18 @@ class Indego(SmartPlugin):
                     self.set_childitem('active_mode.smart', False)
                     
                     
-            if item._name == self.parent_item+'.calendar_save':
-                self.set_childitem('calendar_result', "speichern gestartet")
-                # Now Save the Calendar on Bosch-API
-                self.cal_update_count = 0
-                self.auto_mow_cal_update()
+        if item._name == self.parent_item+'.calendar_save':
+            self.set_childitem('calendar_result', "speichern gestartet")
+            # Now Save the Calendar on Bosch-API
+            self.cal_update_count = 0
+            self.auto_mow_cal_update()
 
 
-            if item._name == self.parent_item+'.calendar_predictive_save':
-                self.set_childitem('calendar_predictive_result', "speichern gestartet")
-                # Now Save the Calendar on Bosch-API
-                self.upate_count_pred = 0
-                self.auto_pred_cal_update()
+        if item._name == self.parent_item+'.calendar_predictive_save':
+            self.set_childitem('calendar_predictive_result', "speichern gestartet")
+            # Now Save the Calendar on Bosch-API
+            self.upate_count_pred = 0
+            self.auto_pred_cal_update()
   
             
     
