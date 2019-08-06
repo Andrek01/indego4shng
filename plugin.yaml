@@ -116,12 +116,18 @@ item_structs:
                 visu_acl: rw
 
             network:
-
                 act_provider:
                     type: str
 
                 available_provider:
                     type: str
+            model:
+                type: str
+                cache: 'on'
+
+            model_type:
+                type: num
+                cache: 'on'
 
 # End - Definitions for the VISU-Items
         active_mode:

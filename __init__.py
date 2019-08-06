@@ -1018,19 +1018,31 @@ class Indego(SmartPlugin):
         if operating_data != False:
             self.parse_dict_2_item(operating_data,'operatingInfo.')
         # Set Visu-Items
-        try:
-            myBatteryVoltage = self.get_childitem('operatingInfo.battery.voltage')
-            if myBatteryVoltage > 35.0:
-                myBatteryVoltage = 35.0
-            myVoltage = myBatteryVoltage - 30.0
-            myLoad_percent = myVoltage/5.0 * 100.0
-            self.set_childitem('visu.battery_load', myLoad_percent)
-            myLoad_icon = myVoltage/5.0*255.0
-            self.set_childitem('visu.battery_load_icon', myLoad_icon)
-        except err as Exception:
-            self.logger.warning("Problem to calculate Battery load")
-
-
+        activeModel = self.get_childitem('visu.model_type')
+        if (activeModel == 1):      # the big ones
+            try:
+                myBatteryVoltage = self.get_childitem('operatingInfo.battery.voltage')
+                if myBatteryVoltage > 35.0:
+                    myBatteryVoltage = 35.0
+                myVoltage = myBatteryVoltage - 30.0
+                myLoad_percent = myVoltage/5.0 * 100.0
+                self.set_childitem('visu.battery_load', myLoad_percent)
+                myLoad_icon = myVoltage/5.0*255.0
+                self.set_childitem('visu.battery_load_icon', myLoad_icon)
+            except err as Exception:
+                self.logger.warning("Problem to calculate Battery load")
+        elif (activeModel == 2):    # the small ones
+            try:
+                myLoad_percent = self.get_childitem('operatingInfo.battery.percent')
+                self.set_childitem('visu.battery_load', myLoad_percent)
+                myLoad_icon = myLoad_percent/100.0*255.0
+                self.set_childitem('visu.battery_load_icon', myLoad_icon)
+            except err as Exception:
+                self.logger.warning("Problem to calculate Battery load")
+        else:
+            pass
+        
+        
         # Get Network-Info
         url = "{}alms/{}/network".format( self.indego_url, self.alm_sn)
         try:
@@ -1295,6 +1307,25 @@ class Indego(SmartPlugin):
             self.logger.debug("alm_mode " + str(alm_mode))
 
             bareToolnumber = device_data_response['bareToolnumber']
+            # Detect Modell
+            myModells = {
+                            "3600HA2300":"1000,1",
+                            "3600HA2301":"1200,1",
+                            "3600HA2302":"1100,1",
+                            "3600HA2303":"13C,1",
+                            "3600HA2304":"10C,1",
+                            "3600HB0100":"350,2",
+                            "3600HB0101":"400,2"
+                        }
+            try:
+                myModell = myModells[bareToolnumber].split(',')[0]
+                myModellType = int(myModells[bareToolnumber].split(',')[1])
+            except:
+                myModell = "unknown Modell ("+bareToolnumber+")"
+                myModellType = 0
+            self.set_childitem('visu.model', 'Indego '+myModell)
+            self.set_childitem('visu.model_type', myModellType)
+            
             self.set_childitem('bareToolnumber',bareToolnumber)
             self.logger.debug("bareToolnumber " + str(bareToolnumber))
 
