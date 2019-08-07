@@ -248,20 +248,9 @@ function ReDrawActCalendar(type)
 	while (i <= 6)
 		{
 	  	 var activeDay = type + "-cal_"+parseInt(i)
-	  	 if (activeCalendar == i && i != 0)
+	  	 if (activeCalendar == i) // && i != 0)
 	  		 {
 	  		 	document.getElementById(activeDay).checked = true
-	  		 	if (ll_first == false)
-	  		 		{
-	  		 		    //var firstDay = type + "-caption_cal_"+parseInt(i)
-	  		 			//document.getElementById(firstDay).classList.add("ui-first-child")
-	  		 			//ll_first = true
-	  		 		}
-	  		 	else
-	  		 		{
-		  		 	    //var firstDay = type + "-caption_cal_"+parseInt(i)
-	  		 			//document.getElementById(firstDay).classList.remove("ui-first-child")
-	  		 		}
 	  		 }
 	  	 else
 			 { document.getElementById(activeDay).checked = false }

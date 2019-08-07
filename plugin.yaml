@@ -129,6 +129,30 @@ item_structs:
                 type: num
                 cache: 'on'
 
+            avoid_temperature:
+                type: bool
+                cache: 'on'
+                visu_acl: rw
+
+            avoid_rain:
+                type: bool
+                cache: 'on'
+                visu_acl: rw
+
+            use_grass_growth:
+                type: bool
+                cache: 'on'
+                visu_acl: rw
+
+            full_cuts:
+                type: num
+                cache: 'on'
+                visu_acl: rw
+
+            store_sms_profile:
+                type: bool
+                visu_acl: rw
+
 # End - Definitions for the VISU-Items
         active_mode:
             type: num
@@ -1705,4 +1729,13 @@ item_structs:
             networks:
                 type: list
                 database: 'yes'
-                cache: 'on'        
+                cache: 'on'
+        smartmowsetup:
+            type: dict
+            visu_acl: rw
+            cache: 'on'
+
+        location:
+            type: dict
+            visu_acl: rw
+            cache: 'on'

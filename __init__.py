@@ -42,6 +42,7 @@ import sys
 
 
 import requests
+from six import _meth_self
 #from _ast import Or
 #from calendar import calendar
 
@@ -1006,8 +1007,68 @@ class Indego(SmartPlugin):
                 self.set_childitem(keyEntry+m, myDict[m])
             else:
                 self.parse_dict_2_item(myDict[m],keyEntry+m+'.')
+    def get_location(self):
+        url = "{}alms/{}/predictive/location".format( self.indego_url, self.alm_sn)
+        try:
+            location = self.get_url( url, self.context_id, 10)    
+        except Exception as e:
+            self.logger.warning("Problem fetching {}: {}".format(url, e))
+            return false
+        self.set_childitem('location', location)
+        return True
     
-    
+    def smart_mow_settings(self, mode =""):
+        # get SmartMowSetup
+        url = "{}alms/{}/predictive/setup".format( self.indego_url, self.alm_sn)
+        if (mode == 'read'):
+            try:
+                predictiveSetup = self.get_url( url, self.context_id, 10)    
+            except Exception as e:
+                self.logger.warning("Problem fetching {}: {}".format(url, e))
+            if predictiveSetup != False:
+                self.set_childitem('smartmowsetup', predictiveSetup)
+            else:       # create empty dict
+                self.set_childitem('smartmowsetup',{
+                                                      "full_cuts": 2,
+                                                      "no_mow_calendar_days": [],
+                                                      "garden_location":
+                                                      {
+                                                        "timezone": "Europe/Berlin",
+                                                        "longitude": "0.0",
+                                                        "latitude": "0.0"
+                                                      },
+                                                      "avoid_rain": true,
+                                                      "use_grass_growth": true,
+                                                      "mowing_duration": 9,
+                                                      "garden_size": 0,
+                                                      "rain_factor": 1.4,
+                                                      "avoid_temperature": true,
+                                                      "temperature_factor": 1.1
+                                                    })
+            
+            self.set_childitem('visu.avoid_temperature',predictiveSetup['avoid_temperature'] )
+            self.set_childitem('visu.avoid_rain',predictiveSetup['avoid_rain'] )
+            self.set_childitem('visu.use_grass_growth',predictiveSetup['use_grass_growth'], )
+            self.set_childitem('visu.full_cuts',predictiveSetup['full_cuts'] )
+            
+        if (mode == "write"):
+            predictiveSetup = self.get_childitem('smartmowsetup')
+            predictiveSetup['avoid_temperature'] = self.get_childitem('visu.avoid_temperature')
+            predictiveSetup['avoid_rain'] = self.get_childitem('visu.avoid_rain')
+            predictiveSetup['use_grass_growth'] = self.get_childitem('visu.use_grass_growth')
+            predictiveSetup['full_cuts'] = self.get_childitem('visu.full_cuts')
+            if (self.get_childitem('calendar_predictive_sel_cal') != 0):
+                predictiveSetup['no_mow_calendar_days'] = self.get_childitem('calendar_predictive')['cals'][0]['days']
+            else:
+                predictiveSetup['no_mow_calendar_days']=[]
+            predictiveSetup['garden_size'] = self.get_childitem('.operatingInfo.garden.size')
+            predictiveSetup['garden_location'] = self.get_childitem('.location')
+            try:
+                predictiveSetup = self.get_url( url, self.context_id, 10)    
+            except Exception as e:
+                self.logger.warning("Problem putting {}: {}".format(url, e))
+        
+        
     def get_operating_data(self):
         # Get Operating-Info
         url = "{}alms/{}/operatingData".format( self.indego_url, self.alm_sn)
@@ -1089,8 +1150,10 @@ class Indego(SmartPlugin):
         for entry in ProviderLst:
             myLst += Providers[str(entry)]+', '
             
-        self.set_childitem('visu.network.available_provider', myLst[0:-2]) 
-                            
+        self.set_childitem('visu.network.available_provider', myLst[0:-2])
+         
+        # Get Location
+        self.get_location()                   
     
     def get_next_time(self):
             url = "{}alms/{}/predictive/nextcutting?last=YYYY-MM-DD-HH:MM:SS%2BHH:MM".format( self.indego_url, self.alm_sn)
@@ -1342,7 +1405,7 @@ class Indego(SmartPlugin):
                 self.logger.debug("alm_firmware_version " + str(alm_firmware_version))
 
     def state(self):
-        
+        self.smart_mow_settings("read")
         
         # Test for SmartMow-Mode
         #"alms/{alm_serial}/predictive/setup"
