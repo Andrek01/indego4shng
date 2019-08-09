@@ -153,6 +153,7 @@ function ShowPopUp(calType, myKey)
 
 function EnableCalendar(calType)
 {
+	return
 	// document.getElementById("myH3").firstChild.textContent = "Mähkalender"
 	if (calType == 'M')
 		{ CalCount = m_CalCount}
@@ -224,7 +225,14 @@ function DrawCalendar(TableName, CalNo, preFix)
 		myHtml += "</tr>"
 		d += 1
 		}
-	$("#"+TableName).html(myHtml)
+	try
+	{
+		$("#"+TableName).html(myHtml)
+	}
+	catch (e)
+	{
+		console.log("Fehler")
+	}
 }
 
 function ReDrawActCalendar(type)
@@ -241,31 +249,37 @@ function ReDrawActCalendar(type)
 		}
 
 	// Create round Corner for ON
-    var activeDay = type + "-caption_cal_6"	     
-    document.getElementById(activeDay).classList.add("ui-first-child")
-	var ll_first = false
-	i=0
-	while (i <= 6)
+	try
 		{
-	  	 var activeDay = type + "-cal_"+parseInt(i)
-	  	 if (activeCalendar == i) // && i != 0)
-	  		 {
-	  		 	document.getElementById(activeDay).checked = true
-	  		 }
-	  	 else
-			 { document.getElementById(activeDay).checked = false }
-
-	     $(document.getElementById(activeDay)).checkboxradio("refresh")
-		 i += 1
+		    var activeDay = type + "-caption_cal_6"	     
+		    document.getElementById(activeDay).classList.add("ui-first-child")
+			var ll_first = false
+			i=0
+			while (i <= 6)
+				{
+			  	 var activeDay = type + "-cal_"+parseInt(i)
+			  	 if (activeCalendar == i) // && i != 0)
+			  		 {
+			  		 	document.getElementById(activeDay).checked = true
+			  		 }
+			  	 else
+					 { document.getElementById(activeDay).checked = false }
+		
+			     $(document.getElementById(activeDay)).checkboxradio("refresh")
+				 i += 1
+				}
+		
+			if (CalCount.length == 1 && activeCalendar != "0")
+			{
+			  	 var activeDay = type + "-cal_6"
+		  		 document.getElementById(activeDay).checked = true 
+			     $(document.getElementById(activeDay)).checkboxradio("refresh")
+			}
 		}
-
-	if (CalCount.length == 1 && activeCalendar != "0")
+	catch (e)
 	{
-	  	 var activeDay = type + "-cal_6"
-  		 document.getElementById(activeDay).checked = true 
-	     $(document.getElementById(activeDay)).checkboxradio("refresh")
+		console.log("Error")
 	}
-
 }
 
 function GetActCalendar(type)
@@ -491,6 +505,8 @@ function BtnAdd(click_item)
 
 function FillDrawingCalendar(myCal,myColour, preFix)
 {
+ try
+  {
 	var myTable = new Array(5)
     i=0
     while (i < myCal.length)
@@ -524,6 +540,11 @@ function FillDrawingCalendar(myCal,myColour, preFix)
       }
      i += 1
     }
+  }
+catch (e)
+ {
+	console.log("Error while drawing Calendar")
+ }
 }
 
 
@@ -555,16 +576,23 @@ function UpdateTable(myCal,preFixDrawCalender, preFixEntryCalendar, preFix)
 			  if (calendar[key].Days.search("5") != -1) { retvalDays +=  'Sa ' }
 			  if (calendar[key].Days.search("6") != -1) { retvalDays +=  'So'  }
 	          retvalDays = retvalDays + '</td>' 
-	          myRow = retValTime + retvalDays  
-	          myRow +="<td>" +
-	          "<div class='indegoControl' style='float: right'>" +
-	              "<div data-role='controlgroup' data-type='horizontal' data-inline='true' data-mini='true'>" +
-	                "<button id='"+preFix+"edit_"  + key + "' onclick=BtnEdit(this.id)> Edit</button>" +
-	                "<button id='"+preFix+"delete_"+ key + "' onclick=BtnDelete(this.id)>Del</button>" +
-	              "</div>" +
-	            "</div>" +
-	 		"</td>" +
-			"</tr>"
+	          myRow = retValTime + retvalDays
+	          if (myIndex != 3 || preFix != 'm')
+	        	  {
+			          myRow +="<td>" +
+			          "<div class='indegoControl' style='float: right'>" +
+			              "<div data-role='controlgroup' data-type='horizontal' data-inline='true' data-mini='true'>" +
+			                "<button id='"+preFix+"edit_"  + key + "' onclick=BtnEdit(this.id)> Edit</button>" +
+			                "<button id='"+preFix+"delete_"+ key + "' onclick=BtnDelete(this.id)>Del</button>" +
+			              "</div>" +
+			            "</div>" +
+			 		"</td>" +
+					"</tr>"
+	        	  }
+	          else
+	        	  {
+	        	    myRow +="</tr>"
+	        	  }
 	          console.log(key, calendar[key].Start);
 	          myTable[myIndex] += myRow
 	        }
@@ -574,13 +602,16 @@ function UpdateTable(myCal,preFixDrawCalender, preFixEntryCalendar, preFix)
     i = 1
     while (i <= 5)
      {
-      myTable[i] += "<tr><td colspan='3' style='align: left>'"+
-              "<div class='indegoadd'>" +
-                  "<div data-role='controlgroup' data-type='horizontal' data-inline='true' data-mini='true'>" +
-                    "<button id='" +preFix+ "add_"+String(i) + "' onclick=BtnAdd(this.id)>Eintrag hinzu</button>" +
-                  "</div>" +
-                "</div>" +
-		'</td></tr>'
+      if (i != 3 || preFix != 'm')
+    	  {
+	    	myTable[i] += "<tr><td colspan='3' style='align: left>'"+
+	              "<div class='indegoadd'>" +
+	                  "<div data-role='controlgroup' data-type='horizontal' data-inline='true' data-mini='true'>" +
+	                    "<button id='" +preFix+ "add_"+String(i) + "' onclick=BtnAdd(this.id)>Eintrag hinzu</button>" +
+	                  "</div>" +
+	                "</div>" +
+			'</td></tr>'
+    	  }
       i += 1
      }
     i = 1
@@ -890,14 +921,10 @@ $.widget("sv.spinner", $.sv.widget, {
 		if (myVal == 0)
 			{
 			document.getElementById("overlay-"+myObj).className ="spinnerHidden"
-			//this.element.removeClass('overlayloader').show()
-			//this.element.addClass('spinnerHidden').show()
 			}
 		else
 			{
 			 document.getElementById("overlay-"+myObj).className ="overlayloader"
-			 //this.element.removeClass('spinnerHidden').show()
-			 //this.element.addClass('overlayloader').show()
 			}
 		
 		
@@ -906,40 +933,44 @@ $.widget("sv.spinner", $.sv.widget, {
 });
 
 
-//*****************************************************
-//Widget for Mow-Mode (Calendar = 1, off = 0, smart = 2
-//*****************************************************
-$.widget("sv.mode_active", $.sv.widget, {
+//**********************************************************************
+//Widget for Mower Type 0 = unknown 1 = 1000 Series 2=350/400er Series
+//**********************************************************************
+$.widget("sv.status", $.sv.widget, {
 
-	initSelector: '[data-widget="indego.mode_active"]',
+	initSelector: '[data-widget="indego.status"]',
 
 	options: {
-		mode : 0
+		type : 0
 	},
 
 	_create: function() {
 		this._super();
-		this.id = 'ModeSwitch';
-		
+		this.id = 'MowerType';
 
 	},
 
 	_update: function(response) {
-		// get list of values
-		this.options.mode = response.toString().trim();
-		activeMode = this.options.mode
-		/*
-		document.getElementById("indego--mode_0").checked = false
-		$(document.getElementById("indego--mode_0")).checkboxradio("refresh")
-		document.getElementById("indego--mode_1").checked = false
-		$(document.getElementById("indego--mode_1")).checkboxradio("refresh")
-		document.getElementById("indego--mode_2").checked = false
-		$(document.getElementById("indego--mode_2")).checkboxradio("refresh")
+		logo_small_ok = document.getElementById("logo_small_OK").value
+		logo_big_ok   = document.getElementById("logo_big_OK").value
 		
-		var myMode = "indego--mode_"+parseInt(activeMode)
-		document.getElementById(myMode).checked = true
-	    $(document.getElementById(myMode)).checkboxradio("refresh")
-	    */		
+		if (response[0] == 1 && logo_big_ok == 1)
+		{
+			document.getElementById("Indego_big").style.display = "block"
+		}
+		else if (response[0] == 2 && logo_small_ok == 1)
+		{
+			document.getElementById("Indego_small").style.display = "block"
+		}
+		else
+		{
+			document.getElementById("Indego_unknown").style.display = "block"
+		}
+		// Additional Views for Indego 1000er Series
+		if (response[0] == 1)
+			{
+				document.getElementById("Advanced_Info1_4_1000").style.display = "block"
+			}
 		
 	},
 
