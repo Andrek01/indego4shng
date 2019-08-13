@@ -236,6 +236,10 @@ class Indego(SmartPlugin):
         if "refresh" in item._name:
                 self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
                 return self.update_item
+        
+        if "store_sms_profile" in item._name:
+                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
+                return self.update_item
             
         return None
 
@@ -281,7 +285,7 @@ class Indego(SmartPlugin):
                 myList = item()
                 self.parse_list_2_cal(myList, self.predictive_calendar,'PRED')
                      
-            if item._name == self.parent_item+'.visu.refresh':
+            if item._name == self.parent_item+'.visu.refresh' and item()== True:
                 self.set_childitem('update_active_mode', True)
                 self.get_calendars()
                 self.state()
@@ -293,6 +297,7 @@ class Indego(SmartPlugin):
                 item(False)
                 
 
+            
             if item._name == self.parent_item+'.active_mode.kalender' and item() == True:
                 self.set_childitem('update_active_mode', True)
                 self.set_childitem('active_mode', 1)
@@ -326,7 +331,8 @@ class Indego(SmartPlugin):
                 self.set_childitem('calendar_save', True)
                 self.set_childitem('alm_mode','smart')
                 self.set_childitem('update_active_mode', False)
-                
+            
+            
                 
                 
         # Function when item is triggered by anybody, also by plugin
@@ -347,6 +353,11 @@ class Indego(SmartPlugin):
                     self.set_childitem('active_mode.aus', True)
                     self.set_childitem('active_mode.kalender', False)          
                     self.set_childitem('active_mode.smart', False)
+            
+            
+        if item._name == self.parent_item+'.visu.store_sms_profile' and item() == True:
+                self.smart_mow_settings("write")
+                self.set_childitem('visu.store_sms_profile', False)
                     
                     
         if item._name == self.parent_item+'.calendar_save':
@@ -614,9 +625,9 @@ class Indego(SmartPlugin):
     
     def put_url(self, url, contextid=None, body=None, timeout=2):
         headers = {
-                   'x-im-context-id' : contextid,
-                   'Content-Type': 'application/json',
-                   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+                   'x-im-context-id' : contextid
+                   #'Content-Type': 'application/json',
+                   #'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
                   }
         
         try:
@@ -848,7 +859,10 @@ class Indego(SmartPlugin):
     
             
     def build_new_calendar(self, myList = None,type = None):
-        selected_calendar = self.get_childitem('calendar_sel_cal')
+        if (type =='MOW'):
+            selected_calendar = self.get_childitem('calendar_sel_cal')
+        else:
+            selected_calendar = self.get_childitem('calendar_predictive_sel_cal')
         newCal = {}
         newCal['sel_cal'] = selected_calendar
         newCal['cals'] = []
@@ -1031,40 +1045,47 @@ class Indego(SmartPlugin):
                 self.set_childitem('smartmowsetup',{
                                                       "full_cuts": 2,
                                                       "no_mow_calendar_days": [],
-                                                      "garden_location":
-                                                      {
-                                                        "timezone": "Europe/Berlin",
-                                                        "longitude": "0.0",
-                                                        "latitude": "0.0"
-                                                      },
-                                                      "avoid_rain": true,
-                                                      "use_grass_growth": true,
-                                                      "mowing_duration": 9,
-                                                      "garden_size": 0,
-                                                      "rain_factor": 1.4,
-                                                      "avoid_temperature": true,
-                                                      "temperature_factor": 1.1
+                                                      "avoid_rain": False,
+                                                      "use_grass_growth": False,
+                                                      "avoid_temperature": False,
                                                     })
-            
-            self.set_childitem('visu.avoid_temperature',predictiveSetup['avoid_temperature'] )
-            self.set_childitem('visu.avoid_rain',predictiveSetup['avoid_rain'] )
-            self.set_childitem('visu.use_grass_growth',predictiveSetup['use_grass_growth'], )
-            self.set_childitem('visu.full_cuts',predictiveSetup['full_cuts'] )
+                
+            predictiveSetup = self.get_childitem('smartmowsetup')
+            try:
+                self.set_childitem('visu.avoid_temperature',predictiveSetup['avoid_temperature'] )
+            except:
+                self.set_childitem('visu.avoid_temperature',False)
+            try:
+                self.set_childitem('visu.avoid_rain',predictiveSetup['avoid_rain'] )
+            except:
+                self.set_childitem('visu.avoid_rain',False)
+            try:
+                self.set_childitem('visu.use_grass_growth',predictiveSetup['use_grass_growth'])
+            except:
+                self.set_childitem('visu.use_grass_growth',False)
+            try:
+                self.set_childitem('visu.full_cuts',predictiveSetup['full_cuts'] )
+            except:
+                self.set_childitem('visu.full_cuts',2 )
             
         if (mode == "write"):
-            predictiveSetup = self.get_childitem('smartmowsetup')
+            predictiveSetup = {   "full_cuts": 2,
+                                  "no_mow_calendar_days": [],
+                                  "avoid_rain": False,
+                                  "use_grass_growth": False,
+                                  "avoid_temperature": False,
+                               }
             predictiveSetup['avoid_temperature'] = self.get_childitem('visu.avoid_temperature')
             predictiveSetup['avoid_rain'] = self.get_childitem('visu.avoid_rain')
             predictiveSetup['use_grass_growth'] = self.get_childitem('visu.use_grass_growth')
             predictiveSetup['full_cuts'] = self.get_childitem('visu.full_cuts')
-            if (self.get_childitem('calendar_predictive_sel_cal') != 0):
+            if (self.get_childitem('visu.use_exclude_time_4_sms') == True):
                 predictiveSetup['no_mow_calendar_days'] = self.get_childitem('calendar_predictive')['cals'][0]['days']
             else:
                 predictiveSetup['no_mow_calendar_days']=[]
-            predictiveSetup['garden_size'] = self.get_childitem('.operatingInfo.garden.size')
-            predictiveSetup['garden_location'] = self.get_childitem('.location')
+            
             try:
-                predictiveSetup = self.get_url( url, self.context_id, 10)    
+                predictiveSetup = self.put_url( url, self.context_id, predictiveSetup)    
             except Exception as e:
                 self.logger.warning("Problem putting {}: {}".format(url, e))
         
@@ -1103,57 +1124,60 @@ class Indego(SmartPlugin):
         else:
             pass
         
-        
-        # Get Network-Info
-        url = "{}alms/{}/network".format( self.indego_url, self.alm_sn)
-        try:
-            network_data = self.get_url( url, self.context_id, 10)    
-        except Exception as e:
-            self.logger.warning("Problem fetching {}: {}".format(url, e))
-        if network_data != False:
-            try:
-                self.parse_dict_2_item(network_data,'network.')
-            except err as Exception:
-                self.logger.warning("Problem parsing Network-Info : {}".format(err))
-        Providers = {
-                    "26217"  :"E-Plus",
-                    "26210"  :"DB Netz AG",
-                    "26205"  :"E-Plus",
-                    "26277"  :"E-Plus",
-                    "26203"  :"E-Plus",
-                    "26212"  :"E-Plus",
-                    "26220"  :"E-Plus",
-                    "26214"  :"Group 3G UMTS",
-                    "26243"  :"Lycamobile",
-                    "26213"  :"Mobilcom",
-                    "26208"  :"O2",
-                    "26211"  :"O2",
-                    "26207"  :"O2",
-                    "26206"  :"T-mobile/Telekom",
-                    "26201"  :"T-mobile/Telekom",
-                    "26216"  :"Telogic/ViStream",
-                    "26202"  :"Vodafone D2",
-                    "26242"  :"Vodafone D2",
-                    "26209"  :"Vodafone D2",
-                    "26204"  :"Vodafone D2"
-                    }
-        myMcc = self.get_childitem('network.mcc')
-        myMnc = self.get_childitem('network.mnc')
-        try:
-            actProvider = Providers[str(myMcc)+str('%0.2d' %myMnc)]
-        except:
-            actProvider = 'unknown('+str(myMcc)+str('%0.2d' %myMnc)+')'
-            
-        self.set_childitem('visu.network.act_provider', actProvider)
-        ProviderLst = self.get_childitem('network.networks')
-        myLst = ""
-        for entry in ProviderLst:
-            myLst += Providers[str(entry)]+', '
-            
-        self.set_childitem('visu.network.available_provider', myLst[0:-2])
-         
         # Get Location
-        self.get_location()                   
+        self.get_location()
+        
+        # Get Network-Info - only for the 350/400er
+        myType = self.get_childitem('visu.model_type')
+        if (myType == 2):
+            url = "{}alms/{}/network".format( self.indego_url, self.alm_sn)
+            try:
+                network_data = self.get_url( url, self.context_id, 10)    
+            except Exception as e:
+                self.logger.warning("Problem fetching {}: {}".format(url, e))
+            if network_data != False:
+                try:
+                    self.parse_dict_2_item(network_data,'network.')
+                except err as Exception:
+                    self.logger.warning("Problem parsing Network-Info : {}".format(err))
+            Providers = {
+                        "26217"  :"E-Plus",
+                        "26210"  :"DB Netz AG",
+                        "26205"  :"E-Plus",
+                        "26277"  :"E-Plus",
+                        "26203"  :"E-Plus",
+                        "26212"  :"E-Plus",
+                        "26220"  :"E-Plus",
+                        "26214"  :"Group 3G UMTS",
+                        "26243"  :"Lycamobile",
+                        "26213"  :"Mobilcom",
+                        "26208"  :"O2",
+                        "26211"  :"O2",
+                        "26207"  :"O2",
+                        "26206"  :"T-mobile/Telekom",
+                        "26201"  :"T-mobile/Telekom",
+                        "26216"  :"Telogic/ViStream",
+                        "26202"  :"Vodafone D2",
+                        "26242"  :"Vodafone D2",
+                        "26209"  :"Vodafone D2",
+                        "26204"  :"Vodafone D2"
+                        }
+            myMcc = self.get_childitem('network.mcc')
+            myMnc = self.get_childitem('network.mnc')
+            try:
+                actProvider = Providers[str(myMcc)+str('%0.2d' %myMnc)]
+            except:
+                actProvider = 'unknown('+str(myMcc)+str('%0.2d' %myMnc)+')'
+                
+            self.set_childitem('visu.network.act_provider', actProvider)
+            ProviderLst = self.get_childitem('network.networks')
+            myLst = ""
+            for entry in ProviderLst:
+                myLst += Providers[str(entry)]+', '
+                
+            self.set_childitem('visu.network.available_provider', myLst[0:-2])
+             
+                           
     
     def get_next_time(self):
             url = "{}alms/{}/predictive/nextcutting?last=YYYY-MM-DD-HH:MM:SS%2BHH:MM".format( self.indego_url, self.alm_sn)
@@ -1269,17 +1293,21 @@ class Indego(SmartPlugin):
             self.logger.debug("No Alert or error")
             self.alert_reset = False
         else:
-            self.logger.debug("ALARM ELSE")
-            #alert_response = alert_response.decode(encoding='UTF-8', errors='ignore')
-            #alert_response = json.loads(alert_response)
-            self.logger.debug("Alärmchen 2: " + json.dumps(alert_response))
             if len(alert_response) == 0:
                 self.logger.debug("No new Alert Messages")
 
             else:
-                self.logger.warning("alert_response " + str(alert_response))
+                actAlerts = self.get_childitem('visu.alerts')
+                self.logger.debug("Got Alarms: " + json.dumps(alert_response))
+                for myAlert in alert_response:
+                    if not (myAlert['alert_id'] in actAlerts):
+                        # add new alert to dict
+                        actAlerts[myAlert['alert_id']]=myAlert
+                        self.set_childitem('visu.alert_new', True)
+                
+                self.set_childitem('visu.alerts', actAlerts)
+                
                 alerts = len(alert_response)
-                self.logger.debug("ALERTS " + str(alerts))
                 if len(alert_response) == 1:
                     alert_latest = alert_response[0]
                     self.alert_reset = False

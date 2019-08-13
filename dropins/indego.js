@@ -79,6 +79,22 @@ var htmlPopUp = "<div data-role='popup' data-overlay-theme='b' data-theme='a' cl
 				      
 			"</div>";					
 
+
+function onClickToggle(myID)
+{
+	if (document.getElementById("ToggleCalender_1").src.search("minus") > 0)
+		{
+		document.getElementById('SMW').style.display='none'
+		document.getElementById("ToggleCalender_1").src = 'icons/ws/jquery_plus.svg'
+		}
+	else
+		{
+		document.getElementById('SMW').style.display='block'
+		document.getElementById("ToggleCalender_1").src = 'icons/ws/jquery_minus.svg'
+		}
+ 
+}
+
 function ShowPopUp(calType, myKey)
 {
  // Append to actual site
@@ -156,23 +172,29 @@ function EnableCalendar(calType)
 	return
 	// document.getElementById("myH3").firstChild.textContent = "Mähkalender"
 	if (calType == 'M')
-		{ CalCount = m_CalCount}
+		{
+
+			CalCount = m_CalCount
+		}
 	else
 		{ CalCount = p_CalCount }
 	var FirstDay = 5
 	for (actCal in CalCount)
 		{
 		 var strActCal = CalCount[actCal]
+	     /*
 		 if (calType == 'M')
 			 { var myCal = "mow_cal_"+strActCal }
 		 else
 			 { var myCal = "pred_cal_"+strActCal }
 		 // Show Collapsible for transmitted Calendars
 		 document.getElementById(myCal).style.display="block"
-	     if (calType == 'M')
+
+		 if (calType == 'M')
 		 { document.getElementById("mow_caption_"+strActCal).firstChild.textContent = "Mähkalender ("+strActCal+")"}
 		 else
 		 { document.getElementById("pred_caption_"+strActCal).firstChild.textContent = "Ausschlusskalender ("+strActCal+")"}
+		 */
 		 if (CalCount.length > 1)
 			{
 			 if (strActCal < FirstDay)
@@ -349,18 +371,19 @@ function ValidateEntry(CalNo,Days,myStartTime,myEndTime)
 }
 
 
-function CancelChanges_mow()
+function CancelChanges_mow(click_item)
 {
     newCalendar = $.extend( true, [], orgCalendar );
 	UpdateTable(orgCalendar,'indego-draw-calendar','indego-calendar','m')	
 	
     activeNewCalendar =  activeOrgCalendar
-	ReDrawActCalendar('M');
+	//ReDrawActCalendar('M');
 }
 
-function SaveChanges_mow()
-{
-	activeNewCalendar = GetActCalendar('M')
+function SaveChanges_mow(click_item)
+{	
+	activeNewCalendar = click_item.substring(10,11)
+	//activeNewCalendar = GetActCalendar('M')
 	io.write('indego.calendar_sel_cal',activeNewCalendar)
 	//activeOrgCalendar = activeNewCalendar
 	
@@ -370,19 +393,20 @@ function SaveChanges_mow()
 }
 
 // Functions for Predictive Calendar
-function CancelChanges_pred()
+function CancelChanges_pred(click_item)
 {
     newPredictiveCalendar = $.extend( true, [], orgPredictiveCalendar );
     UpdateTable(orgPredictiveCalendar,'indego-pred-draw-calendar','indego-pred-calendar','p')
 
     activeNewPredictive = activeOrgPredictive
-	ReDrawActCalendar('P');
+	//ReDrawActCalendar('P');
 
 }
 
-function SaveChanges_pred()
+function SaveChanges_pred(click_item)
 {
-	activeNewPredictive = GetActCalendar('P')
+	activeNewPredictive = click_item.substring(20,21)
+	//activeNewPredictive = GetActCalendar('P')
 	io.write('indego.calendar_predictive_sel_cal',activeNewPredictive)
     //activeOrgPredictive = activeNewPredictive
 
@@ -529,9 +553,19 @@ function FillDrawingCalendar(myCal,myColour, preFix)
               actHour = parseFloat(calendar[key].Start.substring(0,2))
               while (actHour <= parseFloat(calendar[key].End.substring(0,2)))
             	  {
-            	   myID = preFix+'-'+myIndex+"-"+myArray[numberOfEntry]+"-"+String(actHour)
-            	   myCell=document.getElementById(myID)
-            	   myCell.bgColor=myColour
+            	   if (actHour == parseFloat(calendar[key].End.substring(0,2)) && 
+            		   parseFloat(calendar[key].End.substring(3,5)) > 0)
+            		   {
+	            	   myID = preFix+'-'+myIndex+"-"+myArray[numberOfEntry]+"-"+String(actHour)
+	            	   myCell=document.getElementById(myID)
+	            	   myCell.bgColor=myColour
+            		   }
+            	   else if (actHour < parseFloat(calendar[key].End.substring(0,2)))
+            		   {
+	            	   myID = preFix+'-'+myIndex+"-"+myArray[numberOfEntry]+"-"+String(actHour)
+	            	   myCell=document.getElementById(myID)
+	            	   myCell.bgColor=myColour
+            		   }
             	   
             	   actHour += 1
             	  }
@@ -604,6 +638,7 @@ function UpdateTable(myCal,preFixDrawCalender, preFixEntryCalendar, preFix)
      {
       if (i != 3 || preFix != 'm')
     	  {
+    	  /*
 	    	myTable[i] += "<tr><td colspan='3' style='align: left>'"+
 	              "<div class='indegoadd'>" +
 	                  "<div data-role='controlgroup' data-type='horizontal' data-inline='true' data-mini='true'>" +
@@ -611,6 +646,7 @@ function UpdateTable(myCal,preFixDrawCalender, preFixEntryCalendar, preFix)
 	                  "</div>" +
 	                "</div>" +
 			'</td></tr>'
+			*/
     	  }
       i += 1
      }
@@ -814,86 +850,7 @@ $.widget("sv.symbol", $.sv.widget, {
 
 
 
-function onclickChangeMode(myID)
-{
-	console.log("Change arrived - switched to "+ myID)
-	activeMode = myID
-	if (myID == 0)								// Modus = AUS
-		{
-		 activeMode = 0
-		 //activeNewPredictive = 0
-		 activeNewCalendar = 0
-		 // write via WebSocket to shng
-		 
-		 io.write('indego.active_mode',activeMode)
-		 
-		 /*
-		 activeNewPredictive = 0
-		 io.write('indego.calendar_predictive_sel_cal',activeNewPredictive)
- 		 io.write('indego.calendar_predictive_list',newPredictiveCalendar[0])
-  		 io.write('indego.calendar_predictive_save', true)
-		 */
-		 
-		 io.write('indego.calendar_sel_cal',activeNewCalendar)
-	     io.write('indego.calendar_list',newCalendar[0])
-		 io.write('indego.calendar_save', true)
-		 
-		 
-		
-		}
-	else if (myID == 1)								// Modus = Calendar
-		{
-		 activeMode = 1
-		 //activeNewPredictive = 0
-		 activeNewCalendar = 2
-		 // write via WebSocket to shng
 
-		 io.write('indego.active_mode',activeMode)
-		 
-		 /*
-		 activeNewPredictive = 0
-		 io.write('indego.calendar_predictive_sel_cal',activeNewPredictive)
- 		 io.write('indego.calendar_predictive_list',newPredictiveCalendar[0])
-  		 io.write('indego.calendar_predictive_save', true)
-		 */
-		 
-		 io.write('indego.calendar_sel_cal',activeNewCalendar)
-	     io.write('indego.calendar_list',newCalendar[0])
-		 io.write('indego.calendar_save', true)
-		 
-
-		 
-		}
-	else if (myID == 2)								// Modus = SmartMow
-		{
-		 activeMode = 2
-		 activeNewPredictive = 1
-		 activeNewCalendar = 3
-		 // write via WebSocket to shng
-		 
-		 io.write('indego.active_mode',activeMode)
-		 
-		 activeNewPredictive = 1
-		 io.write('indego.calendar_predictive_sel_cal',activeNewPredictive)
- 		 io.write('indego.calendar_predictive_list',newPredictiveCalendar[0])
-  		 io.write('indego.calendar_predictive_save', true)
-
-		 /*
-		 io.write('indego.calendar_sel_cal',activeNewCalendar)
-	     io.write('indego.calendar_list',newCalendar[0])
-		 io.write('indego.calendar_save', true)
-		 */
-		 
-
-		}
-	 //document.getElementById("overlay-Indego_Spinner_1").className="overlayloader"
-	 //document.getElementById("spinner-Indego_Spinner_1").className="loader"
-	 //document.getElementById("overlay_mow_state").className="spinnerHidden"
-	 //document.getElementById("-_mod_active").disabled = true
-	
-	 //document.getElementById("overlay_mow_state").className="spinnerHidden"
-	 //document.getElementById("spinner").className="spinnerHidden"
-}
 
 
 //*****************************************************
@@ -957,14 +914,20 @@ $.widget("sv.status", $.sv.widget, {
 		if (response[0] == 1 && logo_big_ok == 1)
 		{
 			document.getElementById("Indego_big").style.display = "block"
+			document.getElementById("Indego_small").style.display = "none"
+			document.getElementById("Indego_small").style.display = "none"
 		}
 		else if (response[0] == 2 && logo_small_ok == 1)
 		{
 			document.getElementById("Indego_small").style.display = "block"
+			document.getElementById("Indego_big").style.display = "none"
+			document.getElementById("Indego_unknown").style.display = "none"
 		}
 		else
 		{
 			document.getElementById("Indego_unknown").style.display = "block"
+			document.getElementById("Indego_small").style.display = "none"
+			document.getElementById("Indego_big").style.display = "none"
 		}
 		// Additional Views for Indego 1000er Series
 		if (response[0] == 1)

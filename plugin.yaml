@@ -149,7 +149,27 @@ item_structs:
                 cache: 'on'
                 visu_acl: rw
 
+            use_exclude_time_4_sms:
+                type: bool
+                visu_acl: rw
+
             store_sms_profile:
+                type: bool
+                visu_acl: rw
+
+            alerts:
+                type: dict
+                visu_acl: rw
+
+            alert_new:
+                type: bool
+                visu_acl: rw
+
+            alerts_reset:
+                type: bool
+                visu_acl: rw
+
+            alerts_read:
                 type: bool
                 visu_acl: rw
 
