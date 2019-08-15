@@ -80,6 +80,34 @@ var htmlPopUp = "<div data-role='popup' data-overlay-theme='b' data-theme='a' cl
 			"</div>";					
 
 
+
+function MessageHandling(click_item)
+{
+	if (click_item == 'alert_read' || click_item == 'alert_delete')
+		{
+		myPopup=document.getElementById("rpopupalarm-popup")
+		myPopup.classList.remove("ui-popup-active")
+		myPopup.classList.add("ui-popup-hidden")
+		myCheckBoxes = $(".inedgo_alert_check")
+		myAlerts2Handle = []
+		for (alertId in myCheckBoxes)
+			{
+			 if (myCheckBoxes[alertId].checked == true)
+				 { myAlerts2Handle.push(myCheckBoxes[alertId].id) }
+			}
+		if (myAlerts2Handle.length == 0)
+			{ return }
+		if (click_item == 'alert_read')
+			{
+			 io.write('indego.visu.alerts_set_read',myAlerts2Handle)
+			}
+		else if (click_item == 'alert_delete')
+			{
+			 io.write('indego.visu.alerts_set_clear',myAlerts2Handle)
+			}
+		}
+}
+
 function onClickToggle(myID)
 {
 	if (document.getElementById("ToggleCalender_1").src.search("minus") > 0)
@@ -939,3 +967,64 @@ $.widget("sv.status", $.sv.widget, {
 
 });
 
+//*****************************************************
+//Widget for alerts
+//*****************************************************
+$.widget("sv.alerts", $.sv.widget, {
+
+	initSelector: '[data-widget="indego.alerts"]',
+
+	options: {
+		id : ''
+	},
+
+	_create: function() {
+		this._super();
+		this.options.id = this.element[0].id;
+		
+
+	},
+
+	_update: function(response) {
+		// get list of values
+		var myVal = response[0];
+		myHtml = '<table>'
+		
+		for (alert in myVal)
+			{
+			 myHtml += '<tr style="font-size:15px">'
+			 myHtml += '<td colspan=3 align=center>'+ myVal[alert].date + ' - ' + myVal[alert].headline +'</td><td></td><td></td>'
+			 myHtml += '</tr>'
+			 myHtml += '<tr>'
+			 myHtml += '<td colwidth=30px>'
+			 myHtml += '<label class="container"> <span> <input type="checkbox" class="inedgo_alert_check" id='+alert+'"> </span></label>'
+			 //"<label title='Mo'><input id = 'day_0' checked_0 type='checkbox' value='0'>Mo</label>" +
+			 myHtml += '</td>'
+			 myHtml += '<td>'
+			  
+			 myHtml += '</td>'
+			 if (myVal[alert].read_status == 'unread')
+				 {
+				 myHtml += '<td style="font-size:14px; font-weight:700">'
+				 }
+			 else
+				 {
+				 myHtml += '<td style="font-size:14px; font-weight:400">'				 
+				 }
+			 myHtml += myVal[alert].message + '<br>'
+			 myHtml += '</td>'
+			 myHtml += '</tr>'
+			}
+		myHtml += '</table>'
+		myHtml += '<table width="100%">'
+		myHtml += '<tr>'
+		myHtml += '<td width="120px"><button id="alert_delete" class="ui-btn ui-shadow ui-corner-all" onclick="MessageHandling(this.id)">Löschen</button></td>'
+		myHtml += '<td width="120px"><button id="alert_read" class="ui-btn ui-shadow ui-corner-all" onclick="MessageHandling(this.id)">Gelesen</button></td>'
+		myHtml += '</tr>'
+		myHtml += '</table>'
+			
+		$('#indegoalertbox').html(myHtml)
+		
+	},
+
+});

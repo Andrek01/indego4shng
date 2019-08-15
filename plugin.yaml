@@ -152,6 +152,7 @@ item_structs:
             use_exclude_time_4_sms:
                 type: bool
                 visu_acl: rw
+                cache: 'on'
 
             store_sms_profile:
                 type: bool
@@ -171,6 +172,14 @@ item_structs:
 
             alerts_read:
                 type: bool
+                visu_acl: rw
+
+            alerts_set_read:
+                type : list
+                visu_acl: rw
+
+            alerts_set_clear:
+                type : list
                 visu_acl: rw
 
 # End - Definitions for the VISU-Items
@@ -272,6 +281,10 @@ item_structs:
             type: num
 
         next_time:
+            type: foo
+            cache: 'on'
+
+        last_time:
             type: foo
             cache: 'on'
 

@@ -34,6 +34,18 @@
 {% endmacro %}
 
 
+/*********************************************
+*
+*  Widget for the Spinner
+*
+*********************************************/
+
+{% macro alerts(id, item,_backend ) %}
+
+{% import "basic.html" as basic %}
+<div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.alerts" data-item="{{ item }}" data-designType="{{ _backend }}">
+</div>
+{% endmacro %}
 
 
 /*********************************************
