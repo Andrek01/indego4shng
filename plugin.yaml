@@ -165,6 +165,7 @@ item_structs:
             alert_new:
                 type: bool
                 visu_acl: rw
+                cache: 'on'
 
             alerts_reset:
                 type: bool
@@ -374,30 +375,6 @@ item_structs:
             changed:
                 type: foo
                 cache: 'on'
-
-        alert_message:
-            type: str
-            cache: 'on'
-
-        alert_id:
-            type: str
-            cache: 'on'
-
-        alert_id_send:
-            type: str
-            cache: 'on'
-
-        alert_flag:
-            type: str
-            cache: 'on'
-
-        alert_headline:
-            type: str
-            cache: 'on'
-
-        alert_date:
-            type: foo
-            cache: 'on'
 
         calendar:
             type: dict

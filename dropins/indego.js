@@ -1002,6 +1002,8 @@ $.widget("sv.alerts", $.sv.widget, {
 		sorted.reverse();
 		
 		myHtml  = '<table>'
+		myHtml  += '<h3>Meldungen</h3>'
+		myHtml += '<hr>'
 		
 		
 		for (counter in sorted)
@@ -1018,7 +1020,7 @@ $.widget("sv.alerts", $.sv.widget, {
 				 }
 			 else
 				 {
-				 	myHtml += '<td colspan=3 align="left"  style="font-size:14px; font-weight:400">'+ myPrettyDate + ' - ' + myVal[alert].headline +'</td><td></td><td></td>'				 
+				 	myHtml += '<td colspan=3 align="left"  style="font-size:14px; font-weight:400">' + myPrettyDate + ' - ' + myVal[alert].headline +'</td><td></td><td></td>'				 
 				 }
 			 
 			 myHtml += '</tr>'
@@ -1039,8 +1041,11 @@ $.widget("sv.alerts", $.sv.widget, {
 				 myHtml += '<td style="font-size:13px; font-weight:400">'				 
 				 }
 			 myHtml += myVal[alert].message + '<br>'
+			 myHtml += '<hr>'
 			 myHtml += '</td>'
+			 
 			 myHtml += '</tr>'
+			 
 			}
 		myHtml += '</table>'
 		myHtml += '<table width="100%">'

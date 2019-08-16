@@ -334,11 +334,12 @@ class Indego(SmartPlugin):
                 self.set_childitem('active_mode', 2)
                 self.set_childitem('active_mode.aus', False)
                 self.set_childitem('active_mode.kalender', False)
-                self.set_smart(True)
                 self.set_childitem('calendar_sel_cal', 3)
                 self.set_childitem('calendar_save', True)
+                self.set_smart(True)
                 self.set_childitem('alm_mode','smart')
                 self.set_childitem('update_active_mode', False)
+                # Set SmartMow on Bosch-Server
             
             if item._name == self.parent_item+'.visu.alerts_set_read':
                 self.SetReadMessages()
@@ -678,36 +679,7 @@ class Indego(SmartPlugin):
         else:
             self.logger.info("Error during put for {} HTTP-Status :{}".format(url, response.status_code))
             return False
-        
-        
-        '''
-        headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'}
-        headers = {'Content-Type': 'application/json'}
-        plain = True
-        if url.startswith('https'):
-            plain = False
-        lurl = url.split('/')
-        host = lurl[2]
-        purl = '/' + '/'.join(lurl[3:])
-        if plain:
-            conn = http.client.HTTPConnection(host, timeout=timeout)
-        else:
-            conn = http.client.HTTPSConnection(host, timeout=timeout)
-            headers['x-im-context-id'] = contextid
-        body = state
-        try:
-            conn.request("PUT", purl, body=body, headers=headers)
-        except Exception as e:
-            self.logger.warning("Problem fetching {0}: {1}".format(url, e))
-            conn.close()
-            return False
-        # resp = conn.getresponse()
-        # content = resp.read()
-        conn.close()
-        self.logger.debug(
-            'put gesendet an URL: ' + str(url) + 'context id: ' + str(contextid) + 'command: ' + str(state))
-        return True
-        '''
+
     def send_command(self, item, command=None, caller=None, source=None, dest=None):
         if self.has_iattr(item.conf, 'indego_command'):
             command = json.loads(self.get_iattr_value(item.conf,'indego_command'))
@@ -717,16 +689,15 @@ class Indego(SmartPlugin):
                 self.logger.debug("Command " + json.dumps(command) + ' gesendet! ' + str(message))
 
     def set_smart(self, enable=None):
-        self.logger.debug("Smart Mode Command " + str(enable))
+
         if enable:
-            self.logger.debug("SMAAAAAAAAAAAAAAAAAAAAART aktivieren")
-            command = '{"enabled": true}'
+            self.logger.debug("SMART-Mow-Modus aktivieren")
+            command = {"enabled": True}
         else:
-            self.logger.debug("SMAAAAAAAAAAAAAAAAAAAAART deaktivieren")
-            command = '{"enabled": false}'
-        self.logger.debug("Smart URL: " + self.indego_url + 'alms/' + self.alm_sn + '/predictive')
-        message = self.put_url(self.indego_url + 'alms/' + self.alm_sn + '/predictive', self.context_id, command, 10)
-        self.logger.debug("Smart Command " + command + ' gesendet! ' + str(message))
+            self.logger.debug("SMART-Mow-Modus deaktivieren")
+            command = {"enabled": False}
+        result = self.put_url(self.indego_url + 'alms/' + self.alm_sn + '/predictive', self.context_id, command, 10)
+        self.logger.debug("Smart Command " + json.dumps(command) + ' gesendet! Result :' + str(result))
 
     def set_smart_frequency(self, item, frequency=0, caller=None, source=None, dest=None):
         frequency = str(item())
@@ -1364,49 +1335,17 @@ class Indego(SmartPlugin):
 
             else:
                 actAlerts = self.get_childitem('visu.alerts')
-                self.logger.debug("Got Alarms: " + json.dumps(alert_response))
+                
                 for myAlert in alert_response:
                     if not (myAlert['alert_id'] in actAlerts):
                         # add new alert to dict
+                        self.logger.debug("Got new Alarm : {} - {} ".format(myAlert['alert_id'], myAlert['message']))
+                        myAlert['message'].replace(' Bitte folgen Sie den Anweisungen im Display des Mähers.', '')
                         actAlerts[myAlert['alert_id']]=myAlert
                         self.set_childitem('visu.alert_new', True)
                 
                 self.set_childitem('visu.alerts', actAlerts)
-                
-                alerts = len(alert_response)
-                if len(alert_response) == 1:
-                    alert_latest = alert_response[0]
-                    self.alert_reset = False
-                else:
-                    # alert_latest = ast.literal_eval(alert_response[0]+'}')
-                    self.logger.debug("ALERTerS " + str(alert_response[len(alert_response) - 1]))
-                    alert_latest = alert_response[len(alert_response) - 1]
-                    self.alert_reset = True
 
-                alert_id = alert_latest['alert_id']
-                self.set_childitem('alert_id',alert_id)
-                self.logger.debug("alert_id " + str(alert_id))
-
-                alert_message = alert_latest['message'].replace(
-                    ' Bitte folgen Sie den Anweisungen im Display des Mähers.', '')
-                self.set_childitem('alert_message',alert_message)
-                self.logger.debug("alert_message " + str(alert_message))
-
-                alert_date = datetime.datetime.strptime(alert_latest['date'], '%Y-%m-%dT%H:%M:%S.%fZ').replace(
-                    tzinfo=tz.gettz('UTC')).astimezone(
-                    self.shtime.tzinfo())  # alert_date = datetime.datetime.strptime(alert_latest['date'],'%Y-%m-%dT%H:%M:%S.%fZ')
-                self.set_childitem('alert_date',alert_date)
-                self.logger.debug("alert_date " + str(alert_date))
-
-                alert_headline = alert_latest['headline']
-                self.set_childitem('alert_headline',alert_headline)
-                self.logger.debug("alert_headline  " + str(alert_headline))
-
-                alert_flag = alert_latest['flag']
-                self.set_childitem('alert_flag',alert_flag)
-                self.logger.debug("alert_flag " + str(alert_flag))
-
-                #self.alert_delete(alert_id)
 
     def get_smart_frequency(self):
         self.logger.debug("getting smart frequency")
