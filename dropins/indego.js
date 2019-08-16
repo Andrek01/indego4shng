@@ -644,8 +644,8 @@ function UpdateTable(myCal,preFixDrawCalender, preFixEntryCalendar, preFix)
 			          myRow +="<td>" +
 			          "<div class='indegoControl' style='float: right'>" +
 			              "<div data-role='controlgroup' data-type='horizontal' data-inline='true' data-mini='true'>" +
-			                "<button id='"+preFix+"edit_"  + key + "' onclick=BtnEdit(this.id)> Edit</button>" +
-			                "<button id='"+preFix+"delete_"+ key + "' onclick=BtnDelete(this.id)>Del</button>" +
+			                "<button id='"+preFix+"edit_"  + key + "'class='ui-btn ui-mini ui-corner-all ui-btn-inline ui-nodisc-icon' onclick=BtnEdit(this.id)> Edit</button>" +
+			                "<button id='"+preFix+"delete_"+ key + "'class='ui-btn ui-mini ui-corner-all ui-btn-inline ui-nodisc-icon' onclick=BtnDelete(this.id)>Del</button>" +
 			              "</div>" +
 			            "</div>" +
 			 		"</td>" +
@@ -967,6 +967,9 @@ $.widget("sv.status", $.sv.widget, {
 
 });
 
+
+
+
 //*****************************************************
 //Widget for alerts
 //*****************************************************
@@ -988,16 +991,40 @@ $.widget("sv.alerts", $.sv.widget, {
 	_update: function(response) {
 		// get list of values
 		var myVal = response[0];
-		myHtml = '<table>'
+		// Todo - sort correct
 		
+		var sorted = [];
 		for (alert in myVal)
+		{
+		    sorted[sorted.length] = alert;
+		}
+		sorted.sort();
+		sorted.reverse();
+		
+		myHtml  = '<table>'
+		
+		
+		for (counter in sorted)
 			{
-			 myHtml += '<tr style="font-size:15px">'
-			 myHtml += '<td colspan=3 align=center>'+ myVal[alert].date + ' - ' + myVal[alert].headline +'</td><td></td><td></td>'
+			 alert = sorted[counter]
+			 myDate = new Date(myVal[alert].date)
+			 myPrettyDate = myDate.toLocaleDateString('de-DE',{ year: 'numeric', month: 'long', day: 'numeric',weekday: 'short',  hour : 'numeric', minute : 'numeric'})
+			 
+			 myHtml += '<tr style="font-size:14px">'
+			 
+				 if (myVal[alert].read_status == 'unread')
+				 {
+					 myHtml += '<td colspan=3 align="left" style="color:red; font-size:14px; font-weight:700">'+ myPrettyDate + ' - ' + myVal[alert].headline +'</td><td></td><td></td>'
+				 }
+			 else
+				 {
+				 	myHtml += '<td colspan=3 align="left"  style="font-size:14px; font-weight:400">'+ myPrettyDate + ' - ' + myVal[alert].headline +'</td><td></td><td></td>'				 
+				 }
+			 
 			 myHtml += '</tr>'
 			 myHtml += '<tr>'
-			 myHtml += '<td colwidth=30px>'
-			 myHtml += '<label class="container"> <span> <input type="checkbox" class="inedgo_alert_check" id='+alert+'"> </span></label>'
+			 myHtml += '<td>'
+			 myHtml += '<label class="container"> <span> <input type="checkbox" align="center" class="inedgo_alert_check" id='+alert+'> </span></label>'
 			 //"<label title='Mo'><input id = 'day_0' checked_0 type='checkbox' value='0'>Mo</label>" +
 			 myHtml += '</td>'
 			 myHtml += '<td>'
@@ -1005,11 +1032,11 @@ $.widget("sv.alerts", $.sv.widget, {
 			 myHtml += '</td>'
 			 if (myVal[alert].read_status == 'unread')
 				 {
-				 myHtml += '<td style="font-size:14px; font-weight:700">'
+				 myHtml += '<td style="font-size:13px; font-weight:700">'
 				 }
 			 else
 				 {
-				 myHtml += '<td style="font-size:14px; font-weight:400">'				 
+				 myHtml += '<td style="font-size:13px; font-weight:400">'				 
 				 }
 			 myHtml += myVal[alert].message + '<br>'
 			 myHtml += '</td>'

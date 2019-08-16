@@ -157,7 +157,7 @@ class Indego(SmartPlugin):
         self.scheduler_add('alert', self.alert, cycle=30)
         self.scheduler_add('get_calendars', self.get_calendars, cycle=300)
         self.scheduler_add('check_login_state', self.check_login_state, cycle=90)
-        self.scheduler_add('device_date', self.device_data, cycle=120)
+        self.scheduler_add('device_data', self.device_data, cycle=120)
         self.scheduler_add('get_weather', self.get_weather, cycle=600)
         self.scheduler_add('get_next_time', self.get_next_time, cycle=300)
         #self.scheduler_add('get_smart_frequency', self.get_smart_frequency, cycle=500)
@@ -240,6 +240,14 @@ class Indego(SmartPlugin):
         if "store_sms_profile" in item._name:
                 self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
                 return self.update_item
+        
+        if "visu.alerts_set_read" in item._name:
+                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
+                return self.update_item
+        
+        if "visu.alerts_set_clear" in item._name:
+                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
+                return self.update_item    
             
         return None
 
@@ -332,7 +340,11 @@ class Indego(SmartPlugin):
                 self.set_childitem('alm_mode','smart')
                 self.set_childitem('update_active_mode', False)
             
+            if item._name == self.parent_item+'.visu.alerts_set_read':
+                self.SetReadMessages()
             
+            if item._name == self.parent_item+'.visu.alerts_set_clear':
+                self.SetClearMessage()
                 
                 
         # Function when item is triggered by anybody, also by plugin
@@ -372,8 +384,31 @@ class Indego(SmartPlugin):
             # Now Save the Calendar on Bosch-API
             self.upate_count_pred = 0
             self.auto_pred_cal_update()
-  
+    
+    
+    def DelMessageInDict(self, myDict, myKey):
+        del myDict[myKey]
+        
+    def SetReadMessages(self):
+        msg2setread = self.get_childitem('visu.alerts_set_read')
+        myReadMsg = self.get_childitem('visu.alerts')
+        
+        for message in msg2setread:
+            myResult = self.put_url(self.indego_url +'alerts/{}'.format(message), self.context_id, None, 10)
+            myReadMsg[message]['read_status'] = 'read'
             
+        self.set_childitem('visu.alerts', myReadMsg)
+        
+        
+    def SetClearMessage(self):
+        msg2clear = self.get_childitem('visu.alerts_set_clear')
+        myClearMsg = self.get_childitem('visu.alerts')
+        
+        for message in msg2clear:
+            myResult = self.delete_url(self.indego_url +'alerts/{}'.format(message), self.context_id, 10, 'Delete')
+            self.DelMessageInDict(myClearMsg, message)
+            
+        self.set_childitem('visu.alerts', myClearMsg) 
     
     def check_login_state(self):
         actTimeStamp = time.time()
@@ -1180,6 +1215,7 @@ class Indego(SmartPlugin):
                            
     
     def get_next_time(self):
+            # get the next mowing time
             url = "{}alms/{}/predictive/nextcutting?last=YYYY-MM-DD-HH:MM:SS%2BHH:MM".format( self.indego_url, self.alm_sn)
 
             try:
@@ -1210,6 +1246,36 @@ class Indego(SmartPlugin):
                     self.set_childitem('next_time','kein Mähen geplant')
                     self.logger.warning("Problem to decode {0} in function get_next_time(): {1}".format(next_time, e))
                     
+            # get the last mowing time
+            url = "{}alms/{}/predictive/lastcutting".format( self.indego_url, self.alm_sn)
+            try:
+                last_time = self.get_url( url, self.context_id, 10)
+            except Exception as e:
+                last_time = False
+                self.logger.warning("Problem fetching {0}: {1}".format(url, e))        
+            if last_time == False:
+                self.set_childitem('last_time','kein letztes Mähen bekannt')
+                self.logger.info("Got last-time - nothing stored")
+            else:
+                try:
+                    
+                    self.logger.debug("Last time raw" + str(json.dumps(last_time))) # net_time was here
+                    new_time = last_time['last_mowed']
+                    new_time = new_time.replace(':', '')
+                        
+                    time_text  = new_time[8:10] + '.'
+                    time_text += new_time[5:7] + '.'
+                    time_text += new_time[0:4] + ' - '
+                    time_text += new_time[11:13] + ':'
+                    time_text += new_time[13:15]
+                    last_time = str(time_text)
+
+                    self.logger.debug("Next time final " + str(next_time))
+                    self.set_childitem('last_time',last_time)
+                except Exception as e:
+                    self.set_childitem('last_time','kein letztes Mähen bekannt')
+                    self.logger.warning("Problem to decode {0} in function get_next_time(): {1}".format(next_time, e))
+
                 
     def get_weather(self):
         try:
@@ -1365,10 +1431,7 @@ class Indego(SmartPlugin):
         if device_data_response == False:
             self.logger.error('Device Data disconnected')
         else:
-            self.logger.debug('device date stringtanga: ' + json.dumps(device_data_response))
-            #device_data_response = device_data_response.decode(encoding='UTF-8', errors='ignore')
-            #device_data_response = json.loads(device_data_response)
-            self.logger.debug('device date JASON: ' + str(device_data_response))
+            self.logger.debug('device date JSON: ' + json.dumps(device_data_response))
 
             alm_sn = device_data_response['alm_sn']
             self.set_childitem('alm_sn',alm_sn)
