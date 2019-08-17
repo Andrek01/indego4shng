@@ -612,6 +612,7 @@ catch (e)
 
 function UpdateTable(myCal,preFixDrawCalender, preFixEntryCalendar, preFix)
 {
+		
 	var myTable = new Array(5)
     i=0
     while (i < myCal.length)
@@ -641,11 +642,21 @@ function UpdateTable(myCal,preFixDrawCalender, preFixEntryCalendar, preFix)
 	          myRow = retValTime + retvalDays
 	          if (myIndex != 3 || preFix != 'm')
 	        	  {
+
+	        	  		editID = preFix+"edit_"  + key
+	        	  		var editButton = "<a id='"+editID+"' class='ui-btn ui-mini ui-corner-all ui-btn-inline' onclick=BtnEdit(this.id)> <img id='img_"+editID+"' class='icon' src='icons/ws/jquery_edit.svg' alt='Edit'></a>"
+	        	  		
+	        	  		deleteID = preFix+"delete_"  + key	        	  		
+						var deleteButton = "<a id='"+deleteID+"' class='ui-btn ui-mini ui-corner-all ui-btn-inline ui-nodisc-icon' onclick=BtnEdit(this.id)> <img id='img_"+deleteID+"' class='icon' src='icons/ws/jquery_delete.svg' alt='Del'></a>"
+
+		        	  	
 			          myRow +="<td>" +
 			          "<div class='indegoControl' style='float: right'>" +
 			              "<div data-role='controlgroup' data-type='horizontal' data-inline='true' data-mini='true'>" +
-			                "<button id='"+preFix+"edit_"  + key + "'class='ui-btn ui-mini ui-corner-all ui-btn-inline ui-nodisc-icon' onclick=BtnEdit(this.id)> Edit</button>" +
-			                "<button id='"+preFix+"delete_"+ key + "'class='ui-btn ui-mini ui-corner-all ui-btn-inline ui-nodisc-icon' onclick=BtnDelete(this.id)>Del</button>" +
+			                editButton +
+			                deleteButton +
+/*			                "<button id='"+preFix+"edit_"  + key + "'class='ui-btn ui-mini ui-corner-all ui-btn-inline ui-nodisc-icon' onclick=BtnEdit(this.id)> Edit</button>" +
+			                "<button id='"+preFix+"delete_"+ key + "'class='ui-btn ui-mini ui-corner-all ui-btn-inline ui-nodisc-icon' onclick=BtnDelete(this.id)>Del</button>" + */
 			              "</div>" +
 			            "</div>" +
 			 		"</td>" +

@@ -10,22 +10,13 @@
 <div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.spinner" data-item="{{ item }}" data-designType="{{ _backend }}">
 
 <html>
-<head>
-
-</head>
 <body>
-
   <div id="{{uid('overlay', id) }}" class="spinnerHidden">
       <div id="{{uid('spinner', id) }}" class="loader"></div>
   </div>
-
-
 <script>
-
   spinner = document.getElementById("{{uid('spinner', id) }}");
-
 </script>
- 
 </body>
 </html>
 </div>
@@ -136,103 +127,6 @@
 
 {% import "basic.html" as basic %}
 	<div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.calendar" data-item="{{ item }}" data-designType="{{ _backend }}"></div>
-    <div class="indego_calendar"></div>
-
-<html>
-<head>
-<!--
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0;" /> 
--->
-  <link rel="stylesheet" type="text/css" media="screen" href="base.css" /> 
-<style>
-main {
-  position: relative;
-}
-.overlay  {
-  border-radius: .5em .5em .5em .5em;	
-  border: 1px solid;
-  padding: .5em;
-  margin: .5em;
-} 
-
-.overlayHidden {
-  display: none;
-}
- 
-.overlay { 
-  width: 30em; 
-  background: #fffbf0; 
-  border: 1px solid #e7c157;
-  position: absolute;
-  top: 10%;
-  right: 5%;
-  margin: auto;
-  padding: 1em;
-}
-</style>
-
-</head>
-<body>
-
-   <div id="popup" class="overlayHidden">
-      <h2>Kalendereintrag hinzu</h2>
-		<table>
-			<tr>
-				<td width=60px><input type="time" id="t2_von" name="Time_von" min="0:00" max="23:59" required></td>
-				<td width=60px><input type="time" id="t2_bis" name="Time_bis" min="0:00" max="23:59" required></td>
-				<td width=150px></td>
-			</tr><tr>
-				<td colspan="3">
-				   <body>
-						<form>
-						<fieldset data-role = "controlgroup" data-type = "horizontal" id="Weekdays">
-							<input type = "checkbox" id = "day_10" >
-							<label for = "day_10">Mo</label>
-
-							<input type = "checkbox" id = "day_11">
-							<label for = "day_11">Di</label>
-
-							<input type = "checkbox" id = "day_12">
-							<label for = "day_12">Mi</label>
-
-							<input type = "checkbox" id = "day_13" >
-							<label for = "day_13">Do</label>
-
-							<input type = "checkbox" id = "day_14" >
-							<label for = "day_14">Fr</label>
-
-							<input type = "checkbox" id = "day_15" >
-							<label for = "day_15">Sa</label>
-
-							<input type = "checkbox" id = "day_16" >
-							<label for = "day_16">So</label>
-						</fieldset>
-						</form>
-				   </body>
-				</td>
-			</tr><tr>
-				<td><button id="cancel">abbrechen</button></td>
-				<td><button id="OK">OK</button></td>
-			</tr>
-		</table>
-	</div>
-  </main>
- 
-<script>
-/*
-  var CancelBtn = document.getElementById('cancel');
-  OkBtn = document.getElementById('OK');
-  popup = document.getElementById('popup');
-  CancelBtn.addEventListener('click',CloseEntryWindowByCancel);
-  OkBtn.addEventListener('click',CloseEntryWindowByOK);
-*/
-</script>
-
-</body>
-</html>
-
-
 {% endmacro %}
 
 
@@ -248,101 +142,5 @@ main {
 
 {% import "basic.html" as basic %}
 	<div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.calendar_predictive_list" data-item="{{ item }}" data-designType="{{ _backend }}"></div>
-    <div class="indego_calendar"></div>
-
-<html>
-<head>
-<!--
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0;" /> -->
-  <link rel="stylesheet" type="text/css" media="screen" href="base.css" /> 
-<style>
-main {
-  position: relative;
-}
-.overlay1  {
-  border-radius: .5em .5em .5em .5em;	
-  border: 1px solid;
-  padding: .5em;
-  margin: .5em;
-} 
-
-.overlayHidden1 {
-  display: none;
-}
- 
-.overlay1 { 
-  width: 30em; 
-  background: #fffbf0; 
-  border: 1px solid #e7c157;
-  position: absolute;
-  top: 10%;
-  right: 5%;
-  margin: auto;
-  padding: 1em;
-}
-</style>
-
-</head>
-<body>
-
-   <div id="popup_pred" class="overlayHidden">
-		<h2>Kalendereintrag hinzu</h2>
-		<table>
-			<tr>
-				<td width=60px><input type="time" id="t1_von" name="Time_von" min="0:00" max="23:59" required></td>
-				<td width=60px><input type="time" id="t1_bis" name="Time_bis" min="0:00" max="23:59" required></td>
-				<td width=150px></td>
-			</tr><tr>
-				<td colspan="3">
-					<body>
-						<form>
-						<fieldset data-role = "controlgroup" data-type = "horizontal" id="Weekdays">
-							<input type = "checkbox" id = "pred_day_10" >
-							<label for = "day_10">Mo</label>
-
-							<input type = "checkbox" id = "pred_day_11" value = 1 >
-							<label for = "day_11">Di</label>
-
-							<input type = "checkbox" id = "pred_day_12" value = 0>
-							<label for = "day_12">Mi</label>
-
-							<input type = "checkbox" id = "pred_day_13" >
-							<label for = "day_13">Do</label>
-
-							<input type = "checkbox" id = "pred_day_14" >
-							<label for = "day_14">Fr</label>
-
-							<input type = "checkbox" id = "pred_day_15" >
-							<label for = "day_15">Sa</label>
-
-							<input type = "checkbox" id = "pred_day_16" >
-							<label for = "day_16">So</label>
-						</fieldset>
-						</form>
-					</body>
-				</td>
-			</tr><tr>
-				<td><button id="cancel">abbrechen</button></td>
-				<td><button id="OK">OK</button></td>
-			</tr>
-		</table>
-    </div>
-  </main>
- 
-<script>
-/*
-  var CancelBtn = document.getElementById('cancel');
-  OkBtn = document.getElementById('OK');
-  popup = document.getElementById('popup');
-  CancelBtn.addEventListener('click',CloseEntryWindowByCancel);
-  OkBtn.addEventListener('click',CloseEntryWindowByOK);
-*/
-</script>
-
-</body>
-</html>
-
-
 {% endmacro %}
 
