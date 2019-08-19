@@ -409,7 +409,11 @@ class Indego(SmartPlugin):
             myResult = self.delete_url(self.indego_url +'alerts/{}'.format(message), self.context_id, 10, 'Delete')
             self.DelMessageInDict(myClearMsg, message)
             
-        self.set_childitem('visu.alerts', myClearMsg) 
+        self.set_childitem('visu.alerts', myClearMsg)
+        if (len(myClearMsg)) == 0:
+            {
+                self.set_childitem('visu.alert_new', False)
+            } 
     
     def check_login_state(self):
         actTimeStamp = time.time()
@@ -1027,6 +1031,8 @@ class Indego(SmartPlugin):
                 self.set_childitem(keyEntry+m, myDict[m])
             else:
                 self.parse_dict_2_item(myDict[m],keyEntry+m+'.')
+                
+                
     def get_location(self):
         url = "{}alms/{}/predictive/location".format( self.indego_url, self.alm_sn)
         try:
@@ -1459,6 +1465,8 @@ class Indego(SmartPlugin):
                       1026: ['Endoflive', 'hilfe'], 1281: ['Softwareupdate', 'dock'],
                       1537: ['Stromsparmodus','dock'],
                       64513:['wacht auf','dock']}
+        #schedule = self.get_url(self.indego_url + 'alms/' + self.alm_sn +'/predictive/schedule', self.context_id)
+        
         state_response = self.get_url(self.indego_url + 'alms/' + self.alm_sn + '/state', self.context_id)
         states = state_response
         if state_response != False:

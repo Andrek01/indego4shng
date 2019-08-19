@@ -647,7 +647,7 @@ function UpdateTable(myCal,preFixDrawCalender, preFixEntryCalendar, preFix)
 	        	  		var editButton = "<a id='"+editID+"' class='ui-btn ui-mini ui-corner-all ui-btn-inline' onclick=BtnEdit(this.id)> <img id='img_"+editID+"' class='icon' src='icons/ws/jquery_edit.svg' alt='Edit'></a>"
 	        	  		
 	        	  		deleteID = preFix+"delete_"  + key	        	  		
-						var deleteButton = "<a id='"+deleteID+"' class='ui-btn ui-mini ui-corner-all ui-btn-inline ui-nodisc-icon' onclick=BtnEdit(this.id)> <img id='img_"+deleteID+"' class='icon' src='icons/ws/jquery_delete.svg' alt='Del'></a>"
+						var deleteButton = "<a id='"+deleteID+"' class='ui-btn ui-mini ui-corner-all ui-btn-inline ui-nodisc-icon' onclick=BtnDelete(this.id)> <img id='img_"+deleteID+"' class='icon' src='icons/ws/jquery_delete.svg' alt='Del'></a>"
 
 		        	  	
 			          myRow +="<td>" +
@@ -1005,7 +1005,7 @@ $.widget("sv.alerts", $.sv.widget, {
 		// Todo - sort correct
 		
 		var sorted = [];
-		for (alert in myVal)
+		for (var alert in myVal)
 		{
 		    sorted[sorted.length] = alert;
 		}
@@ -1019,7 +1019,7 @@ $.widget("sv.alerts", $.sv.widget, {
 		
 		for (counter in sorted)
 			{
-			 alert = sorted[counter]
+			 var alert = sorted[counter]
 			 myDate = new Date(myVal[alert].date)
 			 myPrettyDate = myDate.toLocaleDateString('de-DE',{ year: 'numeric', month: 'long', day: 'numeric',weekday: 'short',  hour : 'numeric', minute : 'numeric'})
 			 
