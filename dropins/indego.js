@@ -248,6 +248,11 @@ function EnableCalendar(calType)
 	
 function DrawCalendar(TableName, CalNo, preFix)
 {
+	if (preFix == "m")
+		{
+			$("#indego-draw-calendar-2-act").html("")
+		}
+	
 	var myDays = ["Mo","Di","Mi","Do","Fr","Sa","So"]
 	d=0
 	myHtml = ""
@@ -559,7 +564,6 @@ function FillDrawingCalendar(myCal,myColour, preFix)
 {
  try
   {
-	var myTable = new Array(5)
     i=0
     while (i < myCal.length)
     {
@@ -602,6 +606,10 @@ function FillDrawingCalendar(myCal,myColour, preFix)
       }
      i += 1
     }
+    // Now Copy HTML to act Calender in Modus-Status
+	$("#indego-draw-calendar-2-act").html($("#indego-draw-calendar-2").html())
+	
+    
   }
 catch (e)
  {
@@ -655,8 +663,6 @@ function UpdateTable(myCal,preFixDrawCalender, preFixEntryCalendar, preFix)
 			              "<div data-role='controlgroup' data-type='horizontal' data-inline='true' data-mini='true'>" +
 			                editButton +
 			                deleteButton +
-/*			                "<button id='"+preFix+"edit_"  + key + "'class='ui-btn ui-mini ui-corner-all ui-btn-inline ui-nodisc-icon' onclick=BtnEdit(this.id)> Edit</button>" +
-			                "<button id='"+preFix+"delete_"+ key + "'class='ui-btn ui-mini ui-corner-all ui-btn-inline ui-nodisc-icon' onclick=BtnDelete(this.id)>Del</button>" + */
 			              "</div>" +
 			            "</div>" +
 			 		"</td>" +
@@ -767,7 +773,7 @@ _create: function()
 _update: function(response)
 {
 
- // wenn keine Daten vorhanden, dann ist kein item mit den eigenschaften hinterlegt und es wird nichts gemacht
+ // wenn keine Daten vorhanden, dann ist kein item mit den Eigenschaften hinterlegt und es wird nichts gemacht
  if (response.length === 0)
  {
    notify.error("Indego widget", "No predictive Calendar found ");
@@ -842,6 +848,51 @@ else
 }
 });
 
+
+//*****************************************************
+//Widget for smartmow_calendar
+//*****************************************************
+$.widget("sv.smartmow_calendar", $.sv.widget, {
+
+initSelector: 'div[data-widget="indego.smartmow_calendar"]',
+	options: {
+		mode: '',
+		id: ''
+	},
+
+_create: function()
+{
+this._super();
+var id = this.options.id;
+},
+
+_update: function(response)
+{
+	if (response.length === 0)
+	 {
+	   notify.error("Indego widget", "No predictive Calendar found ");
+	   return;
+	 }
+	 
+	 if (this.options.item == "indego.visu.exclusion_days")
+	  {
+  	   colour = "#bebebe"
+  	  }
+	 else
+  	  {
+  	   colour = "#0099000"
+  	  }
+	 // Hier den Kalender zeichnen
+	 //DrawCalendar(TableName, CalNo, preFix)
+	 if ($("#indego-pred-draw-calendar-9").html() == "")
+		 {
+		 	DrawCalendar("indego-pred-draw-calendar-9",9,"S")
+		 }
+	 FillDrawingCalendar(response,colour, "S")
+
+
+}
+});
 //*****************************************************
 //Widget for Symbols
 //*****************************************************
@@ -886,6 +937,63 @@ $.widget("sv.symbol", $.sv.widget, {
 	}
 });
 
+//*****************************************************
+//Widget for Params
+//*****************************************************
+$.widget("sv.params", $.sv.widget, {
+
+	initSelector: '[data-widget="indego.params"]',
+	
+	options: {
+		mode: '',
+		val: '',
+		id: ''
+	},
+
+	_create: function()
+	{
+		this._super()
+	},
+	_update: function(response)
+	{
+		myParam = response[0].split(":")[0]
+		myValue = response[0].split(":")[1]
+		switch (myParam)
+		{
+				case 'cal2show':
+				{
+				 switch (myValue)
+					 {
+						 case '1':
+							 {
+								document.getElementById("show_sm_times").style.display = "none"
+								document.getElementById("show_cal_times").style.display = "block"									
+								
+								//document.getElementById("calendar_container").style.display="block"
+								//document.getElementById("smartmow_container").style.display="none"
+								break;
+							 }
+						 case '2':
+							 {
+								document.getElementById("show_sm_times").style.display = "block"
+								document.getElementById("show_cal_times").style.display = "none"
+								//document.getElementById("calendar_container").style.display="none"
+								//document.getElementById("smartmow_container").style.display="block"								
+								break;
+							 }
+						 default:
+							 {
+								document.getElementById("show_sm_times").style.display = "none"
+								document.getElementById("show_cal_times").style.display = "none"
+								//document.getElementById("calendar_container").style.display="none"
+								//document.getElementById("smartmow_container").style.display="none"									
+							 }				
+					 }
+				 break;
+				}
+		}
+	}
+});
 
 
 

@@ -183,7 +183,46 @@ item_structs:
                 type : list
                 visu_acl: rw
 
+            cal_2_show:
+                type : str
+                visu_acl: rw
+
+            exclusion_days:
+                type: dict
+                visu_acl: rw
+
+            schedule_days:
+                type: dict
+                visu_acl: rw
+
+
 # End - Definitions for the VISU-Items
+
+        wartung:
+            
+            messer_zaehler:
+                type: bool
+                visu_acl: rw
+
+            update:
+                type: str
+                visu_acl: rw
+
+            update_start:
+                type: bool
+                visu_acl: rw
+
+            update_auto:
+                type: bool
+                visu_acl: rw
+                cache: 'on'
+
+            wintermodus:
+                type: bool
+                visu_acl: rw
+                cache: 'on'
+
+
         active_mode:
             type: num
             cache: 'on'

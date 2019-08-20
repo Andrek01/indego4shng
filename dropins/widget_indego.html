@@ -27,17 +27,26 @@
 
 /*********************************************
 *
-*  Widget for the Spinner
+*  Widget for the alerts
 *
 *********************************************/
 
 {% macro alerts(id, item,_backend ) %}
 
 {% import "basic.html" as basic %}
-<div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.alerts" data-item="{{ item }}" data-designType="{{ _backend }}">
-</div>
+<div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.alerts" data-item="{{ item }}" data-designType="{{ _backend }}"></div>
 {% endmacro %}
 
+
+/*********************************************
+*
+*  Widget for the params
+*
+*********************************************/
+
+{% macro params(id, item,_backend ) %}
+<div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.params" data-item="{{ item }}" data-designType="{{ _backend }}"></div>
+{% endmacro %}
 
 /*********************************************
 *
@@ -116,13 +125,23 @@
 
 
 
+/*********************************************
+*
+*  Widget for the SmartMowCalendar
+*
+*********************************************/
+{% macro smartmow_calendar(id, item,_backend ) %}
+
+{% import "basic.html" as basic %}
+	<div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.smartmow_calendar" data-item="{{ item }}" data-designType="{{ _backend }}"></div>
+{% endmacro %}
+
 
 /*********************************************
 *
 *  Widget for the Mow Calendar
 *
 *********************************************/
-
 {% macro mow_calendar(id, item,_backend ) %}
 
 {% import "basic.html" as basic %}

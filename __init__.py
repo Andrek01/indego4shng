@@ -339,7 +339,8 @@ class Indego(SmartPlugin):
                 self.set_smart(True)
                 self.set_childitem('alm_mode','smart')
                 self.set_childitem('update_active_mode', False)
-                # Set SmartMow on Bosch-Server
+            
+            
             
             if item._name == self.parent_item+'.visu.alerts_set_read':
                 self.SetReadMessages()
@@ -385,7 +386,9 @@ class Indego(SmartPlugin):
             # Now Save the Calendar on Bosch-API
             self.upate_count_pred = 0
             self.auto_pred_cal_update()
-    
+        
+        if "active_mode" in item._name:
+            self.set_childitem('visu.cal_2_show','cal2show:'+str(self.get_childitem('active_mode')))
     
     def DelMessageInDict(self, myDict, myKey):
         del myDict[myKey]
@@ -541,6 +544,32 @@ class Indego(SmartPlugin):
                 self.act_pred_Calender(self.get_active_calendar(self.predictive_calendar()),'indego')
         except Exception as e:
             self.logger.warning("Problem fetching Calendars: {0}".format(e))
+        
+        # Get the scheduled smart-mow-calendar
+        try:
+            schedule = self.get_url(self.indego_url + 'alms/' + self.alm_sn +'/predictive/schedule', self.context_id)
+            if schedule == False:
+                return
+        except Exception as e:
+            self.logger.warning("Problem fetching Calendars: {0}".format(e))
+        my_pred_cal = {
+                        "cals" : [{
+                                    "cal" : 9,
+                                    'days' : schedule['exclusion_days']
+                                 }]
+                      } 
+        my_smMow_cal = {
+                        "cals" : [{
+                                    "cal" : 9,
+                                    'days' : schedule['schedule_days']
+                                 }]
+                      }
+        my_pred_list = self.parse_cal_2_list(my_pred_cal, None)
+        my_smMow_list = self.parse_cal_2_list(my_smMow_cal, None)
+        
+        self.set_childitem('visu.exclusion_days', my_pred_list)
+        self.set_childitem('visu.schedule_days', my_smMow_list)
+        
 
     def fetch_url(self, url, username=None, password=None, timeout=2, body=None):
         try:
@@ -1019,7 +1048,7 @@ class Indego(SmartPlugin):
         myList['Params']['CalCount'] = myCalList
         if (type == 'MOW'):
             self.calendar_count_mow = myCalList
-        else:
+        elif (type == 'PRED'):
             self.calendar_count_pred = myCalList
         
         return myList
@@ -1465,7 +1494,7 @@ class Indego(SmartPlugin):
                       1026: ['Endoflive', 'hilfe'], 1281: ['Softwareupdate', 'dock'],
                       1537: ['Stromsparmodus','dock'],
                       64513:['wacht auf','dock']}
-        #schedule = self.get_url(self.indego_url + 'alms/' + self.alm_sn +'/predictive/schedule', self.context_id)
+        
         
         state_response = self.get_url(self.indego_url + 'alms/' + self.alm_sn + '/state', self.context_id)
         states = state_response
