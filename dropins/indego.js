@@ -537,11 +537,29 @@ function BtnDelete(click_item)
 	calType = click_item.substring(0,1)
 	if (calType == 'm')
 		{
+		for (var i=0; i <=5;i++)
+			{
+			try
+			{
+				$('#indego-calendar'+ '-'+ String(i)).html("");
+			}
+			catch(e)
+			{}
+			}
 		 delete newCalendar[0][myKey]
 		 UpdateTable(newCalendar,'indego-draw-calendar','indego-calendar',calType)
 		}
 	else
 		{
+		for (var i=0; i <=5;i++)
+			{
+			try
+			{
+				$('#indego-pred-calendar'+ '-'+ String(i)).html("");
+			}
+			catch(e)
+			{}
+			}
 		 delete newPredictiveCalendar[0][myKey]
 		 UpdateTable(newPredictiveCalendar,'indego-pred-draw-calendar','indego-pred-calendar',calType)
 		}
@@ -623,6 +641,7 @@ function UpdateTable(myCal,preFixDrawCalender, preFixEntryCalendar, preFix)
 		
 	var myTable = new Array(5)
     i=0
+    
     while (i < myCal.length)
     {
      calendar = myCal[i]
@@ -884,11 +903,10 @@ _update: function(response)
   	  }
 	 // Hier den Kalender zeichnen
 	 //DrawCalendar(TableName, CalNo, preFix)
-	 if ($("#indego-pred-draw-calendar-9").html() == "")
-		 {
-		 	DrawCalendar("indego-pred-draw-calendar-9",9,"S")
-		 }
-	 FillDrawingCalendar(response,colour, "S")
+	 
+	 DrawCalendar("indego-pred-draw-calendar-9",9,"S")
+	 FillDrawingCalendar([response[0][0]],"#bebebe", "S")
+	 FillDrawingCalendar([response[0][1]],"#0099000", "S")
 
 
 }

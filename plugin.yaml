@@ -187,13 +187,10 @@ item_structs:
                 type : str
                 visu_acl: rw
 
-            exclusion_days:
-                type: dict
+            smartmow_days:
+                type: list
                 visu_acl: rw
-
-            schedule_days:
-                type: dict
-                visu_acl: rw
+                cache: 'on'
 
 
 # End - Definitions for the VISU-Items

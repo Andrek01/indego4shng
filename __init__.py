@@ -567,8 +567,8 @@ class Indego(SmartPlugin):
         my_pred_list = self.parse_cal_2_list(my_pred_cal, None)
         my_smMow_list = self.parse_cal_2_list(my_smMow_cal, None)
         
-        self.set_childitem('visu.exclusion_days', my_pred_list)
-        self.set_childitem('visu.schedule_days', my_smMow_list)
+        self.set_childitem('visu.smartmow_days',[ my_pred_list,my_smMow_list])
+        
         
 
     def fetch_url(self, url, username=None, password=None, timeout=2, body=None):
