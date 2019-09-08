@@ -259,8 +259,19 @@ class Indego(SmartPlugin):
             # self.function(logic['name'])
             pass
 
-    
-
+    def daystring(self, zeitwert, ausgang):
+        if ausgang == 'min':
+            zeitwert = zeitwert / 60 / 24
+        if ausgang == 'std':
+            zeitwert = zeitwert / 24
+        tage, std = divmod(zeitwert, 1)
+        tage = int(tage)
+        std = std * 24
+        std, min = divmod(std,1)
+        std = int(std)
+        min = round(min * 60)
+        dayout = str(tage)+' Tage '+str(std)+' Std '+str(min)+' Min'
+        return dayout
 
     def update_item(self, item, caller=None, source=None, dest=None):
         """
@@ -1230,7 +1241,7 @@ class Indego(SmartPlugin):
                 next_time = False
                 self.logger.warning("Problem fetching {0}: {1}".format(url, e))        
             if next_time == False:
-                self.set_childitem('next_time','kein Mähen geplant')
+                self.set_childitem('next_time','nicht geplant')
                 self.logger.info("Got next-time - nothing scheduled")
             else:
                 try:
@@ -1419,6 +1430,8 @@ class Indego(SmartPlugin):
             service_counter = device_data_response['service_counter']
             self.set_childitem('service_counter',service_counter)
             self.logger.debug("service_counter " + str(service_counter))
+            service_counter = self.daystring(service_counter, 'min')
+            self.set_childitem('service_counter.dhm',service_counter)
 
             needs_service = device_data_response['needs_service']
             self.set_childitem('needs_service',needs_service)
@@ -1481,11 +1494,12 @@ class Indego(SmartPlugin):
         #states = state_response
         state__str = {0: ['Lese Status', 'unknown'], 257: ['lädt', 'dock'], 258: ['docked', 'dock'],
                       259: ['Docked-Softwareupdate', 'dock'], 260: ['Docked', 'dock'], 261: ['docked', 'dock'],
-                      262: ['docked - lädt Karte', 'dock'], 263: ['docked-speichert Karte', 'dock'],
+                      262: ['docked - lädt Karte', 'dock'], 263: ['docked-speichert Karte', 'dock'], 
+					  266: ['docked', '???'],
                       513: ['mäht', 'moving'], 514: ['bestimme Ort', 'moving'], 515: ['lade Karte', 'moving'],
                       516: ['lerne Garten', 'moving'], 517: ['Pause', 'pause'], 518: ['schneide Rand', 'moving'],
                       519: ['stecke fest', 'hilfe'],523 :['Spot Mow','dock'],524 : ['zufälliges Mähen','dock'],
-                      769: ['fährt in Station', 'moving'],
+                      768: ['fährt in Station', '??????'], 769: ['fährt in Station', 'moving'],
                       770: ['fährt in Station', 'moving'], 771: ['fährt zum Laden in Station', 'moving'],
                       772: ['fährt in Station – Mähzeit beendet', 'moving'],
                       773: ['fährt in Station - überhitzt', 'help'], 774: ['fährt in Station', 'moving'],
@@ -1565,10 +1579,14 @@ class Indego(SmartPlugin):
             total_operate = states['runtime']['total']['operate']
             self.set_childitem('runtimeTotalOperationMins',total_operate)
             self.logger.debug("total_operate " + str(total_operate))
+            total_operate = self.daystring(total_operate, 'min')
+            self.set_childitem('runtimeTotalOperationMins.dhm',total_operate)
 
             total_charge = states['runtime']['total']['charge']
             self.set_childitem('runtimeTotalChargeMins',total_charge)
             self.logger.debug("total_charge " + str(total_charge))
+            total_charge = self.daystring(total_charge, 'min')
+            self.set_childitem('runtimeTotalChargeMins.dhm',total_charge)
 
             session_operate = states['runtime']['session']['operate']
             self.set_childitem('runtimeSessionOperationMins',session_operate)
@@ -1718,5 +1736,4 @@ class WebInterface(SmartPluginWebIf):
         return tmpl.render(p=self.plugin,
                            items=sorted(plgitems, key=lambda k: str.lower(k['_path'])),
                            item_count=item_count)
-
 
