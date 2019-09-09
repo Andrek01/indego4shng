@@ -105,6 +105,7 @@ item_structs:
 
             battery_load:
                 type: num
+                visu_acl: rw
                 cache: 'on'
 
             battery_load_icon:
@@ -118,15 +119,19 @@ item_structs:
             network:
                 act_provider:
                     type: str
+                    visu_acl: rw
 
                 available_provider:
                     type: str
+                    visu_acl: rw
             model:
                 type: str
+                visu_acl: rw
                 cache: 'on'
 
             model_type:
                 type: num
+                visu_acl: rw
                 cache: 'on'
 
             avoid_temperature:
@@ -192,6 +197,9 @@ item_structs:
                 visu_acl: rw
                 cache: 'on'
 
+            wintermodus:
+                type : str
+                visu_acl: rw
 
 # End - Definitions for the VISU-Items
 
@@ -239,19 +247,24 @@ item_structs:
 
         update_active_mode:
             type: bool
+            visu_acl: rw
             initial_value: false
 
         online:
             type: bool
+            visu_acl: rw
 
         stateCode:
             type: num
+            visu_acl: rw
 
         state_str:
             type: str
+            visu_acl: rw
 
         stateError:
             type: num
+            visu_acl: rw
 
         config_change:
             type: bool
@@ -263,94 +276,115 @@ item_structs:
 
         stateLevel:
             type: num
+            visu_acl: rw
 
         docked:
             type: bool
+            visu_acl: rw
             database: 'yes'
 
         moving:
             type: bool
+            visu_acl: rw
             database: 'yes'
 
         pause:
             type: bool
+            visu_acl: rw
             database: 'yes'
 
         help:
             type: bool
+            visu_acl: rw
             database: 'yes'
 
         mowedPercent:
             type: num
+            visu_acl: rw
             cache: 'on'
             database: 'yes'
 
         mowedPercent_soll:
             type: num
+            visu_acl: rw
             database: 'yes'
             cache: 'on'
             initial_value: 100
 
         mapSvgCacheDate:
             type: foo
+            visu_acl: rw
             cache: 'on'
 
         mapUpdateAvailable:
             type: bool
+            visu_acl: rw
 
         mowedDate:
             type: foo
+            visu_acl: rw
             cache: 'on'
 
         xPos:
             type: num
+            visu_acl: rw
 
         yPos:
             type: num
+            visu_acl: rw
 
         svg_xPos:
             type: num
+            visu_acl: rw
 
         svg_yPos:
             type: num
+            visu_acl: rw
 
         mowmode:
             type: num
+            visu_acl: rw
 
         next_time:
             type: foo
+            visu_acl: rw
             cache: 'on'
 
         last_time:
             type: foo
+            visu_acl: rw
             cache: 'on'
 
         runtimeTotalOperationMins:
             type: num
             database: 'yes'
 
-            hours:
-                type: num
-                database: 'yes'
-                eval: round(sh.indego.runtimeTotalOperationMins()/60,0)
-                eval_trigger: indego.runtimeTotalOperationMins
+            dhm:
+                type: str
+                visu_acl: rw
+                # database: 'yes'
+                # eval: round(sh.indego.runtimeTotalOperationMins()/60,0)
+                # eval_trigger: indego.runtimeTotalOperationMins
 
         runtimeTotalChargeMins:
             type: num
             database: 'yes'
 
-            hours:
-                type: num
-                database: 'yes'
-                eval: round(sh.indego.runtimeTotalChargeMins()/60,0)
-                eval_trigger: indego.runtimeTotalChargeMins
+            dhm:
+                type: str
+                visu_acl: rw
+                # database: 'yes'
+                # eval: round(sh.indego.runtimeTotalChargeMins()/60,0)
+                # eval_trigger: indego.runtimeTotalChargeMins
 
         runtimeSessionOperationMins:
             type: num
+            visu_acl: rw
             database: 'yes'
 
         runtimeSessionChargeMins:
             type: num
+            visu_acl: rw
             database: 'yes'
 
         SMART:
@@ -384,32 +418,46 @@ item_structs:
 
         alm_sn:
             type: num
+            visu_acl: rw
 
         alm_name:
             type: str
+            visu_acl: rw
+            initial_value: '---'
 
         service_counter:
             type: num
+            visu_acl: rw
+
+            dhm:
+                type: str
+                visu_acl: rw
 
         needs_service:
             type: bool
+            visu_acl: rw
 
         alm_mode:
             type: str
+            visu_acl: rw
 
         bareToolnumber:
             type: str
+            visu_acl: rw
 
         alm_firmware_version:
             type: str
+            visu_acl: rw
             cache: 'on'
 
             before:
                 type: str
+                visu_acl: rw
                 cache: 'on'
 
             changed:
                 type: foo
+                visu_acl: rw
                 cache: 'on'
 
         calendar:
@@ -427,6 +475,7 @@ item_structs:
         calendar_result:
             type: str
             visu_acl: rw
+            initial_value: '---'
 
         calendar_save:
             type: bool

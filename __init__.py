@@ -3,10 +3,11 @@
 #########################################################################
 #  Copyright 2018 Marco Düchting                   Marco.Duechting@gmx.de
 #  Copyright 2018 Bernd Meiners                     Bernd.Meiners@mail.de
+#  Copyright 2019 Andre Kohler              andre.kohler01@googlemail.com
 #########################################################################
 #  This file is part of SmartHomeNG.   
 #
-#  Sample plugin for new plugins to run with SmartHomeNG version 1.4 and
+#  Sample plugin for new plugins to run with SmartHomeNG version 1.6 and
 #  upwards.
 #
 #  SmartHomeNG is free software: you can redistribute it and/or modify
@@ -42,9 +43,9 @@ import sys
 
 
 import requests
-from six import _meth_self
-#from _ast import Or
-#from calendar import calendar
+
+
+
 
 
 
@@ -233,6 +234,10 @@ class Indego(SmartPlugin):
                 self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
                 return self.update_item
         
+        if "active_mode" in item._name:
+                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
+                return self.update_item
+        
         if "refresh" in item._name:
                 self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
                 return self.update_item
@@ -247,7 +252,12 @@ class Indego(SmartPlugin):
         
         if "visu.alerts_set_clear" in item._name:
                 self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
-                return self.update_item    
+                return self.update_item
+        
+        if "wartung.wintermodus" in item._name:
+                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
+                return self.update_item        
+
             
         return None
 
@@ -258,9 +268,6 @@ class Indego(SmartPlugin):
         if 'xxx' in logic.conf:
             # self.function(logic['name'])
             pass
-
-    
-
 
     def update_item(self, item, caller=None, source=None, dest=None):
         """
@@ -389,6 +396,24 @@ class Indego(SmartPlugin):
         
         if "active_mode" in item._name:
             self.set_childitem('visu.cal_2_show','cal2show:'+str(self.get_childitem('active_mode')))
+        
+        
+        if "wartung.wintermodus" in item._name:
+            self.set_childitem('visu.wintermodus','wintermodus:'+str(self.get_childitem('wartung.wintermodus')))
+
+    def daystring(self, zeitwert, ausgang):
+        if ausgang == 'min':
+            zeitwert = zeitwert / 60 / 24
+        if ausgang == 'std':
+            zeitwert = zeitwert / 24
+        tage, std = divmod(zeitwert, 1)
+        tage = int(tage)
+        std = std * 24
+        std, min = divmod(std,1)
+        std = int(std)
+        min = round(min * 60)
+        dayout = str(tage)+' Tage '+str(std)+' Std '+str(min)+' Min'
+        return dayout
     
     def DelMessageInDict(self, myDict, myKey):
         del myDict[myKey]
@@ -519,6 +544,8 @@ class Indego(SmartPlugin):
     
     
     def get_calendars(self):    
+        if (self.get_childitem("wartung.wintermodus") == True):
+            return        
         try:
             if not self.cal_update_running:
                 # get the mowing calendar
@@ -1133,6 +1160,9 @@ class Indego(SmartPlugin):
         
     def get_operating_data(self):
         # Get Operating-Info
+        if (self.get_childitem("wartung.wintermodus") == True):
+            return
+            
         url = "{}alms/{}/operatingData".format( self.indego_url, self.alm_sn)
         try:
             operating_data = self.get_url( url, self.context_id, 10)    
@@ -1221,66 +1251,68 @@ class Indego(SmartPlugin):
                            
     
     def get_next_time(self):
-            # get the next mowing time
-            url = "{}alms/{}/predictive/nextcutting?last=YYYY-MM-DD-HH:MM:SS%2BHH:MM".format( self.indego_url, self.alm_sn)
+        if (self.get_childitem("wartung.wintermodus") == True):
+            return        
+        # get the next mowing time
+        url = "{}alms/{}/predictive/nextcutting?last=YYYY-MM-DD-HH:MM:SS%2BHH:MM".format( self.indego_url, self.alm_sn)
 
+        try:
+            next_time = self.get_url( url, self.context_id, 10)
+        except Exception as e:
+            next_time = False
+            self.logger.warning("Problem fetching {0}: {1}".format(url, e))        
+        if next_time == False:
+            self.set_childitem('next_time','nicht geplant')
+            self.logger.info("Got next-time - nothing scheduled")
+        else:
             try:
-                next_time = self.get_url( url, self.context_id, 10)
+                
+                self.logger.debug("Next time raw" + str(json.dumps(next_time))) # net_time was here
+                new_time = next_time['mow_next']
+                new_time = new_time.replace(':', '')
+                    
+                time_text  = new_time[8:10] + '.'
+                time_text += new_time[5:7] + '.'
+                time_text += new_time[0:4] + ' - '
+                time_text += new_time[11:13] + ':'
+                time_text += new_time[13:15]
+                next_time = str(time_text)
+
+                self.logger.debug("Next time final " + str(next_time))
+                self.set_childitem('next_time',next_time)
             except Exception as e:
-                next_time = False
-                self.logger.warning("Problem fetching {0}: {1}".format(url, e))        
-            if next_time == False:
                 self.set_childitem('next_time','kein Mähen geplant')
-                self.logger.info("Got next-time - nothing scheduled")
-            else:
-                try:
-                    
-                    self.logger.debug("Next time raw" + str(json.dumps(next_time))) # net_time was here
-                    new_time = next_time['mow_next']
-                    new_time = new_time.replace(':', '')
-                        
-                    time_text  = new_time[8:10] + '.'
-                    time_text += new_time[5:7] + '.'
-                    time_text += new_time[0:4] + ' - '
-                    time_text += new_time[11:13] + ':'
-                    time_text += new_time[13:15]
-                    next_time = str(time_text)
-
-                    self.logger.debug("Next time final " + str(next_time))
-                    self.set_childitem('next_time',next_time)
-                except Exception as e:
-                    self.set_childitem('next_time','kein Mähen geplant')
-                    self.logger.warning("Problem to decode {0} in function get_next_time(): {1}".format(next_time, e))
-                    
-            # get the last mowing time
-            url = "{}alms/{}/predictive/lastcutting".format( self.indego_url, self.alm_sn)
+                self.logger.warning("Problem to decode {0} in function get_next_time(): {1}".format(next_time, e))
+                
+        # get the last mowing time
+        url = "{}alms/{}/predictive/lastcutting".format( self.indego_url, self.alm_sn)
+        try:
+            last_time = self.get_url( url, self.context_id, 10)
+        except Exception as e:
+            last_time = False
+            self.logger.warning("Problem fetching {0}: {1}".format(url, e))        
+        if last_time == False:
+            self.set_childitem('last_time','kein letztes Mähen bekannt')
+            self.logger.info("Got last-time - nothing stored")
+        else:
             try:
-                last_time = self.get_url( url, self.context_id, 10)
-            except Exception as e:
-                last_time = False
-                self.logger.warning("Problem fetching {0}: {1}".format(url, e))        
-            if last_time == False:
-                self.set_childitem('last_time','kein letztes Mähen bekannt')
-                self.logger.info("Got last-time - nothing stored")
-            else:
-                try:
+                
+                self.logger.debug("Last time raw" + str(json.dumps(last_time))) # net_time was here
+                new_time = last_time['last_mowed']
+                new_time = new_time.replace(':', '')
                     
-                    self.logger.debug("Last time raw" + str(json.dumps(last_time))) # net_time was here
-                    new_time = last_time['last_mowed']
-                    new_time = new_time.replace(':', '')
-                        
-                    time_text  = new_time[8:10] + '.'
-                    time_text += new_time[5:7] + '.'
-                    time_text += new_time[0:4] + ' - '
-                    time_text += new_time[11:13] + ':'
-                    time_text += new_time[13:15]
-                    last_time = str(time_text)
+                time_text  = new_time[8:10] + '.'
+                time_text += new_time[5:7] + '.'
+                time_text += new_time[0:4] + ' - '
+                time_text += new_time[11:13] + ':'
+                time_text += new_time[13:15]
+                last_time = str(time_text)
 
-                    self.logger.debug("Next time final " + str(next_time))
-                    self.set_childitem('last_time',last_time)
-                except Exception as e:
-                    self.set_childitem('last_time','kein letztes Mähen bekannt')
-                    self.logger.warning("Problem to decode {0} in function get_next_time(): {1}".format(next_time, e))
+                self.logger.debug("Next time final " + str(next_time))
+                self.set_childitem('last_time',last_time)
+            except Exception as e:
+                self.set_childitem('last_time','kein letztes Mähen bekannt')
+                self.logger.warning("Problem to decode {0} in function get_next_time(): {1}".format(next_time, e))
 
                 
     def get_weather(self):
@@ -1356,10 +1388,12 @@ class Indego(SmartPlugin):
                     wochentag = days[dayNumber]
                     self.logger.debug("WOCHENTAG GEWITTER "+ wochentag)
                     self.set_childitem('weather.day_'+position_day+'.'+'wochentag',wochentag)
+                else:
                     self.set_childitem('weather.day_'+position_day+'.'+wertpunkt_day,wert_day)
 
     def alert(self):
-        self.logger.debug("ÄLÄRMCHEN START")
+        if (self.get_childitem("wartung.wintermodus") == True):
+            return
         alert_response = self.get_url(self.indego_url + 'alerts', self.context_id, 10)
         if alert_response == False:
             self.logger.debug("No Alert or error")
@@ -1400,6 +1434,8 @@ class Indego(SmartPlugin):
         result = self.delete_url(self.indego_url + 'alerts/' + alert_id, self.context_id, 50, 'DELETE')
 
     def device_data(self):
+        if (self.get_childitem("wartung.wintermodus") == True):
+            return        
         self.logger.debug('device_date')
         device_data_response = self.get_url(self.indego_url + 'alms/' + self.alm_sn, self.context_id)
         if device_data_response == False:
@@ -1419,6 +1455,8 @@ class Indego(SmartPlugin):
             service_counter = device_data_response['service_counter']
             self.set_childitem('service_counter',service_counter)
             self.logger.debug("service_counter " + str(service_counter))
+            service_counter = self.daystring(service_counter, 'min')
+            self.set_childitem('service_counter.dhm',service_counter)
 
             needs_service = device_data_response['needs_service']
             self.set_childitem('needs_service',needs_service)
@@ -1470,22 +1508,17 @@ class Indego(SmartPlugin):
                 self.logger.debug("alm_firmware_version " + str(alm_firmware_version))
 
     def state(self):
+        if (self.get_childitem("wartung.wintermodus") == True):
+            return
         self.smart_mow_settings("read")
-        
-        # Test for SmartMow-Mode
-        #"alms/{alm_serial}/predictive/setup"
-        #state_response = self.get_url(self.indego_url + 'alms/' + self.alm_sn + '/predictive/setup', self.context_id)
-        #states = state_response
-        #body = {"count":1,"interval":1}
-        #state_response = self.post_url(self.indego_url + 'alms/' + self.alm_sn + '/requestPosition', self.context_id, body)
-        #states = state_response
         state__str = {0: ['Lese Status', 'unknown'], 257: ['lädt', 'dock'], 258: ['docked', 'dock'],
                       259: ['Docked-Softwareupdate', 'dock'], 260: ['Docked', 'dock'], 261: ['docked', 'dock'],
-                      262: ['docked - lädt Karte', 'dock'], 263: ['docked-speichert Karte', 'dock'],
+                      262: ['docked - lädt Karte', 'dock'], 263: ['docked-speichert Karte', 'dock'], 
+					  266: ['docked', '???'],
                       513: ['mäht', 'moving'], 514: ['bestimme Ort', 'moving'], 515: ['lade Karte', 'moving'],
                       516: ['lerne Garten', 'moving'], 517: ['Pause', 'pause'], 518: ['schneide Rand', 'moving'],
                       519: ['stecke fest', 'hilfe'],523 :['Spot Mow','dock'],524 : ['zufälliges Mähen','dock'],
-                      769: ['fährt in Station', 'moving'],
+                      768: ['fährt in Station', '??????'], 769: ['fährt in Station', 'moving'],
                       770: ['fährt in Station', 'moving'], 771: ['fährt zum Laden in Station', 'moving'],
                       772: ['fährt in Station – Mähzeit beendet', 'moving'],
                       773: ['fährt in Station - überhitzt', 'help'], 774: ['fährt in Station', 'moving'],
@@ -1499,8 +1532,6 @@ class Indego(SmartPlugin):
         state_response = self.get_url(self.indego_url + 'alms/' + self.alm_sn + '/state', self.context_id)
         states = state_response
         if state_response != False:
-            #state_response = state_response.decode(encoding='UTF-8', errors='ignore')
-            #states = json.loads(state_response)            
             self.set_childitem('online', True)
             self.logger.debug("indego state received " + str(state_response))
 
@@ -1565,10 +1596,14 @@ class Indego(SmartPlugin):
             total_operate = states['runtime']['total']['operate']
             self.set_childitem('runtimeTotalOperationMins',total_operate)
             self.logger.debug("total_operate " + str(total_operate))
+            total_operate = self.daystring(total_operate, 'min')
+            self.set_childitem('runtimeTotalOperationMins.dhm',total_operate)
 
             total_charge = states['runtime']['total']['charge']
             self.set_childitem('runtimeTotalChargeMins',total_charge)
             self.logger.debug("total_charge " + str(total_charge))
+            total_charge = self.daystring(total_charge, 'min')
+            self.set_childitem('runtimeTotalChargeMins.dhm',total_charge)
 
             session_operate = states['runtime']['session']['operate']
             self.set_childitem('runtimeSessionOperationMins',session_operate)
@@ -1718,5 +1753,4 @@ class WebInterface(SmartPluginWebIf):
         return tmpl.render(p=self.plugin,
                            items=sorted(plgitems, key=lambda k: str.lower(k['_path'])),
                            item_count=item_count)
-
 
