@@ -2,10 +2,15 @@
 // ---   indego.js   ----------------------------------------------------------
 // ----------------------------------------------------------------------------
 //
-// Indego-Widget für Kalender-Handling
+// Indego-Widget für Handling der Indego-Funktionen
 //
 // Darstellung der Indego-Kalender Einträge  in Form eine Tabelle mit den Einträgen
 // Bearbeiten, löschen und speichern von Kalendereinträgen
+// Darstellung der Mähspur - aktualisieren der Mäherposition in der Karte
+// Handling Wintermode
+// Handling 350/400er und 800/1000er Series
+//
+//
 // (c) Andre Kohler		- 2019
 //
 //
@@ -29,6 +34,7 @@ var p_CalCount = 0
 
 var activeMode = 0
 var MowTrack = ""
+var orgMap = ""
 
 var htmlPopUp = "<div data-role='popup' data-overlay-theme='b' data-theme='a' class='messagePopup' id='uzsuIndegoContent' data-dismissible = 'false' data-history='false' data-position-to='window'>"
 		+ "<button data-rel='back' data-icon='delete' data-iconpos='notext' class='ui-btn-right' id='indegoClose'></button>"
@@ -89,9 +95,20 @@ var htmlPopUp = "<div data-role='popup' data-overlay-theme='b' data-theme='a' cl
 
 //-------------Start - Functions for the Map ------------------------------
 
-function Sleep(milliseconds)
+function SvgLoaded()
+  {
+	var svgObject = document.getElementById('garden-image').contentDocument;
+	orgMap = svgObject.firstElementChild.innerHTML
+	console.log('orgMap was loaded and stored');
+	if (MowTrack != '')
+		{DrawMowTrack(MowTrack)}
+  }
+
+function HideMowTrack()
 {
-   return new Promise(resolve => setTimeout(resolve, milliseconds));
+ if (orgMap =='') { return }
+ var svgObject = document.getElementById('garden-image').contentDocument;;
+ svgObject.firstElementChild.innerHTML = orgMap
 }
 
 function UpdateGrafic()
@@ -102,17 +119,17 @@ function UpdateGrafic()
 
 function DrawMowTrack(DrawLine)
 {
-	//UpdateGrafic()
-	//Sleep(3000)
+	if (orgMap =='') { return }
 	var svgObject = document.getElementById('garden-image').contentDocument;
-	svgObject.firstElementChild.innerHTML = svgObject.firstElementChild.innerHTML + DrawLine
+	svgObject.firstElementChild.innerHTML = orgMap + DrawLine
 }
 
 function UpdateMowerPos(actPos)
 {
 	position = actPos.split(",")
-	newXPos =  position[0]
-	newYPos =  position[1]
+	newXPos =  'cx=' + position[0] + '"'
+	newYPos =  'cy="' + position[1] 
+	
 	
 	var svgObject = document.getElementById('garden-image').contentDocument;
 	svg = svgObject.firstElementChild.innerHTML
@@ -122,8 +139,8 @@ function UpdateMowerPos(actPos)
 	y_End   = svg.indexOf('"',y_Start+4)
 	x_2_Replace = svg.substring(x_Start,x_End+1)
 	y_2_Replace = svg.substring(y_Start,y_End+1)
-	newSvg = svg.replace(x_2_Replace,'cx="'+newXPos+'"')
-	newSvg = newSvg.replace(y_2_Replace,'cy="'+newYPos+'"')
+	newSvg = svg.replace(x_2_Replace,newXPos)
+	newSvg = newSvg.replace(y_2_Replace,newYPos)
 	svgObject.firstElementChild.innerHTML = newSvg
 	
 }
@@ -940,6 +957,11 @@ $
 						myParam = response[0].split(":")[0]
 						myValue = response[0].split(":")[1]
 						switch (myParam) {
+						case 'svg_pos':
+						{
+							if (myValue != '')
+								{ UpdateMowerPos(myValue) }
+						}
 						case 'wintermodus': {
 							switch (myValue) {
 							case 'False': {
@@ -993,7 +1015,7 @@ $
 							  else
 								  {
 								  	MowTrack = ''
-								  	UpdateGrafic()
+								  	HideMowTrack()
 								  }
 							  break;
 							}

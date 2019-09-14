@@ -47,8 +47,6 @@ import requests
 
 
 
-
-
 # If a package is needed, which might be not installed in the Python environment,
 # import it like this:
 #
@@ -265,6 +263,9 @@ class Indego(SmartPlugin):
                 self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
                 return self.update_item
         
+        if "visu.svg_mow_track" in item._name:
+                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
+                return self.update_item
             
         return None
 
@@ -407,14 +408,14 @@ class Indego(SmartPlugin):
         if "wartung.wintermodus" in item._name:
             self.set_childitem('visu.wintermodus','wintermodus:'+str(self.get_childitem('wartung.wintermodus')))
         
-        if "visu.show_mow_track" in item._name and item() == True:
-            myMowTrack = "<polyline points='"
-            myWayPoints = self.get_childitem('visu.mow_track')
-            for myPoint in myWayPoints:
-                myMowTrack += myPoint + ' '
-            myMowTrack = myMowTrack[:-1]
-            myMowTrack += "' fill='none' stroke='#C3FECE' stroke-width='15' stroke-linecap='round' stroke-linejoin='round'/>"
-            self.set_childitem('visu.svg_mow_track','svg_mow_track:'+str(myMowTrack))
+        if ("visu.svg_mow_track" in item._name and self.get_childitem('visu.show_mow_track') == True) or ("visu.show_mow_track" in item._name and item() == True):
+                myMowTrack = "<polyline points='"
+                myWayPoints = self.get_childitem('visu.mow_track')
+                for myPoint in myWayPoints:
+                    myMowTrack += myPoint + ' '
+                myMowTrack = myMowTrack[:-1]
+                myMowTrack += "' fill='none' stroke='#C3FECE' stroke-width='15' stroke-linecap='round' stroke-linejoin='round'/>"
+                self.set_childitem('visu.svg_mow_track','svg_mow_track:'+str(myMowTrack))
         elif "visu.show_mow_track" in item._name and item() == False:
             self.set_childitem('visu.svg_mow_track','svg_mow_track:'+str(''))
 
@@ -563,6 +564,7 @@ class Indego(SmartPlugin):
     def get_calendars(self):    
         if (self.get_childitem("wartung.wintermodus") == True):
             return        
+        self.smart_mow_settings("read")
         try:
             if not self.cal_update_running:
                 # get the mowing calendar
@@ -811,6 +813,7 @@ class Indego(SmartPlugin):
             self.position_count = 0
         # Following runs of position detection
         if  (self.position_detection and self.position_count >= 90):
+            self.position_count = 0
             myResult = self.post_url(self.indego_url + 'alms/' + self.alm_sn + '/requestPosition?count=100&interval=6', self.context_id, None, 10)
             if myResult != True:
                 pass
@@ -1566,39 +1569,39 @@ class Indego(SmartPlugin):
     def state(self):
         if (self.get_childitem("wartung.wintermodus") == True):
             return
-        self.smart_mow_settings("read")
-        state__str = {  0:  ['Lese Status', 'unknown'],
-                      257:  ['lädt', 'dock'],
-                      258:  ['docked', 'dock'],
-                      259:  ['Docked-Softwareupdate', 'dock'],
-                      260:  ['Docked', 'dock'],
-                      261:  ['docked', 'dock'],
-                      262:  ['docked - lädt Karte', 'dock'],
-                      263:  ['docked - speichert Karte', 'dock'], 
-					  266:  ['docked', '???'],
-                      513:  ['mäht', 'moving'],
-                      514:  ['bestimme Ort', 'moving'],
-                      515:  ['lade Karte', 'moving'],
-                      516:  ['lerne Garten', 'moving'],
-                      517:  ['Pause', 'pause'],
-                      518:  ['schneide Rand', 'moving'],
-                      519:  ['stecke fest', 'hilfe'],
-                      523:  ['Spot Mow','dock'],
-                      524:  ['zufälliges Mähen','dock'],
-                      768:  ['fährt in Station', '??????'],
-                      769:  ['fährt in Station', 'moving'],
-                      770:  ['fährt in Station', 'moving'],
-                      771:  ['fährt zum Laden in Station', 'moving'],
-                      772:  ['fährt in Station - Mähzeit beendet', 'moving'],
-                      773:  ['fährt in Station - überhitzt', 'help'],
+        
+        state__str = {  0:  ['liest den Status', 'unknown'],
+                      257:  ['lädt den Akku', 'dock'], 
+                      258:  ['ist angedockt', 'dock'],
+                      259:  ['Softwareupdate!', 'dock'], 
+                      260:  ['ist angedockt', 'dock'], 
+                      261:  ['ist angedockt', 'dock'],
+                      262:  ['lädt die Karte', 'dock'], 
+                      263:  ['speichert die Karte', 'dock'], 
+                      266:  ['???', 'dock'],
+                      513:  ['mäht', 'moving'], 
+                      514:  ['bestimmt den Ort', 'moving'], 
+                      515:  ['lädt die Karte', 'moving'],
+                      516:  ['lernt den Garten', 'moving'], 
+                      517:  ['macht Pause', 'pause'], 
+                      518:  ['schneidet den Rand', 'moving'],
+                      519:  ['steckt fest!', 'hilfe'],
+                      523:  ['mäht im Spot Mow','moving'],
+                      524:  ['mäht zufällig','moving'],					
+                      768:  ['????', 'moving'], 
+                      769:  ['fährt in die Station', 'moving'],					
+                      770:  ['fährt in die Station', 'moving'], 
+                      771:  ['fährt zum Laden in die Station', 'moving'],
+                      772:  ['hat die Mähzeit beendet - fährt zurück', 'moving'],											   
+                      773:  ['ist überhitzt - fährt zurück', 'help'], 
                       774:  ['fährt in Station', 'moving'],
-                      775:  ['fährt in Station - fertig gemäht', 'moving'],
-                      776:  ['fährt in Station - bestimmt Ort', 'moving'],
-                      1025: ['Diagnosemodus', 'unknown'],
-                      1026: ['Endoflive', 'hilfe'],
-                      1281: ['Softwareupdate', 'dock'],
-                      1537: ['Stromsparmodus','dock'],
-                      64513:['wacht auf','dock']}
+                      775:  ['hat fertig gemäht - fährt zurück', 'moving'],									   
+                      776:  ['bestimmt seine Position', 'moving'], 
+                      1025: ['Diagnosemodus!', 'unknown'],						   
+                      1026: ['Endoflive', 'hilfe'], 
+                      1281: ['Softwareupdate!', 'dock'],
+                      1537: ['Stromsparmodus!','dock'],
+                      64513:['wacht auf...','dock']}
         
         if (self.position_detection):
             self.position_count += 1
@@ -1706,7 +1709,7 @@ class Indego(SmartPlugin):
                 # SVG-Position
                 mySvgPos = self.get_childitem("visu.mow_track")
                 newPos = str(svg_xPos)+","+str(svg_yPos)
-                self.set_childitem('visu.svg_pos', newPos)
+                self.set_childitem('visu.svg_pos', 'svg_pos:"'+newPos+'"')
                 if (len(mySvgPos) == 0):
                     mySvgPos.append(newPos)
                     self.set_childitem("visu.mow_track", mySvgPos)
