@@ -28,6 +28,7 @@ var m_CalCount = 0
 var p_CalCount = 0
 
 var activeMode = 0
+var MowTrack = ""
 
 var htmlPopUp = "<div data-role='popup' data-overlay-theme='b' data-theme='a' class='messagePopup' id='uzsuIndegoContent' data-dismissible = 'false' data-history='false' data-position-to='window'>"
 		+ "<button data-rel='back' data-icon='delete' data-iconpos='notext' class='ui-btn-right' id='indegoClose'></button>"
@@ -84,6 +85,50 @@ var htmlPopUp = "<div data-role='popup' data-overlay-theme='b' data-theme='a' cl
 		+ "</div>" + "</span>" + "</div>" +
 
 		"</div>";
+
+
+//-------------Start - Functions for the Map ------------------------------
+
+function Sleep(milliseconds)
+{
+   return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
+function UpdateGrafic()
+{
+	var svgObject = document.getElementById('garden-image');
+	svgObject.data="dropins/garden.svg?"+ new Date().getTime();
+}
+
+function DrawMowTrack(DrawLine)
+{
+	//UpdateGrafic()
+	//Sleep(3000)
+	var svgObject = document.getElementById('garden-image').contentDocument;
+	svgObject.firstElementChild.innerHTML = svgObject.firstElementChild.innerHTML + DrawLine
+}
+
+function UpdateMowerPos(actPos)
+{
+	position = actPos.split(",")
+	newXPos =  position[0]
+	newYPos =  position[1]
+	
+	var svgObject = document.getElementById('garden-image').contentDocument;
+	svg = svgObject.firstElementChild.innerHTML
+	x_Start = svg.indexOf('cx="')
+	x_End   = svg.indexOf('"',x_Start+4)
+	y_Start = svg.indexOf('cy="')
+	y_End   = svg.indexOf('"',y_Start+4)
+	x_2_Replace = svg.substring(x_Start,x_End+1)
+	y_2_Replace = svg.substring(y_Start,y_End+1)
+	newSvg = svg.replace(x_2_Replace,'cx="'+newXPos+'"')
+	newSvg = newSvg.replace(y_2_Replace,'cy="'+newYPos+'"')
+	svgObject.firstElementChild.innerHTML = newSvg
+	
+}
+//-------------End - Functions for the Map ------------------------------
+
 
 function MessageHandling(click_item) {
 	if (click_item == 'alert_read' || click_item == 'alert_delete') {
@@ -938,7 +983,22 @@ $
 							}
 							break;
 						}
+						case 'svg_mow_track':
+							{
+							  if (myValue != '')
+								  {
+								  	MowTrack = myValue
+								  	DrawMowTrack(MowTrack)
+								  }
+							  else
+								  {
+								  	MowTrack = ''
+								  	UpdateGrafic()
+								  }
+							  break;
+							}
 						}
+
 					}
 				});
 
@@ -999,8 +1059,7 @@ $
 					},
 
 					_update : function(response) {
-						logo_small_ok = document
-								.getElementById("logo_small_OK").value
+						logo_small_ok = document.getElementById("logo_small_OK").value
 						logo_big_ok = document.getElementById("logo_big_OK").value
 
 						if (response[0] == 1 && logo_big_ok == 1) {
@@ -1017,8 +1076,13 @@ $
 							document.getElementById("Indego_big").style.display = "none"
 						}
 						// Additional Views for Indego 1000er Series
-						if (response[0] == 1) {
-							document.getElementById("Advanced_Info1_4_1000").style.display = "block"
+						if (response[0] == 1)
+						{
+							document.getElementById("Advanced_Info1_4_1000_1").style.display = "block"
+						}
+						else
+						{
+							document.getElementById("Advanced_Info1_4_1000_1").style.display = "none"
 						}
 
 					},

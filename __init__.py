@@ -122,6 +122,9 @@ class Indego(SmartPlugin):
         
         self.calendar_count_mow = []
         self.calendar_count_pred = []
+        
+        self.position_detection = False
+        self.position_count = 0
 
         # Check for initialization errors:
         if not self.indego_url:
@@ -257,7 +260,11 @@ class Indego(SmartPlugin):
         if "wartung.wintermodus" in item._name:
                 self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
                 return self.update_item        
-
+        
+        if "visu.show_mow_track" in item._name:
+                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
+                return self.update_item
+        
             
         return None
 
@@ -397,9 +404,19 @@ class Indego(SmartPlugin):
         if "active_mode" in item._name:
             self.set_childitem('visu.cal_2_show','cal2show:'+str(self.get_childitem('active_mode')))
         
-        
         if "wartung.wintermodus" in item._name:
             self.set_childitem('visu.wintermodus','wintermodus:'+str(self.get_childitem('wartung.wintermodus')))
+        
+        if "visu.show_mow_track" in item._name and item() == True:
+            myMowTrack = "<polyline points='"
+            myWayPoints = self.get_childitem('visu.mow_track')
+            for myPoint in myWayPoints:
+                myMowTrack += myPoint + ' '
+            myMowTrack = myMowTrack[:-1]
+            myMowTrack += "' fill='none' stroke='#C3FECE' stroke-width='15' stroke-linecap='round' stroke-linejoin='round'/>"
+            self.set_childitem('visu.svg_mow_track','svg_mow_track:'+str(myMowTrack))
+        elif "visu.show_mow_track" in item._name and item() == False:
+            self.set_childitem('visu.svg_mow_track','svg_mow_track:'+str(''))
 
     def daystring(self, zeitwert, ausgang):
         if ausgang == 'min':
@@ -704,11 +721,11 @@ class Indego(SmartPlugin):
                   }
         
         try:
-            response = requests.post(url, headers=headers, data=body)
+            response = requests.post(url, headers=headers)
         except Exception as e:
             self.logger.warning("Problem putting {}: {}".format(url, e))
             return False
-        self.logger.debug('put gesendet an URL: {} context-ID: {} json : {}'.format(url,self.context_id,json.dumps(body)))
+        self.logger.debug('post gesendet an URL: {} context-ID: {} json : {}'.format(url,self.context_id,json.dumps(body)))
         
         if response.status_code == 200:
             self.logger.info("Set correct put for {}".format(url))
@@ -767,6 +784,38 @@ class Indego(SmartPlugin):
                                command, 10)
         self.logger.debug("Command " + command + ' gesendet! ' + str(message))
 
+
+    def check_state_4_protocoll(self):
+        myActState = self.get_childitem("stateCode")
+        if myActState == 772 or myActState == 775:                           # 772 = Mähzeit beendet / 775 = fertig gemäht
+            self.get_sh().scheduler.change('plugins.indego.state', cycle={self.cycle:None})
+            self.set_childitem("laststateCode", myActState)
+            self.position_detection = False
+            return
+        
+        if myActState != 518 and myActState != 513 and myActState !=515 and myActState !=514 :    # 518 = mähe / 513 = schneide Rand / 515 = lade Karte / 514 = mähen, bestimme Ort
+            return
+
+        mylastActState = self.get_childitem("laststateCode")
+        # First run of position detection
+        if mylastActState != myActState and not self.position_detection:
+            self.set_childitem("laststateCode", myActState)
+            self.set_childitem("visu.mow_track", [])
+            # Now set Position-Detection ON
+            myResult = self.post_url(self.indego_url + 'alms/' + self.alm_sn + '/requestPosition?count=100&interval=6', self.context_id, None, 10)
+            if myResult != True:
+                pass
+            # Now set scheduler for state to 6 Sec.
+            self.get_sh().scheduler.change('plugins.indego.state', cycle={6:None})
+            self.position_detection = True
+            self.position_count = 0
+        # Following runs of position detection
+        if  (self.position_detection and self.position_count >= 90):
+            myResult = self.post_url(self.indego_url + 'alms/' + self.alm_sn + '/requestPosition?count=100&interval=6', self.context_id, None, 10)
+            if myResult != True:
+                pass
+        
+        
     def delete_auth(self):
         '''
         DELETE https://api.indego.iot.bosch-si.com/api/v1/authenticate
@@ -1465,11 +1514,18 @@ class Indego(SmartPlugin):
             alm_mode = device_data_response['alm_mode']
             self.set_childitem('alm_mode',alm_mode)
             if alm_mode == 'smart':
-                self.logger.debug("ALM_MODE smaAAAAArt")
                 self.set_childitem('SMART', True)
             else:
-                self.logger.debug("ALM_MODE MANUAAAAAAAAL")
                 self.set_childitem('SMART', False)
+                
+            if alm_mode == 'smart':
+                self.set_childitem('alm_mode.str','Übersicht SmartMow mähen:')
+            elif alm_mode == 'calendar':
+                self.set_childitem('alm_mode.str','Übersicht Kalender mähen:')
+            elif alm_mode == 'manual':
+                self.set_childitem('alm_mode.str','')
+            else:
+                self.set_childitem('alm_mode.str','unbekannt')
             self.logger.debug("alm_mode " + str(alm_mode))
 
             bareToolnumber = device_data_response['bareToolnumber']
@@ -1511,24 +1567,41 @@ class Indego(SmartPlugin):
         if (self.get_childitem("wartung.wintermodus") == True):
             return
         self.smart_mow_settings("read")
-        state__str = {0: ['Lese Status', 'unknown'], 257: ['lädt', 'dock'], 258: ['docked', 'dock'],
-                      259: ['Docked-Softwareupdate', 'dock'], 260: ['Docked', 'dock'], 261: ['docked', 'dock'],
-                      262: ['docked - lädt Karte', 'dock'], 263: ['docked-speichert Karte', 'dock'], 
-					  266: ['docked', '???'],
-                      513: ['mäht', 'moving'], 514: ['bestimme Ort', 'moving'], 515: ['lade Karte', 'moving'],
-                      516: ['lerne Garten', 'moving'], 517: ['Pause', 'pause'], 518: ['schneide Rand', 'moving'],
-                      519: ['stecke fest', 'hilfe'],523 :['Spot Mow','dock'],524 : ['zufälliges Mähen','dock'],
-                      768: ['fährt in Station', '??????'], 769: ['fährt in Station', 'moving'],
-                      770: ['fährt in Station', 'moving'], 771: ['fährt zum Laden in Station', 'moving'],
-                      772: ['fährt in Station – Mähzeit beendet', 'moving'],
-                      773: ['fährt in Station - überhitzt', 'help'], 774: ['fährt in Station', 'moving'],
-                      775: ['fährt in Station - fertig gemäht', 'moving'],
-                      776: ['fährt in Station - bestimmt Ort', 'moving'], 1025: ['Diagnosemodus', 'unknown'],
-                      1026: ['Endoflive', 'hilfe'], 1281: ['Softwareupdate', 'dock'],
+        state__str = {  0:  ['Lese Status', 'unknown'],
+                      257:  ['lädt', 'dock'],
+                      258:  ['docked', 'dock'],
+                      259:  ['Docked-Softwareupdate', 'dock'],
+                      260:  ['Docked', 'dock'],
+                      261:  ['docked', 'dock'],
+                      262:  ['docked - lädt Karte', 'dock'],
+                      263:  ['docked - speichert Karte', 'dock'], 
+					  266:  ['docked', '???'],
+                      513:  ['mäht', 'moving'],
+                      514:  ['bestimme Ort', 'moving'],
+                      515:  ['lade Karte', 'moving'],
+                      516:  ['lerne Garten', 'moving'],
+                      517:  ['Pause', 'pause'],
+                      518:  ['schneide Rand', 'moving'],
+                      519:  ['stecke fest', 'hilfe'],
+                      523:  ['Spot Mow','dock'],
+                      524:  ['zufälliges Mähen','dock'],
+                      768:  ['fährt in Station', '??????'],
+                      769:  ['fährt in Station', 'moving'],
+                      770:  ['fährt in Station', 'moving'],
+                      771:  ['fährt zum Laden in Station', 'moving'],
+                      772:  ['fährt in Station - Mähzeit beendet', 'moving'],
+                      773:  ['fährt in Station - überhitzt', 'help'],
+                      774:  ['fährt in Station', 'moving'],
+                      775:  ['fährt in Station - fertig gemäht', 'moving'],
+                      776:  ['fährt in Station - bestimmt Ort', 'moving'],
+                      1025: ['Diagnosemodus', 'unknown'],
+                      1026: ['Endoflive', 'hilfe'],
+                      1281: ['Softwareupdate', 'dock'],
                       1537: ['Stromsparmodus','dock'],
                       64513:['wacht auf','dock']}
         
-        
+        if (self.position_detection):
+            self.position_count += 1
         state_response = self.get_url(self.indego_url + 'alms/' + self.alm_sn + '/state', self.context_id)
         states = state_response
         if state_response != False:
@@ -1629,6 +1702,18 @@ class Indego(SmartPlugin):
                 svg_yPos = states['svg_yPos']
                 self.set_childitem('svg_yPos',svg_yPos)
                 self.logger.debug("svg_yPos " + str(svg_yPos))
+                
+                # SVG-Position
+                mySvgPos = self.get_childitem("visu.mow_track")
+                newPos = str(svg_xPos)+","+str(svg_yPos)
+                self.set_childitem('visu.svg_pos', newPos)
+                if (len(mySvgPos) == 0):
+                    mySvgPos.append(newPos)
+                    self.set_childitem("visu.mow_track", mySvgPos)
+                else:
+                    if (newPos != mySvgPos[len(mySvgPos)-1]):
+                        mySvgPos.append(newPos)
+                        self.set_childitem("visu.mow_track", mySvgPos)
 
             if 'config_change' in states and 'config_change' in self.add_keys:
                 config_change = states['config_change']
@@ -1651,7 +1736,7 @@ class Indego(SmartPlugin):
 
             if map_update:
                 self.logger.debug('lade neue Karte')
-                garden = self.get_url(self.indego_url + 'alms/' + self.alm_sn + '/map', self.context_id, 120)
+                garden = self.get_url(self.indego_url + 'alms/' + self.alm_sn + '/map?cached=0&showMower=1', self.context_id, 120)
                 if garden == False:
                     self.logger.warning('Map returned false')
                 else:
@@ -1659,6 +1744,9 @@ class Indego(SmartPlugin):
                         outfile.write(garden)
                         self.logger.debug('You have a new MAP')
                         self.set_childitem('mapSvgCacheDate',self.shtime.now())
+                        
+            # Postion-Detection during mowing
+            self.check_state_4_protocoll()
 
     def init_webinterface(self):
         """"

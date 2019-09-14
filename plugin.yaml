@@ -201,6 +201,26 @@ item_structs:
                 type : str
                 visu_acl: rw
 
+            svg_pos:
+                type : str
+                visu_acl: rw
+                cache: 'on'
+
+            mow_track:
+                type : list
+                visu_acl: rw
+                cache: 'on'
+
+            svg_mow_track:
+                type : str
+                visu_acl: rw
+                cache: 'on'
+
+            show_mow_track:
+                type : bool
+                visu_acl: rw
+                cache: 'on'
+
 # End - Definitions for the VISU-Items
 
         wartung:
@@ -255,6 +275,10 @@ item_structs:
             visu_acl: rw
 
         stateCode:
+            type: num
+            visu_acl: rw
+
+        laststateCode:
             type: num
             visu_acl: rw
 
@@ -440,6 +464,10 @@ item_structs:
         alm_mode:
             type: str
             visu_acl: rw
+
+            str:
+                type: str
+                visu_acl: rw
 
         bareToolnumber:
             type: str
