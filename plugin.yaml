@@ -225,8 +225,25 @@ item_structs:
                 type : str
                 visu_acl: rw
                 cache: 'on'
+
 # End - Definitions for the VISU-Items
 
+# Start - Definitions for the webIf-Items
+        webif:
+
+            laststateCode:
+                type: num
+                cache: 'on'
+
+            state_protocoll:
+                type: list
+                cache: 'on'
+
+            communication_protocoll:
+                type: list
+                cache: 'on'
+
+# End - Definitions for the VISU-Items
         wartung:
             
             messer_zaehler:

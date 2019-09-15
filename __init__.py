@@ -615,15 +615,27 @@ class Indego(SmartPlugin):
         
         self.set_childitem('visu.smartmow_days',[ my_pred_list,my_smMow_list])
         
-        
+    def log_communication(self, type, url, result):
+        myLog = self.get_childitem('webif.communication_protocoll')
+        try:
+            if len (myLog) >= 500:
+                myLog = myLog[1:]
+        except:
+            return
+        now = self.shtime.now()
+        myLog.append(str(now)[0:19]+' Type: ' + str(type) + 'Result : '+str(result) + ' Url : ' + url)
+        self.set_childitem('webif.communication_protocoll', myLog)
 
     def fetch_url(self, url, username=None, password=None, timeout=2, body=None):
         try:
             response = requests.post(url,auth=(username,password), json=body)
+            #self.log_communication('fetch', url, response.status_code)
         except Exception as e:
             self.logger.warning("Problem fetching {0}: {1}".format(url, e))
             return False
-
+        
+        
+        
         if response.status_code == 200 or response.status_code == 201:
             content = response.json()
             try:
@@ -693,6 +705,7 @@ class Indego(SmartPlugin):
                   }
         try:
             response = requests.get(url, headers=headers)
+            self.log_communication('get  ', url, response.status_code)
         except Exception as e:
             self.logger.warning("Problem fetching {}: {}".format(url, e))
             return False
@@ -724,6 +737,7 @@ class Indego(SmartPlugin):
         
         try:
             response = requests.post(url, headers=headers)
+            self.log_communication('post ', url, response.status_code)
         except Exception as e:
             self.logger.warning("Problem putting {}: {}".format(url, e))
             return False
@@ -747,6 +761,7 @@ class Indego(SmartPlugin):
         
         try:
             response = requests.put(url, headers=headers, json=body)
+            self.log_communication('put  ', url, response.status_code)
         except Exception as e:
             self.logger.warning("Problem putting {}: {}".format(url, e))
             return False
@@ -831,7 +846,7 @@ class Indego(SmartPlugin):
         url = self.indego_url + 'authenticate'
         try:
             response = requests.delete(url,auth=(self.user,self.password), headers=headers)
-            
+            self.log_communication('post ', url, response.status_code)
         except Exception as e:
             self.logger.warning("Problem logging off {0}: {1}".format(url, e))
             return False
@@ -900,8 +915,7 @@ class Indego(SmartPlugin):
         
         
     def auth(self):
-        auth_response,expiration_timestamp = self.fetch_url(self.indego_url + 'authenticate', self.user, self.password, 25,
-                                       {"device":"","os_type":"Android","os_version":"4.0","dvc_manuf":"unknown","dvc_type":"unknown"})
+        auth_response,expiration_timestamp = self.fetch_url(self.indego_url + 'authenticate', self.user, self.password, 25,{"device":"","os_type":"Android","os_version":"4.0","dvc_manuf":"unknown","dvc_type":"unknown"})
         if auth_response == False:
             self.logger.error('AUTHENTICATION INDEGO FAILED! Plugin not working now.')
         else:
@@ -1144,7 +1158,7 @@ class Indego(SmartPlugin):
     def get_location(self):
         url = "{}alms/{}/predictive/location".format( self.indego_url, self.alm_sn)
         try:
-            location = self.get_url( url, self.context_id, 10)    
+            location = self.get_url( url, self.context_id, 20)    
         except Exception as e:
             self.logger.warning("Problem fetching {}: {}".format(url, e))
             return false
@@ -1217,7 +1231,7 @@ class Indego(SmartPlugin):
             
         url = "{}alms/{}/operatingData".format( self.indego_url, self.alm_sn)
         try:
-            operating_data = self.get_url( url, self.context_id, 10)    
+            operating_data = self.get_url( url, self.context_id, 20)    
         except Exception as e:
             self.logger.warning("Problem fetching {}: {}".format(url, e))
         if operating_data != False:
@@ -1255,7 +1269,7 @@ class Indego(SmartPlugin):
         if (myType == 2):
             url = "{}alms/{}/network".format( self.indego_url, self.alm_sn)
             try:
-                network_data = self.get_url( url, self.context_id, 10)    
+                network_data = self.get_url( url, self.context_id, 20)    
             except Exception as e:
                 self.logger.warning("Problem fetching {}: {}".format(url, e))
             if network_data != False:
@@ -1622,6 +1636,22 @@ class Indego(SmartPlugin):
 
             state_code = states['state']
             self.set_childitem('stateCode',state_code)
+            myLastStateCode = self.get_childitem('webif.laststateCode')
+            
+            # Loggin the states in Timeline for the Web-Interface
+            if state_code != myLastStateCode:
+                self.set_childitem('webif.laststateCode', state_code)
+                # Add to self rotating Array
+                myLog = self.get_childitem('webif.state_protocoll')
+                try:
+                    if len (myLog) >= 500:
+                        myLog = myLog[1:]
+                except:
+                    pass
+                now = self.shtime.now()
+                myLog.append(str(now)[0:19]+'  State : '+str(state_code) + ' State-Message : ' + state__str[state_code][0])
+                self.set_childitem('webif.state_protocoll', myLog)
+                
             self.logger.debug("state code " + str(state_code))
             if state__str[state_code][1] == 'dock':
                 self.logger.debug('indego docked')
@@ -1839,9 +1869,20 @@ class WebInterface(SmartPluginWebIf):
                 plgitems.append(item)
                 item_count += 1
                 
-        
+        my_state_loglines = self.plugin.get_childitem('webif.state_protocoll')
+        state_log_file = ''
+        for line in my_state_loglines:
+            state_log_file += str(line)+'\n'
+
+        my_com_loglines = self.plugin.get_childitem('webif.communication_protocoll')
+        com_log_file = ''
+        for line in my_com_loglines:
+            com_log_file += str(line)+'\n'
+                
         # add values to be passed to the Jinja2 template eg: tmpl.render(p=self.plugin, interface=interface, ...)
         return tmpl.render(p=self.plugin,
                            items=sorted(plgitems, key=lambda k: str.lower(k['_path'])),
-                           item_count=item_count)
+                           item_count=item_count,
+                           state_log_lines=state_log_file,
+                           com_log_lines=com_log_file)
 
