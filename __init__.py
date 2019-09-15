@@ -263,7 +263,7 @@ class Indego(SmartPlugin):
                 self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
                 return self.update_item
         
-        if "visu.svg_mow_track" in item._name:
+        if "visu.mow_track" in item._name:
                 self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
                 return self.update_item
             
@@ -408,13 +408,13 @@ class Indego(SmartPlugin):
         if "wartung.wintermodus" in item._name:
             self.set_childitem('visu.wintermodus','wintermodus:'+str(self.get_childitem('wartung.wintermodus')))
         
-        if ("visu.svg_mow_track" in item._name and self.get_childitem('visu.show_mow_track') == True) or ("visu.show_mow_track" in item._name and item() == True):
+        if ("visu.mow_track" in item._name and self.get_childitem('visu.show_mow_track') == True) or ("visu.show_mow_track" in item._name and item() == True):
                 myMowTrack = "<polyline points='"
                 myWayPoints = self.get_childitem('visu.mow_track')
                 for myPoint in myWayPoints:
                     myMowTrack += myPoint + ' '
                 myMowTrack = myMowTrack[:-1]
-                myMowTrack += "' fill='none' stroke='#C3FECE' stroke-width='15' stroke-linecap='round' stroke-linejoin='round'/>"
+                myMowTrack += "' fill='none' stroke='#C3FECE' stroke-width='17' stroke-linecap='round' stroke-linejoin='round'/>"
                 self.set_childitem('visu.svg_mow_track','svg_mow_track:'+str(myMowTrack))
         elif "visu.show_mow_track" in item._name and item() == False:
             self.set_childitem('visu.svg_mow_track','svg_mow_track:'+str(''))

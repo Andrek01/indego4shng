@@ -35,6 +35,7 @@ var p_CalCount = 0
 var activeMode = 0
 var MowTrack = ""
 var orgMap = ""
+var add_svg_images = ""
 
 var htmlPopUp = "<div data-role='popup' data-overlay-theme='b' data-theme='a' class='messagePopup' id='uzsuIndegoContent' data-dismissible = 'false' data-history='false' data-position-to='window'>"
 		+ "<button data-rel='back' data-icon='delete' data-iconpos='notext' class='ui-btn-right' id='indegoClose'></button>"
@@ -104,11 +105,19 @@ function SvgLoaded()
 		{DrawMowTrack(MowTrack)}
   }
 
+function UpdateAddSvg()
+{
+	if (orgMap =='') { return }
+	var svgObject = document.getElementById('garden-image').contentDocument;;
+	svgObject.firstElementChild.innerHTML = orgMap + add_svg_images 
+}
+
+
 function HideMowTrack()
 {
  if (orgMap =='') { return }
  var svgObject = document.getElementById('garden-image').contentDocument;;
- svgObject.firstElementChild.innerHTML = orgMap
+ svgObject.firstElementChild.innerHTML = orgMap + add_svg_images
 }
 
 function UpdateGrafic()
@@ -121,7 +130,7 @@ function DrawMowTrack(DrawLine)
 {
 	if (orgMap =='') { return }
 	var svgObject = document.getElementById('garden-image').contentDocument;
-	svgObject.firstElementChild.innerHTML = orgMap + DrawLine
+	svgObject.firstElementChild.innerHTML = orgMap + add_svg_images + DrawLine
 }
 
 function UpdateMowerPos(actPos)
@@ -957,10 +966,22 @@ $
 						myParam = response[0].split(":")[0]
 						myValue = response[0].split(":")[1]
 						switch (myParam) {
+						case 'add_svg_images':
+						{
+							if (myValue != '')
+								{
+								 add_svg_images = myValue
+								 UpdateAddSvg()
+								}
+							 break;
+						}
 						case 'svg_pos':
 						{
 							if (myValue != '')
-								{ UpdateMowerPos(myValue) }
+								{
+								 UpdateMowerPos(myValue);
+								 break;
+								}
 						}
 						case 'wintermodus': {
 							switch (myValue) {

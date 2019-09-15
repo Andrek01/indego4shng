@@ -221,6 +221,10 @@ item_structs:
                 visu_acl: rw
                 cache: 'on'
 
+            add_svg_images:
+                type : str
+                visu_acl: rw
+                cache: 'on'
 # End - Definitions for the VISU-Items
 
         wartung:
