@@ -25,17 +25,12 @@
 #
 #########################################################################
 
-from lib.module import Modules
-from lib.model.smartplugin import *
-from lib.item import Items
-from lib.shtime import Shtime
-from datetime import datetime
 
 import time
 import base64
 import os
 import ast
-import datetime
+#import datetime
 import json
 import http.client
 from dateutil import tz
@@ -43,6 +38,15 @@ import sys
 
 
 import requests
+
+from lib.module import Modules
+from lib.model.smartplugin import *
+from lib.item import Items
+from lib.shtime import Shtime
+from datetime import datetime
+from datetime import date
+
+
 
 
 
@@ -101,7 +105,8 @@ class Indego(SmartPlugin):
         
         self.image_file=self.get_sh().get_basedir()+"/plugins/indego/webif/static/img/garden.svg"
 
-        self.expiration_timestamp = 0
+        self.expiration_timestamp = 0.0
+        self.last_login_timestamp = 0.0
         self.logged_in = False
         
         self.context_id = ''
@@ -468,7 +473,7 @@ class Indego(SmartPlugin):
             self.auth()
             self.logged_in = self.check_auth()
             self.set_childitem('online', self.logged_in)
-            actDate = datetime.datetime.now()
+            actDate = datetime.now()
             self.logger.info("refreshed Session-ID at : {}".format(actDate.strftime('Date: %a, %d %b %H:%M:%S %Z %Y')))
         else:
             self.logger.info("Session-ID {} is still valid".format(self.context_id))
@@ -919,6 +924,7 @@ class Indego(SmartPlugin):
         if auth_response == False:
             self.logger.error('AUTHENTICATION INDEGO FAILED! Plugin not working now.')
         else:
+            self.last_login_timestamp = datetime.timestamp(datetime.now())
             self.expiration_timestamp = expiration_timestamp
             self.logger.debug("String Auth: " + str(auth_response))
             self.context_id = auth_response['contextId']
@@ -1400,7 +1406,7 @@ class Indego(SmartPlugin):
                 if wertpunkt == 'dateTime':
                     #wert = wert.replace('+00:00','+0000')
                     self.logger.debug("DATE__TIME "+ wert)
-                    wert= datetime.datetime.strptime(wert,'%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=self.shtime.tzinfo())
+                    wert= datetime.strptime(wert,'%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=self.shtime.tzinfo())
                 if wertpunkt == 'wwsymbol_mg2008':
                     self.logger.debug("WERTPUNKT "+ str(wertpunkt))
                     if wert == '110000' or wert ==  '111000' or wert == '211000' or wert ==  '210000':
@@ -1448,7 +1454,7 @@ class Indego(SmartPlugin):
                 wert_day = str(i[x])
                 self.logger.debug("ITEEEEEM DAY "+'indego.weather.day_'+position_day+'.'+wertpunkt_day)
                 if wertpunkt_day == 'date':
-                    wert_day = datetime.datetime.strptime(wert_day,'%Y-%m-%d').replace(tzinfo=self.shtime.tzinfo())
+                    wert_day = datetime.strptime(wert_day,'%Y-%m-%d').replace(tzinfo=self.shtime.tzinfo())
                     days = ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"]
                     dayNumber = wert_day.weekday()
                     wochentag = days[dayNumber]
@@ -1850,6 +1856,11 @@ class WebInterface(SmartPluginWebIf):
         self.items = Items.get_instance()
         
         
+    @cherrypy.expose
+    def store_color_html(self, newColor = None):
+        self.plugin.set_childitem('visu.mower_colour','mower_colour:"'+newColor[1:]+'"')
+        
+        
 
     @cherrypy.expose
     def index(self, reload=None):
@@ -1878,11 +1889,17 @@ class WebInterface(SmartPluginWebIf):
         com_log_file = ''
         for line in my_com_loglines:
             com_log_file += str(line)+'\n'
-                
+        myExperitation_Time = datetime.fromtimestamp(self.plugin.expiration_timestamp).strftime('%Y-%m-%d %H:%M:%S')
+        myLastLogin = datetime.fromtimestamp(float(self.plugin.last_login_timestamp)).strftime('%Y-%m-%d %H:%M:%S')
+        myColour = '#'+self.plugin.get_childitem('visu.mower_colour')[14:-1]
         # add values to be passed to the Jinja2 template eg: tmpl.render(p=self.plugin, interface=interface, ...)
         return tmpl.render(p=self.plugin,
                            items=sorted(plgitems, key=lambda k: str.lower(k['_path'])),
                            item_count=item_count,
                            state_log_lines=state_log_file,
-                           com_log_lines=com_log_file)
+                           com_log_lines=com_log_file,
+                           myExperitation_Time=myExperitation_Time,
+                           myLastLogin=myLastLogin,
+                           myColour=myColour)
+
 

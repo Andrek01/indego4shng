@@ -36,6 +36,7 @@ var activeMode = 0
 var MowTrack = ""
 var orgMap = ""
 var add_svg_images = ""
+var mower_colour = "#FFF601"
 
 var htmlPopUp = "<div data-role='popup' data-overlay-theme='b' data-theme='a' class='messagePopup' id='uzsuIndegoContent' data-dismissible = 'false' data-history='false' data-position-to='window'>"
 		+ "<button data-rel='back' data-icon='delete' data-iconpos='notext' class='ui-btn-right' id='indegoClose'></button>"
@@ -151,7 +152,20 @@ function UpdateMowerPos(actPos)
 	newSvg = svg.replace(x_2_Replace,newXPos)
 	newSvg = newSvg.replace(y_2_Replace,newYPos)
 	svgObject.firstElementChild.innerHTML = newSvg
-	
+}
+
+function PaintMowerColour()
+{
+	var svgObject = document.getElementById('garden-image').contentDocument;
+	svg = svgObject.firstElementChild.innerHTML
+	circle_Start = svg.indexOf('<circle')
+	color_Start = svg.indexOf('fill="',circle_Start)
+	color_End   = svg.indexOf('"',color_Start+6)
+	x_2_Replace = svg.substring(color_Start+5,color_End+1)
+
+	newSvg = svg.replace(x_2_Replace,'\"#'+mower_colour.substring(1))
+
+	svgObject.firstElementChild.innerHTML = newSvg
 }
 //-------------End - Functions for the Map ------------------------------
 
@@ -701,7 +715,7 @@ function UpdateTable(myCal, preFixDrawCalender, preFixEntryCalendar, preFix) {
 							+ deleteID
 							+ "' class='ui-btn ui-mini ui-corner-all ui-btn-inline ui-nodisc-icon' onclick=BtnDelete(this.id)> <img id='img_"
 							+ deleteID
-							+ "' class='icon' src='icons/ws/jquery_delete.svg' alt='Del'></a>"
+							+ "' class='icon' src='icons/ws/message_garbage.svg' alt='Del'></a>"
 
 					myRow += "<td>"
 							+ "<div class='indegoControl' style='float: right'>"
@@ -1026,6 +1040,15 @@ $
 							}
 							break;
 						}
+						case 'mower_colour':
+							{
+							if (myValue != '')
+							 {
+								mower_colour = myValue
+								PaintMowerColour()
+							 }
+							 break;
+							}
 						case 'svg_mow_track':
 							{
 							  if (myValue != '')

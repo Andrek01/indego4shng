@@ -226,6 +226,12 @@ item_structs:
                 visu_acl: rw
                 cache: 'on'
 
+            mower_colour:
+                visu_acl: rw
+                type : str
+                cache: 'on'
+                initial_value: "mower_colour:'#FFF601'"
+
 # End - Definitions for the VISU-Items
 
 # Start - Definitions for the webIf-Items

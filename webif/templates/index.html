@@ -1,6 +1,17 @@
-<!-- Functions in Scripts       -->
+<!-- Functions in Scripts-->
 <script src="./static/js/jscolor.js"></script>
+<script src="./static/js/handler.js"></script>
 
+
+
+
+
+<style>
+.CodeMirror {
+font-family: Arial, monospace;
+font-size: 12px;
+}
+</style>
 
 {% extends "base_plugin.html" %}
 
@@ -10,28 +21,27 @@
 <table class="table table-striped table-hover">
 	<tbody>
 		<tr>
-			<td class="py-1"><strong>Prompt 1</strong></td>
-			<td class="py-1">{% if 1 == 2 %}{{ _('Ja') }}{% else %}{{ _('Nein') }}{% endif %}</td>
-			<td class="py-1" width="50px"></td>
-			<td class="py-1"><strong>Prompt 4</strong></td>
-			<td class="py-1">{{ _('Wert 4') }}</td>
-			<td class="py-1" width="50px"></td>
+			<td class="py-1" style="vertical-align: middle"><strong>Login-State</strong></td>
+			<td style="text-align: right;">
+                {% if p.logged_in %}
+                <img src="static/img/lamp_green.png" alt="{{ _('logged in') }}" style="width: 17px;padding-bottom: 3px;"/>
+                {% else %}
+                <img src="static/img/lamp_red.png" alt="{{ _('logged out') }}" style="width: 17px;padding-bottom: 3px;"/>
+                {% endif %}
+                <strong>{{ _('logged in') }}</strong>
+            </td>
 		</tr>
 		<tr>
-			<td class="py-1"><strong>Prompt 2</strong></td>
-			<td class="py-1">{{ _('Wert 2') }}</td>
-			<td></td>
-			<td class="py-1"><strong>Prompt 5</strong></td>
-			<td class="py-1">-</td>
-			<td></td>
+			<td class="py-1"><strong>Session-ID</strong></td>
+			<td class="py-1" style="text-align: right;">{{ p.context_id }}</td>
 		</tr>
 		<tr>
-			<td class="py-1"><strong>Prompt 3</strong></td>
-			<td class="py-1">-</td>
-			<td></td>
-			<td class="py-1"><strong>Prompt 6</strong></td>
-			<td class="py-1">-</td>
-			<td></td>
+			<td class="py-1"><strong>last Login:</strong></td>
+			<td class="py-1" style="text-align: right;">{{ myLastLogin }}</td>
+		</tr>
+		<tr>
+			<td class="py-1"><strong>Login Experiation:</strong></td>
+			<td class="py-1" style="text-align: right;">{{ myExperitation_Time }}</td>
 		</tr>
 	</tbody>
 </table>
@@ -113,7 +123,8 @@
                     </td>
 					<td class="py-1" style="vertical-align: middle;">{{ _('Farbwert für Mäher') }}</td>
 					<td>
-                    	<input style="vertical-align: middle;"  class="jscolor" value="ab2567">
+                        <input id="mowercolour" class="jscolor {onFineChange:'SaveColor(this)'}" value={{myColour}}>
+<!--                    	<input id="mowercolour" style="vertical-align: middle; align:center"  class="jscolor" value= {{myColour}}>-->
                     </td>
 				</tr>
 				<tr>
@@ -133,6 +144,7 @@
 <script>
 function setTextColor(picker) {
 	document.getElementsByTagName('body')[0].style.color = '#' + picker.toString()
+    
 }
 </script>
 
@@ -165,7 +177,6 @@ function setTextColor(picker) {
 var logCodeMirror = CodeMirror.fromTextArea(document.getElementById("state_log_file"),
  {
     lineNumbers: true,
-    mode: "{{ mode }}",
     readOnly: true,
     indentUnit: 4,
     lineSeparator: '\n',
@@ -177,6 +188,7 @@ var logCodeMirror = CodeMirror.fromTextArea(document.getElementById("state_log_f
 window.addEventListener("resize", function(){resizeCodeMirror(logCodeMirror, 10)}, false);
 resizeCodeMirror(logCodeMirror, 10);
 logCodeMirror.refresh();
+console.log ("refreshed CodeMirrot")
 </script>
 
 
