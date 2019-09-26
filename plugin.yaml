@@ -232,6 +232,12 @@ item_structs:
                 cache: 'on'
                 initial_value: "mower_colour:'#FFF601'"
 
+            map_2_display:
+                type : str
+                cache: 'on'
+                visu_acl: rw
+
+
 # End - Definitions for the VISU-Items
 
 # Start - Definitions for the webIf-Items
@@ -249,6 +255,11 @@ item_structs:
                 type: list
                 cache: 'on'
 
+            garden_map:
+                type : str
+                cache: 'on'
+                visu_acl: rw
+
 # End - Definitions for the VISU-Items
         wartung:
             
@@ -259,6 +270,7 @@ item_structs:
             update:
                 type: str
                 visu_acl: rw
+                initial_value: 'Nein'
 
             update_start:
                 type: bool
@@ -274,6 +286,23 @@ item_structs:
                 visu_acl: rw
                 cache: 'on'
 
+            alm_config:
+                type: foo
+                visu_acl: rw
+                cache: 'on'
+
+            bump_sensitivity:
+                type: num
+                visu_acl: rw
+                cache: 'on'
+                indego_config: '{"bump_sensitivity":#}'
+                remark: 'bump_sensitivity = 0 = normal / bump_sensitivity = 1 = hohe / bump_sensitivity = 2 = niedrig'
+                initial_value: '---'
+
+            bump_sensitivity_str:
+                type: str
+                visu_acl: rw
+                cache: 'on'
 
         active_mode:
             type: num
@@ -291,6 +320,24 @@ item_structs:
             smart:
                 type: bool
                 visu_acl: rw
+
+            uzsu:
+                type: num
+                visu_acl: rw
+                enforce_updates: 'yes'
+
+                schaltuhr:
+                    type: dict
+                    enforce_updates: 'yes'
+                    uzsu_item: indego.active_mode.uzsu
+                    visu_acl: rw
+                    cache: 'yes'
+                    
+                    active:
+                        type: bool
+                        enforce_updates: 'yes'
+                        eval: sh...activate(value)
+                        visu_acl: rw
 
         update_active_mode:
             type: bool
@@ -531,11 +578,12 @@ item_structs:
             type: str
             visu_acl: rw
             initial_value: '---'
+            autotimer: 70 = '---'
 
         calendar_save:
             type: bool
             visu_acl: rw
-            autotimer: 50 = False
+            autotimer: 185 = False
 
         calendar_predictive:
             type: dict
@@ -552,11 +600,13 @@ item_structs:
         calendar_predictive_result:
             type: str
             visu_acl: rw
+            initial_value: '---'
+            autotimer: 70 = '---'
 
         calendar_predictive_save:
             type: bool
             visu_acl: rw
-            autotimer: 50 = False
+            autotimer: 185 = False
 
         weather:
 
@@ -1889,3 +1939,19 @@ item_structs:
             type: dict
             visu_acl: rw
             cache: 'on'
+
+            latitude:
+                type: str
+                visu_acl: rw
+                cache: 'on'
+
+            longitude:
+                type: str
+                visu_acl: rw
+                cache: 'on'
+
+            timezone:
+                type: str
+                visu_acl: rw
+                cache: 'on'
+

@@ -40,7 +40,7 @@ var mower_colour = "#FFF601"
 
 var htmlPopUp = "<div data-role='popup' data-overlay-theme='b' data-theme='a' class='messagePopup' id='uzsuIndegoContent' data-dismissible = 'false' data-history='false' data-position-to='window'>"
 		+ "<button data-rel='back' data-icon='delete' data-iconpos='notext' class='ui-btn-right' id='indegoClose'></button>"
-		+ "<div class='uzsuPopupHeader id=popHeader'><h4><u>HEADLINE</u><h4></div>"
+		+ "<div class='uzsuPopupHeader id=popHeader'><h5><u>HEADLINE</u><h4></div>"
 		+
 		// Body
 		"<table>"
@@ -106,67 +106,48 @@ function SvgLoaded()
 		{DrawMowTrack(MowTrack)}
   }
 
-function UpdateAddSvg()
-{
-	if (orgMap =='') { return }
-	var svgObject = document.getElementById('garden-image').contentDocument;;
-	svgObject.firstElementChild.innerHTML = orgMap + add_svg_images 
-}
+
 
 
 function HideMowTrack()
 {
- if (orgMap =='') { return }
- var svgObject = document.getElementById('garden-image').contentDocument;;
- svgObject.firstElementChild.innerHTML = orgMap + add_svg_images
-}
-
-function UpdateGrafic()
-{
-	var svgObject = document.getElementById('garden-image');
-	svgObject.data="dropins/garden.svg?"+ new Date().getTime();
+	try
+	{
+		document.getElementById("mower_track_id").outerHTML = '<g id="mower_track_id"</g>'
+	}
+	catch (e)
+	{
+	console.log("not able to Hide mow_track")
+	}
 }
 
 function DrawMowTrack(DrawLine)
 {
-	if (orgMap =='') { return }
-	var svgObject = document.getElementById('garden-image').contentDocument;
-	svgObject.firstElementChild.innerHTML = orgMap + add_svg_images + DrawLine
+	try
+	{
+		document.getElementById("mower_track_id").outerHTML = DrawLine
+	}
+	catch (e)
+	{
+	console.log("not able to show mow_track")
+	}
 }
 
 function UpdateMowerPos(actPos)
 {
-	position = actPos.split(",")
-	newXPos =  'cx=' + position[0] + '"'
-	newYPos =  'cy="' + position[1] 
-	
-	
-	var svgObject = document.getElementById('garden-image').contentDocument;
-	svg = svgObject.firstElementChild.innerHTML
-	x_Start = svg.indexOf('cx="')
-	x_End   = svg.indexOf('"',x_Start+4)
-	y_Start = svg.indexOf('cy="')
-	y_End   = svg.indexOf('"',y_Start+4)
-	x_2_Replace = svg.substring(x_Start,x_End+1)
-	y_2_Replace = svg.substring(y_Start,y_End+1)
-	newSvg = svg.replace(x_2_Replace,newXPos)
-	newSvg = newSvg.replace(y_2_Replace,newYPos)
-	svgObject.firstElementChild.innerHTML = newSvg
+	try
+		{
+		var mowerObject = document.getElementById('mower_pos');
+		mowerObject.setAttribute("cx", position[0]);
+		mowerObject.setAttribute("cy", position[1]);
+		}
+	catch (e)
+		{
+		console.log("No Mower Position found in Grafic")
+		}
+
 }
 
-function PaintMowerColour()
-{
-	var svgObject = document.getElementById('garden-image').contentDocument;
-	svg = svgObject.firstElementChild.innerHTML
-	circle_Start = svg.indexOf('<circle')
-	color_Start = svg.indexOf('fill="',circle_Start)
-	color_End   = svg.indexOf('"',color_Start+6)
-	x_2_Replace = svg.substring(color_Start+5,color_End+1)
-
-	newSvg = svg.replace(x_2_Replace,'\"#'+mower_colour.substring(1))
-
-	svgObject.firstElementChild.innerHTML = newSvg
-}
 //-------------End - Functions for the Map ------------------------------
 
 
@@ -959,114 +940,94 @@ $.widget("sv.symbol", $.sv.widget, {
 // *****************************************************
 // Widget for Params
 // *****************************************************
-$
-		.widget(
-				"sv.params",
-				$.sv.widget,
+$.widget("sv.params",
+		$.sv.widget,
+		{
+
+			initSelector : '[data-widget="indego.params"]',
+
+			options : {
+				mode : '',
+				val : '',
+				id : ''
+			},
+
+			_create : function() {
+				this._super()
+			},
+			_update : function(response) {
+				myParam = response[0].split(":")[0]
+				myValue = response[0].split(":")[1]
+				switch (myParam) {
+				case 'svg_pos':
 				{
-
-					initSelector : '[data-widget="indego.params"]',
-
-					options : {
-						mode : '',
-						val : '',
-						id : ''
-					},
-
-					_create : function() {
-						this._super()
-					},
-					_update : function(response) {
-						myParam = response[0].split(":")[0]
-						myValue = response[0].split(":")[1]
-						switch (myParam) {
-						case 'add_svg_images':
+					if (myValue != '')
 						{
-							if (myValue != '')
-								{
-								 add_svg_images = myValue
-								 UpdateAddSvg()
-								}
-							 break;
+						 UpdateMowerPos(myValue);
+						 break;
 						}
-						case 'svg_pos':
-						{
-							if (myValue != '')
-								{
-								 UpdateMowerPos(myValue);
-								 break;
-								}
-						}
-						case 'wintermodus': {
-							switch (myValue) {
-							case 'False': {
-								document.getElementById("wintermode_0").style.display = "block"
-								document.getElementById("wintermode_1").style.display = "block"
-								document.getElementById("wintermode_2").style.display = "block"
-								document.getElementById("wintermode_3").style.display = "block"
-								document.getElementById("wintermode_4").style.display = "block"
-								document.getElementById("wintermode_5").style.display = "block"									
-								break;
-							}
-							case 'True': {
-								document.getElementById("wintermode_0").style.display = "none"
-								document.getElementById("wintermode_1").style.display = "none"
-								document.getElementById("wintermode_2").style.display = "none"
-								document.getElementById("wintermode_3").style.display = "none"
-								document.getElementById("wintermode_4").style.display = "none"
-								document.getElementById("wintermode_5").style.display = "none"									
-								break;
-							}
-
-							}
-							break;
-						}
-						case 'cal2show': {
-							switch (myValue) {
-							case '1': {
-								document.getElementById("show_sm_times").style.display = "none"
-								document.getElementById("show_cal_times").style.display = "block"
-								break;
-							}
-							case '2': {
-								document.getElementById("show_sm_times").style.display = "block"
-								document.getElementById("show_cal_times").style.display = "none"
-								break;
-							}
-							default: {
-								document.getElementById("show_sm_times").style.display = "none"
-								document.getElementById("show_cal_times").style.display = "none"
-							}
-							}
-							break;
-						}
-						case 'mower_colour':
-							{
-							if (myValue != '')
-							 {
-								mower_colour = myValue
-								PaintMowerColour()
-							 }
-							 break;
-							}
-						case 'svg_mow_track':
-							{
-							  if (myValue != '')
-								  {
-								  	MowTrack = myValue
-								  	DrawMowTrack(MowTrack)
-								  }
-							  else
-								  {
-								  	MowTrack = ''
-								  	HideMowTrack()
-								  }
-							  break;
-							}
-						}
+				}
+				case 'wintermodus': {
+					switch (myValue) {
+					case 'False': {
+						document.getElementById("wintermode_0").style.display = "block"
+						document.getElementById("wintermode_1").style.display = "block"
+						document.getElementById("wintermode_2").style.display = "block"
+						document.getElementById("wintermode_3").style.display = "block"
+						document.getElementById("wintermode_4").style.display = "block"
+						document.getElementById("wintermode_5").style.display = "block"									
+						break;
+					}
+					case 'True': {
+						document.getElementById("wintermode_0").style.display = "none"
+						document.getElementById("wintermode_1").style.display = "none"
+						document.getElementById("wintermode_2").style.display = "none"
+						document.getElementById("wintermode_3").style.display = "none"
+						document.getElementById("wintermode_4").style.display = "none"
+						document.getElementById("wintermode_5").style.display = "none"									
+						break;
+					}
 
 					}
-				});
+					break;
+				}
+				case 'cal2show': {
+					switch (myValue) {
+					case '1': {
+						document.getElementById("show_sm_times").style.display = "none"
+						document.getElementById("show_cal_times").style.display = "block"
+						break;
+					}
+					case '2': {
+						document.getElementById("show_sm_times").style.display = "block"
+						document.getElementById("show_cal_times").style.display = "none"
+						break;
+					}
+					default: {
+						document.getElementById("show_sm_times").style.display = "none"
+						document.getElementById("show_cal_times").style.display = "none"
+					}
+					}
+					break;
+				}
+				case 'svg_mow_track':
+					{
+					  if (myValue != '')
+						  {
+						  	MowTrack = myValue
+						  	DrawMowTrack(MowTrack)
+						  }
+					  else
+						  {
+						  	MowTrack = ''
+						  	HideMowTrack()
+						  }
+					  break;
+					}
+				}
+
+			}
+		});
 
 // *****************************************************
 // Widget for Spinners
@@ -1256,3 +1217,25 @@ $
 					},
 
 				});
+
+
+//*****************************************************
+//Widget for the garden-map
+//*****************************************************
+$.widget("sv.garden_map", $.sv.widget, {
+
+	initSelector : '[data-widget="indego.garden_map"]',
+	options : {id : ''},
+	_create : function()
+	{
+		this._super();
+	},
+	_update : function(response)
+	{
+		document.getElementById("garden-image").innerHTML = response[0]
+		orgMap = response[0] 
+	}
+});
+
+
+///////////////////////////
