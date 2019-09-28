@@ -959,13 +959,21 @@ $.widget("sv.params",
 				myParam = response[0].split(":")[0]
 				myValue = response[0].split(":")[1]
 				switch (myParam) {
+				case 'fire_uszu_popup':
+					{
+						if (myValue == 'True')
+						{
+							document.getElementById("indego-indego_uzsu").click()
+						}
+						break;
+					}
 				case 'svg_pos':
 				{
 					if (myValue != '')
 						{
 						 UpdateMowerPos(myValue);
-						 break;
 						}
+					break;
 				}
 				case 'wintermodus': {
 					switch (myValue) {

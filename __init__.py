@@ -49,9 +49,6 @@ from bs4 import BeautifulSoup
 
 
 
-
-
-
 # If a package is needed, which might be not installed in the Python environment,
 # import it like this:
 #
@@ -210,10 +207,13 @@ class Indego(SmartPlugin):
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'indego_add_key', self.get_iattr_value(item.conf, 'indego_add_key')))
             self.add_keys[item.conf['indego_add_key']] = item
         
-
+        if self.has_iattr(item.conf, 'indego_plugin_handled'):
+            self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'indego_plugin_handled', self.get_iattr_value(item.conf, 'indego_plugin_handled')))
+            return self.update_item
+        ################################################
         if item.property.name ==  self.parent_item+'.calendar_list':
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'calendar_list', self.get_iattr_value(item.conf, 'calendar_list')))
-            return self.update_item
+            
         
         if item.property.name ==  self.parent_item+'.calendar_predictive_list':
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'calendar_list', self.get_iattr_value(item.conf, 'calendar_list')))
@@ -355,7 +355,8 @@ class Indego(SmartPlugin):
                 self.set_childitem('alm_mode.str','Übersicht Kalender mähen:')
                 self.set_childitem('alm_mode','calendar')
                 self.set_childitem('update_active_mode', False)
-                self.set_childitem('active_mode.uzsu.schaltuhr.active', False)
+                self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate(False)
+                #self.set_childitem('active_mode.uzsu.schaltuhr.active', False)
                 
             if item.property.name == self.parent_item+'.active_mode.aus' and item() == True:
                 self.set_childitem('update_active_mode', True)
@@ -380,7 +381,8 @@ class Indego(SmartPlugin):
                 self.set_smart(True)
                 self.set_childitem('alm_mode','smart')
                 self.set_childitem('update_active_mode', False)
-                self.set_childitem('active_mode.uzsu.schaltuhr.active', False)
+                self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate(False)
+                #self.set_childitem('active_mode.uzsu.schaltuhr.active', False)
             
             
             
@@ -408,7 +410,10 @@ class Indego(SmartPlugin):
                 if item() == 30:              
                     self.set_childitem('PAUSE', True)
                     # self.logger.warning("uzsu Trigger Pause")                
-        
+            
+            if ("show_uzsu_popup" in item.property.name and item() == True):
+                self.set_childitem('visu.fire_uszu_popup','fire_uszu_popup:True' )
+            
         
         # Function when item is triggered by anybody, also by plugin
         else:
@@ -479,6 +484,16 @@ class Indego(SmartPlugin):
         if "visu.mower_colour" in item.property.name:
                 self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
                 self.parse_map()
+                
+        if item.property.name == self.parent_item+".active_mode.uzsu.schaltuhr":
+                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
+                myResult = self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate()
+                if myResult == True:
+                    self.set_childitem('active_mode.uzsu.schaltuhr.active', True)
+                else:
+                    self.set_childitem('active_mode.uzsu.schaltuhr.active', False)
+                
+                
 
     def daystring(self, zeitwert, ausgang):
         if ausgang == 'min':
@@ -655,29 +670,30 @@ class Indego(SmartPlugin):
             self.logger.warning("Problem fetching Calendars: {0}".format(e))
         
         # Get the scheduled smart-mow-calendar
-        try:
-            schedule = self.get_url(self.indego_url + 'alms/' + self.alm_sn +'/predictive/schedule', self.context_id)
+        if self.get_childitem("alm_mode") == 'smart':
+            try:
+                schedule = self.get_url(self.indego_url + 'alms/' + self.alm_sn +'/predictive/schedule', self.context_id)
 
-            if schedule == False:
-                return
-        except Exception as e:
-            self.logger.warning("Problem fetching Calendars: {0}".format(e))
-        my_pred_cal = {
-                        "cals" : [{
-                                    "cal" : 9,
-                                    'days' : schedule['exclusion_days']
-                                 }]
-                      } 
-        my_smMow_cal = {
-                        "cals" : [{
-                                    "cal" : 9,
-                                    'days' : schedule['schedule_days']
-                                 }]
-                      }
-        my_pred_list = self.parse_cal_2_list(my_pred_cal, None)
-        my_smMow_list = self.parse_cal_2_list(my_smMow_cal, None)
-        
-        self.set_childitem('visu.smartmow_days',[ my_pred_list,my_smMow_list])
+                if schedule == False:
+                    return
+            except Exception as e:
+                self.logger.warning("Problem fetching Calendars: {0}".format(e))
+            my_pred_cal = {
+                            "cals" : [{
+                                        "cal" : 9,
+                                        'days' : schedule['exclusion_days']
+                                     }]
+                          } 
+            my_smMow_cal = {
+                            "cals" : [{
+                                        "cal" : 9,
+                                        'days' : schedule['schedule_days']
+                                     }]
+                          }
+            my_pred_list = self.parse_cal_2_list(my_pred_cal, None)
+            my_smMow_list = self.parse_cal_2_list(my_smMow_cal, None)
+            
+            self.set_childitem('visu.smartmow_days',[ my_pred_list,my_smMow_list])
         
     def log_communication(self, type, url, result):
         myLog = self.get_childitem('webif.communication_protocoll')
@@ -747,6 +763,7 @@ class Indego(SmartPlugin):
         headers = {
                    'x-im-context-id' : self.context_id
                   }
+        response = False
         try:
             response = requests.delete(url, headers=headers, auth=auth)
             self.log_communication('delete', url, response.status_code)
@@ -771,6 +788,7 @@ class Indego(SmartPlugin):
         headers = {
                    'x-im-context-id' : self.context_id
                   }
+        response = False
         try:
             if auth == None:
                 response = requests.get(url, headers=headers)
@@ -809,6 +827,7 @@ class Indego(SmartPlugin):
         else:
             headers = ""
         
+        response = False
         try:
             if body == None:
                 response = requests.post(url, headers=headers, auth=auth)
@@ -834,6 +853,7 @@ class Indego(SmartPlugin):
                    'x-im-context-id' : contextid
                   }
         
+        response = False
         try:
             response = requests.put(url, headers=headers, json=body)
             self.log_communication('put   ', url, response.status_code)
@@ -1741,37 +1761,37 @@ class Indego(SmartPlugin):
             return
         
         state__str = {  0:  ['liest den Status', 'unknown'],
-                      257:  ['lädt den Akku', 'dock'], 
+                      257:  ['lädt den Akku', 'dock'],
                       258:  ['ist angedockt', 'dock'],
-                      259:  ['Softwareupdate!', 'dock'], 
-                      260:  ['lädt den Akku', 'dock'], 
+                      259:  ['Softwareupdate!', 'dock'],
+                      260:  ['lädt den Akku', 'dock'],
                       261:  ['ist angedockt', 'dock'],
-                      262:  ['lädt die Karte', 'dock'], 
-                      263:  ['speichert die Karte', 'dock'], 
+                      262:  ['lädt die Karte', 'dock'],
+                      263:  ['speichert die Karte', 'dock'],
                       266:  ['verlässt Ladestation', 'dock'],
-                      513:  ['mäht', 'moving'], 
-                      514:  ['bestimmt den Ort', 'moving'], 
+                      513:  ['mäht', 'moving'],
+                      514:  ['bestimmt den Ort', 'moving'],
                       515:  ['lädt die Karte', 'moving'],
-                      516:  ['lernt den Garten', 'moving'], 
-                      517:  ['macht Pause', 'pause'], 
+                      516:  ['lernt den Garten', 'moving'],
+                      517:  ['macht Pause', 'pause'],
                       518:  ['schneidet den Rand', 'moving'],
-                      519:  ['steckt fest!', 'hilfe'],
+                      519:  ['angehalten!', 'hilfe'],
                       523:  ['mäht im Spot Mow','moving'],
                       524:  ['mäht zufällig','moving'],
-                      768:  ['fährt in die Ladestation', 'moving'],
+                      768:  ['fährt in die Station', 'moving'],
                       769:  ['fährt zurück zur Station', 'moving'],
                       770:  ['fährt zurück zur Station', 'moving'],
                       771:  ['fährt zum Laden in die Station', 'moving'],
-                      772:  ['hat die Mähzeit beendet - fährt zurück', 'moving'],											   
-                      773:  ['ist überhitzt - fährt zurück', 'help'], 
+                      772:  ['hat die Mähzeit beendet - fährt zurück', 'moving'],
+                      773:  ['ist überhitzt - fährt zurück', 'help'],
                       774:  ['fährt in Station', 'moving'],
-                      775:  ['hat fertig gemäht - fährt zurück', 'moving'],									   
-                      776:  ['bestimmt seine Position', 'moving'], 
-                      1025: ['Diagnosemodus!', 'unknown'],						   
-                      1026: ['Endoflive', 'hilfe'], 
+                      775:  ['hat fertig gemäht - fährt zurück', 'moving'],
+                      776:  ['bestimmt seine Position', 'moving'],
+                      1025: ['Diagnosemodus!', 'unknown'],
+                      1026: ['Endoflive', 'hilfe'],
                       1281: ['Softwareupdate!', 'dock'],
                       1537: ['Stromsparmodus!','dock'],
-                      64513:['wacht auf...','dock']}
+                      64513:['Status abrufen...','dock']}
         
         if (self.position_detection):
             self.position_count += 1

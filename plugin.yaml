@@ -237,6 +237,13 @@ item_structs:
                 cache: 'on'
                 visu_acl: rw
 
+            fire_uszu_popup:
+                type : str
+                cache: 'on'
+                visu_acl: rw
+                initial_value: 'fire_uszu_popup:False'
+                autotimer: 1 = 'fire_uszu_popup:False'
+    
 
 # End - Definitions for the VISU-Items
 
@@ -297,12 +304,12 @@ item_structs:
                 cache: 'on'
                 indego_config: '{"bump_sensitivity":#}'
                 remark: 'bump_sensitivity = 0 = normal / bump_sensitivity = 1 = hohe / bump_sensitivity = 2 = niedrig'
-                initial_value: '---'
 
             bump_sensitivity_str:
                 type: str
                 visu_acl: rw
                 cache: 'on'
+                initial_value: '---'
 
         active_mode:
             type: num
@@ -332,12 +339,20 @@ item_structs:
                     uzsu_item: indego.active_mode.uzsu
                     visu_acl: rw
                     cache: 'yes'
+                    indego_plugin_handled : true
                     
                     active:
                         type: bool
                         enforce_updates: 'yes'
-                        eval: sh...activate(value)
+                        cache: 'yes'
                         visu_acl: rw
+
+        show_uzsu_popup:
+            type: bool
+            visu_acl: rw
+            initial_value: false
+            indego_plugin_handled : true
+            autotimer: 1 = False
 
         update_active_mode:
             type: bool
@@ -577,8 +592,8 @@ item_structs:
         calendar_result:
             type: str
             visu_acl: rw
-            initial_value: '---'
-            autotimer: 70 = '---'
+            # initial_value: '---'
+            autotimer: 70 = ''
 
         calendar_save:
             type: bool
@@ -600,8 +615,8 @@ item_structs:
         calendar_predictive_result:
             type: str
             visu_acl: rw
-            initial_value: '---'
-            autotimer: 70 = '---'
+            # initial_value: '---'
+            autotimer: 70 = ''
 
         calendar_predictive_save:
             type: bool
