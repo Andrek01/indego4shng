@@ -130,6 +130,15 @@ function DrawMowTrack(DrawLine)
 {
 	try
 	{
+		/*
+		var svg = document.getElementById("mower_track_id")
+		var newElement = document.createElementNS("http://www.w3.org/2000/svg", 'path'); //Create a path in SVG's namespace
+		newElement.setAttribute("d","M 200 200 L 20 20"); //Set path's data
+		newElement.style.stroke = "#000"; //Set stroke colour
+		newElement.style.strokeWidth = "5px"; //Set stroke width
+		svg.appendChild(newElement);
+		*/
+		
 		document.getElementById("mower_track_id").outerHTML = DrawLine
 		if (actMowerPos != "")
 		{
@@ -144,6 +153,7 @@ function DrawMowTrack(DrawLine)
 
 function UpdateMowerPos(actPos)
 {
+	position = actPos.split(",")
 	try
 		{
 		var mowerObject = document.getElementById('mower_pos');
@@ -662,6 +672,7 @@ function UpdateTable(myCal, preFixDrawCalender, preFixEntryCalendar, preFix) {
 		for ( var key in calendar) {
 			if (calendar.hasOwnProperty(key)) {
 				if (key == 'Params') {
+					cals2draw = calendar[key]['CalCount']
 					continue
 				}
 				myIndex = parseInt(key[0])
@@ -736,11 +747,12 @@ function UpdateTable(myCal, preFixDrawCalender, preFixEntryCalendar, preFix) {
 	}
 	i = 1
 	// Now draw the calendars
-	while (i <= 5) {
+	//while (i <= 8) {
+	cals2draw.forEach (function(element){
+		i=element
 		$('#' + preFixEntryCalendar + '-' + String(i)).html(myTable[i]);
 		DrawCalendar(preFixDrawCalender + "-" + String(i), i, preFix)
-		i += 1
-	}
+	})
 
 	// Fill the Drawing Calendars
 	// First the Mowing-Calendar

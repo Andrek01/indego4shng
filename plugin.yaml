@@ -347,6 +347,11 @@ item_structs:
                         cache: 'yes'
                         visu_acl: rw
 
+                calendar_list:
+                    type: dict
+                    visu_acl: rw
+                    indego_plugin_handled : true
+
         show_uzsu_popup:
             type: bool
             visu_acl: rw

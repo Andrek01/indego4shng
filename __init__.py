@@ -30,7 +30,7 @@ import time
 import base64
 import os
 import ast
-#import datetime
+
 import json
 import http.client
 from dateutil import tz
@@ -490,7 +490,9 @@ class Indego(SmartPlugin):
                 myResult = self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate()
                 if myResult == True:
                     self.set_childitem('active_mode.uzsu.schaltuhr.active', True)
-                else:
+                    self.set_childitem('active_mode.uzsu.calendar_list',self.parse_uzsu_2_list(item()))
+                    self.set_childitem('alm_mode.str','Übersicht mähen nach UZSU:')
+                else:                  
                     self.set_childitem('active_mode.uzsu.schaltuhr.active', False)
                 
                 
@@ -797,7 +799,7 @@ class Indego(SmartPlugin):
             self.log_communication('get   ', url, response.status_code)
         except Exception as e:
             self.logger.warning("Problem fetching {}: {}".format(url, e))
-            return False,response
+            return False
         
         if response.status_code == 204:                  # No content
                 self.logger.info("Got no Content : {}".format(url))
@@ -1196,6 +1198,55 @@ class Indego(SmartPlugin):
         # First get active Calendar
         activeCal = myCal['sel_cal']
         return activeCal
+    
+    def parse_uzsu_2_list(self, uzsu_dict=None):
+        weekDays = {'MO' : "0" ,'TU' : "1" ,'WE' : "2" ,'TH' : "3",'FR' : "4",'SA' : "5" ,'SU' : "6" }
+        myCal = {}
+        
+        for myItem in uzsu_dict['list']:
+            # First run get all the start times
+            myDays = myItem['rrule'].split(';')[1].split("=")[1].split(",")
+            if myItem['value'] == '10' and myItem['active'] == True:
+                myKey = "8-"+myItem['time']
+                if not myKey in myCal:
+                    myCal[myKey] = {'Days':'', 'Start':'','End':'','Key':'','Color' : ''}
+                    start_hour = float(myItem['time'].split(':')[0])
+                    myCal[myKey]['Start']=str("%02d" % start_hour)+myItem['time'].split(':')[1]
+                    #myCal[myKey]['Start'] = myItem['time']
+                    calDays =""
+                else:
+                    calDays = myCal[myKey]['Days']
+    
+                for day in myDays:
+                    calDays += ","+ weekDays[day]
+                if calDays[0:1] == ",":
+                    calDays = calDays[1:]
+                myCal[myKey]['Days'] = calDays
+            # Second run get all the stop times
+            for myItem in uzsu_dict['list']:
+                # First run get all the start times
+                myDays = myItem['rrule'].split(';')[1].split("=")[1].split(",")
+                if myItem['value'] == '20' and myItem['active'] == True:
+                    for myCalEntry in myCal:
+                        for day in myDays:
+                            if weekDays[day] in myCal[myCalEntry]['Days']:
+                                myCal[myCalEntry]['End'] = myItem['time']
+                                myCal[myCalEntry]['Key'] = myCalEntry+'-'+ myItem['time']
+            # finally build the calendar
+            final_Calender = {}
+            for myCalEntry in myCal:
+                if myCal[myCalEntry]['End'] == "":
+                    start_hour = myCal[myCalEntry]['Start'].split(':')[0]
+                    stop_hour = float(start_hour)+4
+                    if stop_hour > 23:
+                        stop_hour = 23
+                    myCal[myCalEntry]['End']=str("%02d" % stop_hour)+myCal[myCalEntry]['Start'].split(':')[1]
+                    myCal[myCalEntry]['Key']='8-'+myCal[myCalEntry]['Start']+'-'+myCal[myCalEntry]['End']
+                final_Calender[myCal[myCalEntry]['Key']]=myCal[myCalEntry]
+        
+        final_Calender['Params']={'CalCount': [8]}
+        return final_Calender
+    
     
     
     def parse_cal_2_list(self, myCal = None, type=None):
@@ -1715,8 +1766,10 @@ class Indego(SmartPlugin):
                 self.set_childitem('alm_mode.str','Übersicht SmartMow mähen:')
             elif alm_mode == 'calendar':
                 self.set_childitem('alm_mode.str','Übersicht Kalender mähen:')
-            elif alm_mode == 'manual':
+            elif alm_mode == 'manual' and self.get_childitem('active_mode.uzsu.schaltuhr.active')== False:
                 self.set_childitem('alm_mode.str','')
+            elif alm_mode == 'manual' and self.get_childitem('active_mode.uzsu.schaltuhr.active')== True:
+                self.set_childitem('alm_mode.str','Übersicht mähen nach UZSU:')
             else:
                 self.set_childitem('alm_mode.str','unbekannt')
             self.logger.debug("alm_mode " + str(alm_mode))
