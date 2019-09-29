@@ -37,6 +37,7 @@ var MowTrack = ""
 var orgMap = ""
 var add_svg_images = ""
 var mower_colour = "#FFF601"
+var actMowerPos = ""
 
 var htmlPopUp = "<div data-role='popup' data-overlay-theme='b' data-theme='a' class='messagePopup' id='uzsuIndegoContent' data-dismissible = 'false' data-history='false' data-position-to='window'>"
 		+ "<button data-rel='back' data-icon='delete' data-iconpos='notext' class='ui-btn-right' id='indegoClose'></button>"
@@ -114,6 +115,10 @@ function HideMowTrack()
 	try
 	{
 		document.getElementById("mower_track_id").outerHTML = '<g id="mower_track_id"</g>'
+		if (actMowerPos != "")
+		{
+			UpdateMowerPos(actMowerPos)
+		}
 	}
 	catch (e)
 	{
@@ -126,6 +131,10 @@ function DrawMowTrack(DrawLine)
 	try
 	{
 		document.getElementById("mower_track_id").outerHTML = DrawLine
+		if (actMowerPos != "")
+		{
+			UpdateMowerPos(actMowerPos)
+		}
 	}
 	catch (e)
 	{
@@ -971,7 +980,8 @@ $.widget("sv.params",
 				{
 					if (myValue != '')
 						{
-						 UpdateMowerPos(myValue);
+						actMowerPos = myValue 
+						UpdateMowerPos(myValue);
 						}
 					break;
 				}
@@ -1241,7 +1251,15 @@ $.widget("sv.garden_map", $.sv.widget, {
 	_update : function(response)
 	{
 		document.getElementById("garden-image").innerHTML = response[0]
-		orgMap = response[0] 
+		orgMap = response[0]
+		if (MowTrack != "")
+			{
+				DrawMowTrack(MowTrack)
+			}
+		if (actMowerPos != "")
+			{
+				UpdateMowerPos(actMowerPos)
+			}
 	}
 });
 
