@@ -114,7 +114,8 @@ function HideMowTrack()
 {
 	try
 	{
-		document.getElementById("mower_track_id").outerHTML = '<g id="mower_track_id"</g>'
+		//document.getElementById("mower_track_id").outerHTML = '<g id="mower_track_id"</g>'
+		document.getElementById("svg_mower_track").remove()
 		if (actMowerPos != "")
 		{
 			UpdateMowerPos(actMowerPos)
@@ -130,16 +131,35 @@ function DrawMowTrack(DrawLine)
 {
 	try
 	{
-		/*
+		var svg = document.getElementById("svg_garden_map")
+		if (svg == null) { return }
+		var newElement = document.createElementNS("http://www.w3.org/2000/svg", 'polyline'); //Create a path in SVG's namespace
+		newElement.id = 'svg_mower_track'
+		for (key in DrawLine) 
+		{
+			if (key == 'Points')
+			{
+				myPoints = DrawLine[key]
+				myPoints.forEach(function(element)
+				{
+					myPoint = element.split(',')
+					myNewPoint = svg.createSVGPoint()
+					myNewPoint.x = parseInt(myPoint[0])
+					myNewPoint.y = parseInt(myPoint[1])
+					newElement.points.appendItem(myNewPoint)
+				})
+			}
+			else
+			{
+				// country.setAttribute("style", "fill: blue; stroke: black");
+				newElement.setAttribute("style", DrawLine[key]); //Set path's data
+			}
+			
+		}
 		var svg = document.getElementById("mower_track_id")
-		var newElement = document.createElementNS("http://www.w3.org/2000/svg", 'path'); //Create a path in SVG's namespace
-		newElement.setAttribute("d","M 200 200 L 20 20"); //Set path's data
-		newElement.style.stroke = "#000"; //Set stroke colour
-		newElement.style.strokeWidth = "5px"; //Set stroke width
 		svg.appendChild(newElement);
-		*/
 		
-		document.getElementById("mower_track_id").outerHTML = DrawLine
+		
 		if (actMowerPos != "")
 		{
 			UpdateMowerPos(actMowerPos)
@@ -661,7 +681,7 @@ function FillDrawingCalendar(myCal, myColour, preFix) {
 }
 
 function UpdateTable(myCal, preFixDrawCalender, preFixEntryCalendar, preFix) {
-
+	var cals2draw = []
 	var myTable = new Array(5)
 	i = 0
 
@@ -977,8 +997,8 @@ $.widget("sv.params",
 				this._super()
 			},
 			_update : function(response) {
-				myParam = response[0].split(":")[0]
-				myValue = response[0].split(":")[1]
+				myParam = response[0].split("|")[0]
+				myValue = response[0].split("|")[1]
 				switch (myParam) {
 				case 'fire_uszu_popup':
 					{
@@ -1044,7 +1064,7 @@ $.widget("sv.params",
 					{
 					  if (myValue != '')
 						  {
-						  	MowTrack = myValue
+						  	MowTrack = JSON.parse(myValue)
 						  	DrawMowTrack(MowTrack)
 						  }
 					  else

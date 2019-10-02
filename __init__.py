@@ -412,7 +412,7 @@ class Indego(SmartPlugin):
                     # self.logger.warning("uzsu Trigger Pause")                
             
             if ("show_uzsu_popup" in item.property.name and item() == True):
-                self.set_childitem('visu.fire_uszu_popup','fire_uszu_popup:True' )
+                self.set_childitem('visu.fire_uszu_popup','fire_uszu_popup|True' )
             
         
         # Function when item is triggered by anybody, also by plugin
@@ -454,24 +454,15 @@ class Indego(SmartPlugin):
             self.auto_pred_cal_update()
         
         if "active_mode" in item.property.name:
-            self.set_childitem('visu.cal_2_show','cal2show:'+str(self.get_childitem('active_mode')))
+            self.set_childitem('visu.cal_2_show','cal2show|'+str(self.get_childitem('active_mode')))
         
         if "wartung.wintermodus" in item.property.name:
-            self.set_childitem('visu.wintermodus','wintermodus:'+str(self.get_childitem('wartung.wintermodus')))
+            self.set_childitem('visu.wintermodus','wintermodus|'+str(self.get_childitem('wartung.wintermodus')))
         
         if ("visu.mow_track" in item.property.name and self.get_childitem('visu.show_mow_track') == True) or ("visu.show_mow_track" in item.property.name and item() == True):
-                myMowTrack = "<polyline id='mower_track_id' points='"
-                myWayPoints = self.get_childitem('visu.mow_track')
-                for myPoint in myWayPoints:
-                    myMowTrack += myPoint + ' '
-                myMowTrack = myMowTrack[:-1]
-                if self.get_childitem('visu.model_type') == 2:
-                    myMowTrack += "' fill='none' stroke='#C3FECE' stroke-width='17' stroke-linecap='round' stroke-linejoin='round'/>"
-                else:
-                    myMowTrack += "' fill='none' stroke='#999999' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/>"
-                self.set_childitem('visu.svg_mow_track','svg_mow_track:'+str(myMowTrack))
+                self.create_mow_track()
         elif "visu.show_mow_track" in item.property.name and item() == False:
-            self.set_childitem('visu.svg_mow_track','svg_mow_track:'+str(''))
+            self.set_childitem('visu.svg_mow_track','svg_mow_track|'+str(''))
         
         if "webif.garden_map" in item.property.name:
                 self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
@@ -496,7 +487,30 @@ class Indego(SmartPlugin):
                     self.set_childitem('active_mode.uzsu.schaltuhr.active', False)
                 
                 
-
+    def create_mow_track(self):
+        if self.get_childitem('visu.model_type') == 2:
+            mystroke     ='#C3FECE'
+            mytrokewidth ='17'
+        else:
+            mystroke      ='#999999'
+            mystrokewidth ='5'
+        myMowTrack = {'Points':self.get_childitem('visu.mow_track'),
+                      'style':'fill:none; stroke:'+mystroke+ '; stroke-width: '+mystrokewidth+'; stroke-linecap:round; stroke-linejoin: round;'}
+        #'fill:none; stroke:#999999 ; stroke-width:5; stroke-linecap:round; stroke-linejoin:round;'
+        self.set_childitem('visu.svg_mow_track','svg_mow_track|'+json.dumps(myMowTrack))
+        '''
+        myMowTrack = "<polyline id='mower_track_id' points='"
+        myWayPoints = self.get_childitem('visu.mow_track')
+        for myPoint in myWayPoints:
+            myMowTrack += myPoint + ' '
+        myMowTrack = myMowTrack[:-1]
+        if self.get_childitem('visu.model_type') == 2:
+            myMowTrack += "' fill='none' stroke='#C3FECE' stroke-width='17' stroke-linecap='round' stroke-linejoin='round'/>"
+        else:
+            myMowTrack += "' fill='none' stroke='#999999' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/>"
+        self.set_childitem('visu.svg_mow_track','svg_mow_track:'+str(myMowTrack))
+        '''
+        
     def daystring(self, zeitwert, ausgang):
         if ausgang == 'min':
             zeitwert = zeitwert / 60 / 24
@@ -1207,11 +1221,16 @@ class Indego(SmartPlugin):
             # First run get all the start times
             myDays = myItem['rrule'].split(';')[1].split("=")[1].split(",")
             if myItem['value'] == '10' and myItem['active'] == True:
+                if "sun" in myItem['time']:
+                    if not 'calculated' in myItem:
+                        continue
+                    else:
+                        myItem['time']=myItem['calculated']
                 myKey = "8-"+myItem['time']
                 if not myKey in myCal:
                     myCal[myKey] = {'Days':'', 'Start':'','End':'','Key':'','Color' : ''}
                     start_hour = float(myItem['time'].split(':')[0])
-                    myCal[myKey]['Start']=str("%02d" % start_hour)+myItem['time'].split(':')[1]
+                    myCal[myKey]['Start']=str("%02d" % start_hour)+':'+myItem['time'].split(':')[1]
                     #myCal[myKey]['Start'] = myItem['time']
                     calDays =""
                 else:
@@ -1223,28 +1242,34 @@ class Indego(SmartPlugin):
                     calDays = calDays[1:]
                 myCal[myKey]['Days'] = calDays
             # Second run get all the stop times
-            for myItem in uzsu_dict['list']:
-                # First run get all the start times
-                myDays = myItem['rrule'].split(';')[1].split("=")[1].split(",")
-                if myItem['value'] == '20' and myItem['active'] == True:
-                    for myCalEntry in myCal:
-                        for day in myDays:
-                            if weekDays[day] in myCal[myCalEntry]['Days']:
-                                myCal[myCalEntry]['End'] = myItem['time']
-                                myCal[myCalEntry]['Key'] = myCalEntry+'-'+ myItem['time']
-            # finally build the calendar
-            final_Calender = {}
-            for myCalEntry in myCal:
-                if myCal[myCalEntry]['End'] == "":
-                    start_hour = myCal[myCalEntry]['Start'].split(':')[0]
-                    stop_hour = float(start_hour)+4
-                    if stop_hour > 23:
-                        stop_hour = 23
-                    myCal[myCalEntry]['End']=str("%02d" % stop_hour)+myCal[myCalEntry]['Start'].split(':')[1]
-                    myCal[myCalEntry]['Key']='8-'+myCal[myCalEntry]['Start']+'-'+myCal[myCalEntry]['End']
-                final_Calender[myCal[myCalEntry]['Key']]=myCal[myCalEntry]
-        
-        final_Calender['Params']={'CalCount': [8]}
+        for myItem in uzsu_dict['list']:
+            myDays = myItem['rrule'].split(';')[1].split("=")[1].split(",")
+            if myItem['value'] == '20' and myItem['active'] == True:
+                if "sun" in myItem['time']:
+                    if not 'calculated' in myItem:
+                        continue
+                    else:
+                        myItem['time']=myItem['calculated']
+                for myCalEntry in myCal:
+                    for day in myDays:
+                        if weekDays[day] in myCal[myCalEntry]['Days']:
+                            myCal[myCalEntry]['End'] = myItem['time']
+                            myCal[myCalEntry]['Key'] = myCalEntry+'-'+ myItem['time']
+        # finally build the calendar
+        final_Calender = {}
+        for myCalEntry in myCal:
+            if myCal[myCalEntry]['End'] == "":
+                start_hour = myCal[myCalEntry]['Start'].split(':')[0]
+                stop_hour = float(start_hour)+4
+                if stop_hour > 23:
+                    stop_hour = 23
+                myCal[myCalEntry]['End']=str("%02d" % stop_hour)+':'+myCal[myCalEntry]['Start'].split(':')[1]
+                myCal[myCalEntry]['Key']='8-'+myCal[myCalEntry]['Start']+'-'+myCal[myCalEntry]['End']
+            final_Calender[myCal[myCalEntry]['Key']]=myCal[myCalEntry]
+        if len(final_Calender) > 0:
+            final_Calender['Params']={'CalCount': [8]}
+        else:
+            final_Calender['Params']={'CalCount': [8]}
         return final_Calender
     
     
@@ -1968,7 +1993,7 @@ class Indego(SmartPlugin):
                 # SVG-Position
                 mySvgPos = self.get_childitem("visu.mow_track")
                 newPos = str(svg_xPos)+","+str(svg_yPos)
-                self.set_childitem('visu.svg_pos', 'svg_pos:'+newPos)
+                self.set_childitem('visu.svg_pos', 'svg_pos|'+newPos)
                 if (len(mySvgPos) == 0):
                     mySvgPos.append(newPos)
                     self.set_childitem("visu.mow_track", mySvgPos)
@@ -2026,7 +2051,9 @@ class Indego(SmartPlugin):
             if '<circle' in line:
                 mowerPos = line + '</circle>'
                 myMowerPos = i
-                break
+            if '<svg' in line:
+                line.replace('<svg', '<svg id="svg_garden_map"')
+                mapArray[i]=line
             i += 1
         # Delete the Mower-Position from the SVG
         del mapArray[myMowerPos+1]
