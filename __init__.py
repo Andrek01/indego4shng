@@ -490,7 +490,7 @@ class Indego(SmartPlugin):
     def create_mow_track(self):
         if self.get_childitem('visu.model_type') == 2:
             mystroke     ='#C3FECE'
-            mytrokewidth ='17'
+            mystrokewidth ='17'
         else:
             mystroke      ='#999999'
             mystrokewidth ='5'

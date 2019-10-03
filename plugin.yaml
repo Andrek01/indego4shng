@@ -200,6 +200,7 @@ item_structs:
             wintermodus:
                 type : str
                 visu_acl: rw
+                cache: 'on'
 
             svg_pos:
                 type : str
@@ -230,7 +231,7 @@ item_structs:
                 visu_acl: rw
                 type : str
                 cache: 'on'
-                initial_value: "mower_colour:'#FFF601'"
+                initial_value: "mower_colour|'#FFF601'"
 
             map_2_display:
                 type : str
@@ -241,8 +242,8 @@ item_structs:
                 type : str
                 cache: 'on'
                 visu_acl: rw
-                initial_value: 'fire_uszu_popup:False'
-                autotimer: 1 = 'fire_uszu_popup:False'
+                initial_value: 'fire_uszu_popup|False'
+                autotimer: 1 = 'fire_uszu_popup|False'
     
 
 # End - Definitions for the VISU-Items
