@@ -927,7 +927,7 @@ class Indego(SmartPlugin):
             if myResult != True:
                 pass
             # Now set scheduler for state to 6 Sec.
-            self.get_sh().scheduler.change('plugins.indego.state', cycle={10:None}) # Zum Testen von 6 auf 10 Sekunden geändert
+            self.get_sh().scheduler.change('plugins.indego.state', cycle={8:None}) # Zum Testen von 6 auf 10 Sekunden geändert
             self.position_detection = True
             self.position_count = 0
         # Following runs of position detection
