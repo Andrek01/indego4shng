@@ -49,6 +49,7 @@ from bs4 import BeautifulSoup
 
 
 
+
 # If a package is needed, which might be not installed in the Python environment,
 # import it like this:
 #
@@ -201,11 +202,15 @@ class Indego(SmartPlugin):
         """
         if self.has_iattr(item.conf, 'indego_command'):
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format( item, 'indego_command', self.get_iattr_value(item.conf, 'indego_command')))
-            return self.send_command
-
+            return self.update_item
+        '''        
         if self.has_iattr(item.conf, 'indego_add_key'):
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'indego_add_key', self.get_iattr_value(item.conf, 'indego_add_key')))
             self.add_keys[item.conf['indego_add_key']] = item
+        '''
+        if self.has_iattr(item.conf, 'indego_config'):
+            self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'indego_plugin_handled', self.get_iattr_value(item.conf, 'indego_config')))
+            return self.update_item
         
         if self.has_iattr(item.conf, 'indego_plugin_handled'):
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'indego_plugin_handled', self.get_iattr_value(item.conf, 'indego_plugin_handled')))
@@ -213,6 +218,7 @@ class Indego(SmartPlugin):
         ################################################
         if item.property.name ==  self.parent_item+'.calendar_list':
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'calendar_list', self.get_iattr_value(item.conf, 'calendar_list')))
+            return self.update_item
             
         
         if item.property.name ==  self.parent_item+'.calendar_predictive_list':
@@ -321,7 +327,21 @@ class Indego(SmartPlugin):
     
             if self.has_iattr(item.conf, 'foo_itemtag'):
                 self.logger.debug("update_item was called with item '{}' from caller '{}', source '{}' and dest '{}'".format(item,caller,source,dest))
-            
+
+            if self.has_iattr(item.conf, 'indego_config'):
+                self.logger.debug("update_item was called with item '{}' from caller '{}', source '{}' and dest '{}'".format(item,caller,source,dest))
+                '''
+                PUT /api/v1/alms/603702021/config
+                {"bump_sensitivity": 0 } = normal
+                '''
+                try:
+                    myUrl = self.indego_url + item.conf['indego_config_url'].format(self.alm_sn)
+                    myBody = json.loads(item.conf['indego_config'].replace('#',str(item.property.value)))
+                    myResult = self.send_config(myUrl, myBody)
+                except:
+                    self.logger.warning("Error building config for item '{}' from caller '{}', source '{}' and dest '{}'".format(item,caller,source,dest))
+    
+                
             if item.property.name == self.parent_item+'.calendar_list':
                 myList = item()
                 self.parse_list_2_cal(myList, self.calendar,'MOW')
@@ -339,6 +359,7 @@ class Indego(SmartPlugin):
                 self.device_data()
                 self.get_next_time()
                 self.get_weather()
+                self.load_map()
                 self.set_childitem('update_active_mode', False)
                 item(False)
                 
@@ -347,6 +368,7 @@ class Indego(SmartPlugin):
             if item.property.name == self.parent_item+'.active_mode.kalender' and item() == True:
                 self.set_childitem('update_active_mode', True)
                 self.set_childitem('active_mode', 1)
+                self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate(False)
                 self.set_childitem('active_mode.smart', False)
                 self.set_childitem('active_mode.aus', False)
                 self.set_smart(False)
@@ -355,8 +377,7 @@ class Indego(SmartPlugin):
                 self.set_childitem('alm_mode.str','Übersicht Kalender mähen:')
                 self.set_childitem('alm_mode','calendar')
                 self.set_childitem('update_active_mode', False)
-                self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate(False)
-                #self.set_childitem('active_mode.uzsu.schaltuhr.active', False)
+                self.set_childitem('active_mode.uzsu.schaltuhr.active', False)
                 
             if item.property.name == self.parent_item+'.active_mode.aus' and item() == True:
                 self.set_childitem('update_active_mode', True)
@@ -373,6 +394,7 @@ class Indego(SmartPlugin):
             if item.property.name == self.parent_item+'.active_mode.smart' and item() == True:
                 self.set_childitem('update_active_mode', True)
                 self.set_childitem('active_mode', 2)
+                self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate(False)
                 self.set_childitem('alm_mode.str','Übersicht SmartMow mähen:')
                 self.set_childitem('active_mode.aus', False)
                 self.set_childitem('active_mode.kalender', False)
@@ -381,8 +403,7 @@ class Indego(SmartPlugin):
                 self.set_smart(True)
                 self.set_childitem('alm_mode','smart')
                 self.set_childitem('update_active_mode', False)
-                self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate(False)
-                #self.set_childitem('active_mode.uzsu.schaltuhr.active', False)
+                self.set_childitem('active_mode.uzsu.schaltuhr.active', False)
             
             
             
@@ -403,13 +424,10 @@ class Indego(SmartPlugin):
             if item._name == self.parent_item+'.active_mode.uzsu':
                 if item() == 10:
                     self.set_childitem('MOW', True)
-                    # self.logger.warning("Trigger Mow")
                 if item() == 20:
                     self.set_childitem('RETURN', True)
-                    # self.logger.warning("uzsu Trigger Return")
                 if item() == 30:              
                     self.set_childitem('PAUSE', True)
-                    # self.logger.warning("uzsu Trigger Pause")                
             
             if ("show_uzsu_popup" in item.property.name and item() == True):
                 self.set_childitem('visu.fire_uszu_popup','fire_uszu_popup|True' )
@@ -423,11 +441,13 @@ class Indego(SmartPlugin):
                     self.set_childitem('active_mode.aus', False)
                     self.set_childitem('active_mode.kalender', False)          
                     self.set_childitem('active_mode.smart', True)
+                    self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate(False)
                 elif (item() == 'calendar'):
                     self.set_childitem('active_mode', 1)
                     self.set_childitem('active_mode.aus', False)
                     self.set_childitem('active_mode.kalender', True)          
-                    self.set_childitem('active_mode.smart', False)       
+                    self.set_childitem('active_mode.smart', False)
+                    self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate(False)
                 elif (item() == 'manual'):
                     self.set_childitem('active_mode', 3)
                     self.set_childitem('active_mode.aus', True)
@@ -435,19 +455,26 @@ class Indego(SmartPlugin):
                     self.set_childitem('active_mode.smart', False)
             
             
+        if self.has_iattr(item.conf, 'indego_command'):
+            self.logger.debug("Item '{}' has attribute '{}' triggered {}".format( item, 'indego_command', self.get_iattr_value(item.conf, 'indego_command')))
+            try:    
+                self.send_command(item, caller=None, source=None, dest=None)
+            except:
+                    self.logger.warning("Error sending command for item '{}' from caller '{}', source '{}' and dest '{}'".format(item,caller,source,dest))
+        
         if item.property.name == self.parent_item+'.visu.store_sms_profile' and item() == True:
                 self.smart_mow_settings("write")
                 self.set_childitem('visu.store_sms_profile', False)
                     
                     
-        if item.property.name == self.parent_item+'.calendar_save':
+        if item.property.name == self.parent_item+'.calendar_save' and item() == True:
             self.set_childitem('calendar_result', "speichern gestartet")
             # Now Save the Calendar on Bosch-API
             self.cal_update_count = 0
             self.auto_mow_cal_update()
 
 
-        if item.property.name == self.parent_item+'.calendar_predictive_save':
+        if item.property.name == self.parent_item+'.calendar_predictive_save' and item() == True:
             self.set_childitem('calendar_predictive_result', "speichern gestartet")
             # Now Save the Calendar on Bosch-API
             self.upate_count_pred = 0
@@ -486,7 +513,22 @@ class Indego(SmartPlugin):
                 else:                  
                     self.set_childitem('active_mode.uzsu.schaltuhr.active', False)
                 
-                
+    def send_config(self,url,body=None):
+        try:
+            myResult, response = self.put_url( url, self.context_id, body)
+        except err as Exception:
+            self.logger.warning("Error during putting Config {}".format(err))
+            return False
+        return True
+
+    def send_command(self, item, command=None, caller=None, source=None, dest=None):
+        if self.has_iattr(item.conf, 'indego_command'):
+            command = json.loads(self.get_iattr_value(item.conf,'indego_command'))
+            self.logger.debug("Function Command " + json.dumps(command) + ' ' + str(item()))
+            if item():
+                message, response = self.put_url(self.indego_url + 'alms/' + self.alm_sn + '/state', self.context_id, command, 10)
+                self.logger.debug("Command " + json.dumps(command) + ' gesendet! ' + str(message))
+                    
     def create_mow_track(self):
         if self.get_childitem('visu.model_type') == 2:
             mystroke     ='#C3FECE'
@@ -496,20 +538,7 @@ class Indego(SmartPlugin):
             mystrokewidth ='5'
         myMowTrack = {'Points':self.get_childitem('visu.mow_track'),
                       'style':'fill:none; stroke:'+mystroke+ '; stroke-width: '+mystrokewidth+'; stroke-linecap:round; stroke-linejoin: round;'}
-        #'fill:none; stroke:#999999 ; stroke-width:5; stroke-linecap:round; stroke-linejoin:round;'
         self.set_childitem('visu.svg_mow_track','svg_mow_track|'+json.dumps(myMowTrack))
-        '''
-        myMowTrack = "<polyline id='mower_track_id' points='"
-        myWayPoints = self.get_childitem('visu.mow_track')
-        for myPoint in myWayPoints:
-            myMowTrack += myPoint + ' '
-        myMowTrack = myMowTrack[:-1]
-        if self.get_childitem('visu.model_type') == 2:
-            myMowTrack += "' fill='none' stroke='#C3FECE' stroke-width='17' stroke-linecap='round' stroke-linejoin='round'/>"
-        else:
-            myMowTrack += "' fill='none' stroke='#999999' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/>"
-        self.set_childitem('visu.svg_mow_track','svg_mow_track:'+str(myMowTrack))
-        '''
         
     def daystring(self, zeitwert, ausgang):
         if ausgang == 'min':
@@ -619,7 +648,6 @@ class Indego(SmartPlugin):
         myCal = self.get_childitem('calendar')
         myCal['sel_cal'] = actCalendar
         self.set_childitem('calendar',myCal)
-        
         myResult = self.store_calendar(self.calendar(),'calendar')
         if self.cal_update_count <=3:
             if myResult != 200:
@@ -637,6 +665,10 @@ class Indego(SmartPlugin):
                 except:
                     pass
                 myMsg = "Mähkalender wurde gespeichert"
+                # Deactivate the UZSU, when saving the calendar, calendar-mode is activated
+                # and set the correctmode
+                self.set_childitem('active_mode.kalender',True)
+                
 
         else: # Bereits drei Versuche getätigt
             try:
@@ -716,7 +748,7 @@ class Indego(SmartPlugin):
         if (myLog == None):
             return
         try:
-            if len (myLog) >= 500:
+            if len (myLog) >= 2500:
                 myLog = myLog[1:]
         except:
             return
@@ -886,14 +918,6 @@ class Indego(SmartPlugin):
             self.logger.info("Error during put for {} HTTP-Status :{}".format(url, response.status_code))
             return False, response
 
-    def send_command(self, item, command=None, caller=None, source=None, dest=None):
-        if self.has_iattr(item.conf, 'indego_command'):
-            command = json.loads(self.get_iattr_value(item.conf,'indego_command'))
-            self.logger.debug("Function Command " + json.dumps(command) + ' ' + str(item()))
-            if item():
-                message, response = self.put_url(self.indego_url + 'alms/' + self.alm_sn + '/state', self.context_id, command, 10)
-                self.logger.debug("Command " + json.dumps(command) + ' gesendet! ' + str(message))
-
     def set_smart(self, enable=None):
 
         if enable:
@@ -908,34 +932,10 @@ class Indego(SmartPlugin):
 
     def check_state_4_protocoll(self):
         myActState = self.get_childitem("stateCode")
-        if myActState == 772 or myActState == 775 or myActState == 769 or myActState == 770 or myActState == 771 or myActState == 773 or myActState == 774 or myActState == 257 or myActState == 260 or myActState == 261 or myActState == 262 or myActState == 263:                           # 772 = Mähzeit beendet / 775 = fertig gemäht
+        if myActState == 772 or myActState == 775 or myActState == 769 or myActState == 770 or myActState == 771 or myActState == 773 or myActState == 774 or myActState == 257 or myActState == 260 or myActState == 261 or myActState == 262 or myActState == 263:                           # 769 = fährt zur Station / 772 = Mähzeit beendet / 775 = fertig gemäht
             self.get_sh().scheduler.change('plugins.indego.state', cycle={self.cycle:None})
             self.set_childitem("laststateCode", myActState)
             self.position_detection = False
-            return
-        
-        if myActState != 518 and myActState != 513 and myActState !=515 and myActState !=514 :    # 518 = mähe / 513 = schneide Rand / 515 = lade Karte / 514 = mähen, bestimme Ort
-            return
-
-        mylastActState = self.get_childitem("laststateCode")
-        # First run of position detection
-        if mylastActState != myActState and not self.position_detection:
-            self.set_childitem("laststateCode", myActState)
-            self.set_childitem("visu.mow_track", [])
-            # Now set Position-Detection ON
-            myResult = self.post_url(self.indego_url + 'alms/' + self.alm_sn + '/requestPosition?count=100&interval=6', self.context_id, None, 10)
-            if myResult != True:
-                pass
-            # Now set scheduler for state to 6 Sec.
-            self.get_sh().scheduler.change('plugins.indego.state', cycle={8:None}) # Zum Testen von 6 auf 10 Sekunden geändert
-            self.position_detection = True
-            self.position_count = 0
-        # Following runs of position detection
-        if  (self.position_detection and self.position_count >= 90):
-            self.position_count = 0
-            myResult = self.post_url(self.indego_url + 'alms/' + self.alm_sn + '/requestPosition?count=100&interval=6', self.context_id, None, 10)
-            if myResult != True:
-                pass
         
         
     def delete_auth(self):
@@ -969,12 +969,7 @@ class Indego(SmartPlugin):
         '''
         url = "{}alms/{}/{}".format( self.indego_url, self.alm_sn, myName)
         
-        #headers = {
-        #           'x-im-context-id' : self.context_id
-        #          }
-
         try:
-            #response = requests.put(url, headers=headers, json=myCal)
             myResult, response = self.put_url( url, self.context_id, myCal)
         except err as Exception:
             self.logger.warning("Error during saving Calendar-Infos Error {}".format(err))
@@ -1104,6 +1099,13 @@ class Indego(SmartPlugin):
         else:
             selected_calendar = self.get_childitem('calendar_predictive_sel_cal')
         newCal = {}
+        emptySlot = {
+                    'StHr' : '00',
+                    'StMin' : '00',
+                    'EnHr' : '00',
+                    'EnMin' : '00',
+                    'En' : False
+                    }
         newCal['sel_cal'] = selected_calendar
         newCal['cals'] = []
         newCal['cals'].append({'cal':selected_calendar})  #['cal'] = selected_calendar
@@ -1117,14 +1119,6 @@ class Indego(SmartPlugin):
             End = ""
             Days  = ""
             myCalNo = 0
-            emptySlot = {
-                        'StHr' : '00',
-                        'StMin' : '00',
-                        'EnHr' : '00',
-                        'EnMin' : '00',
-                        'En' : False
-                        }
-    
             calEntry = myList[myKey].items()
     
             for myEntry in  calEntry:
@@ -1160,9 +1154,56 @@ class Indego(SmartPlugin):
                 if not dayFound:
                     newCal['cals'][0]['days'].append(newDay)
         # Add the empty slots for mowing calendars
+        #(len(newCal['cals'][0]['days'][0]['slots'])
+
+        final_Cal = newCal
+        calCounter = 0
+        for calEntry in newCal['cals']:
+            if calEntry['cal'] != 2:
+                calCounter += 1
+                continue
+            dayCounter = 0
+            for days in calEntry['days']:
+                if len(days['slots']) < 2:
+                       # add a empty slot
+                       final_Cal['cals'][calCounter]['days'][dayCounter]['slots'].append(emptySlot)
+                dayCounter += 1
+
+        return final_Cal
         
-        return newCal
-            
+    
+    def create_empty_calendar(self,needed_cals=None):
+        needed_cals=[2,3]
+        newCal = {'cals':[]}
+        emptySlot = {
+                    'StHr' : '00',
+                    'StMin' : '00',
+                    'EnHr' : '00',
+                    'EnMin' : '00',
+                    'En' : False
+                    }
+    
+        days=[]
+        #Create a complete week
+        dayCount = 0
+        while dayCount <= 6:
+            newDay = {
+                     'slots': [emptySlot,emptySlot],
+                     'day' : int(dayCount)
+                     }
+            days.append(newDay)
+            dayCount +=1
+    
+        newCal['sel_cal'] = 2
+        for cal in needed_cals:
+            newCalEntry={'days':days}
+            newCalEntry['cal']=cal
+            newCal['cals'].append(newCalEntry)
+    
+        print (json.dumps(newCal))
+    
+    
+                
     def parse_list_2_cal(self,myList = None, myCal = None,type = None):
         if (type == 'MOW' and len(self.calendar_count_mow) == 5):
             self.clear_calendar(myCal._value)
@@ -1172,6 +1213,7 @@ class Indego(SmartPlugin):
                 
         if (type == 'MOW' and len(self.calendar_count_mow) < 5):
             myCal._value = self.build_new_calendar(myList,type)
+        
         elif (type == 'PRED' and len(self.calendar_count_pred) < 5):
             myCal._value = self.build_new_calendar(myList,type)
         
@@ -1948,6 +1990,32 @@ class Indego(SmartPlugin):
             mowed = states['mowed']
             self.set_childitem('mowedPercent', mowed)
             self.logger.debug("mowed " + str(mowed))
+            
+            myLast_percent_mowed = self.get_childitem('visu.mow_track.last_percent_mowed')
+            if (mowed == 0.0 and myLast_percent_mowed > 0.0):
+                # New mow-Cycle startet
+                self.set_childitem("visu.mow_track", [])
+                #################################
+            if state_code == 518 or state_code == 513 or state_code ==515 or state_code == 514 :    # 518 = mähe / 513 = schneide Rand / 515 = lade Karte / 514 = mähen, bestimme Ort
+                # First run of position detection
+                if not self.position_detection:
+                    # Now set Position-Detection ON
+                    myResult = self.post_url(self.indego_url + 'alms/' + self.alm_sn + '/requestPosition?count=100&interval=7', self.context_id, None, 10)
+                    if myResult != True:
+                        pass
+                    # Now set scheduler for state to 8 Sec.
+                    self.get_sh().scheduler.change('plugins.indego.state', cycle={8:None}) # Zum Testen von 6 auf 10 Sekunden geändert
+                    self.position_detection = True
+                    self.position_count = 0
+                # Following runs of position detection
+                if  (self.position_detection and self.position_count >= 90):
+                    self.position_count = 0
+                    myResult = self.post_url(self.indego_url + 'alms/' + self.alm_sn + '/requestPosition?count=100&interval=7', self.context_id, None, 10)
+                    if myResult != True:
+                        pass
+
+                #################################
+            self.set_childitem('visu.mow_track.last_percent_mowed', mowed)
 
             mowmode = states['mowmode']
             self.set_childitem('mowmode',mowmode)
@@ -2022,20 +2090,24 @@ class Indego(SmartPlugin):
             self.set_childitem('mapUpdateAvailable',map_update)
 
             if map_update:
-                self.logger.debug('lade neue Karte')
-                garden = self.get_url(self.indego_url + 'alms/' + self.alm_sn + '/map?cached=0&showMower=1', self.context_id, 120)
-                if garden == False:
-                    self.logger.warning('Map returned false')
-                else:
-                    with open(self.img_pfad, 'wb') as outfile:
-                        outfile.write(garden)
-                    self.logger.debug('You have a new MAP')
-                    self.set_childitem('mapSvgCacheDate',self.shtime.now())
-                    self.set_childitem('webif.garden_map', garden.decode("utf-8"))
+                self.load_map()
+
                         
             # Postion-Detection during mowing
             self.check_state_4_protocoll()
 
+    def load_map(self):
+        self.logger.debug('lade neue Karte')
+        garden = self.get_url(self.indego_url + 'alms/' + self.alm_sn + '/map?cached=0&showMower=1', self.context_id, 120)
+        if garden == False:
+            self.logger.warning('Map returned false')
+        else:
+            with open(self.img_pfad, 'wb') as outfile:
+                outfile.write(garden)
+            self.logger.debug('You have a new MAP')
+            self.set_childitem('mapSvgCacheDate',self.shtime.now())
+            self.set_childitem('webif.garden_map', garden.decode("utf-8"))
+            
     def parse_map(self):
         myMap = self.get_childitem('webif.garden_map')
         myCustomDrawing = self.get_childitem('visu.add_svg_images')
@@ -2052,7 +2124,7 @@ class Indego(SmartPlugin):
                 mowerPos = line + '</circle>'
                 myMowerPos = i
             if '<svg' in line:
-                line.replace('<svg', '<svg id="svg_garden_map"')
+                line = line.replace('<svg', '<svg id="svg_garden_map"')
                 mapArray[i]=line
             i += 1
         # Delete the Mower-Position from the SVG

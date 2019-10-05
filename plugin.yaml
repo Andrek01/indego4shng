@@ -212,6 +212,10 @@ item_structs:
                 visu_acl: rw
                 cache: 'on'
 
+                last_percent_mowed:
+                    type: num
+                    cache: 'on'
+
             svg_mow_track:
                 type : str
                 visu_acl: rw
@@ -304,13 +308,9 @@ item_structs:
                 visu_acl: rw
                 cache: 'on'
                 indego_config: '{"bump_sensitivity":#}'
+                indego_config_url: 'api/v1/alms/{}/config'
                 remark: 'bump_sensitivity = 0 = normal / bump_sensitivity = 1 = hohe / bump_sensitivity = 2 = niedrig'
 
-            bump_sensitivity_str:
-                type: str
-                visu_acl: rw
-                cache: 'on'
-                initial_value: '---'
 
         active_mode:
             type: num

@@ -483,8 +483,13 @@ function CancelChanges_mow(click_item) {
 }
 
 function SaveChanges_mow(click_item) {
+	// !!!!!!!!!!!!!!!!!
+	// Kalender beim speichern unverändert lassen
+	// !!!!!!!!!!!!!!!!!
+	
 	activeNewCalendar = click_item.substring(10, 11)
 	// activeNewCalendar = GetActCalendar('M')
+
 	io.write('indego.calendar_sel_cal', activeNewCalendar)
 	// activeOrgCalendar = activeNewCalendar
 
@@ -814,10 +819,13 @@ $.widget("sv.indego_calendar", $.sv.widget,
 					}
 
 				}
-				orgCalendar = $.extend(true, [], response);
-				newCalendar = $.extend(true, [], response);
-				EnableCalendar('M')
-				UpdateTable(orgCalendar, 'indego-draw-calendar',
+				if (String(m_CalCount).search("8") == -1)
+					{
+					orgCalendar = $.extend(true, [], response);
+					newCalendar = $.extend(true, [], response);
+					EnableCalendar('M')
+					}
+				UpdateTable($.extend(true, [], response), 'indego-draw-calendar',
 						'indego-calendar', 'm')
 				ReDrawActCalendar('M')
 			}
