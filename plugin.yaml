@@ -166,6 +166,7 @@ item_structs:
             alerts:
                 type: dict
                 visu_acl: rw
+                cache: 'on'
 
             alert_new:
                 type: bool
@@ -248,9 +249,91 @@ item_structs:
                 visu_acl: rw
                 initial_value: 'fire_uszu_popup|False'
                 autotimer: 1 = 'fire_uszu_popup|False'
-    
 
 # End - Definitions for the VISU-Items
+
+# Start - Definitions for the Trigger_Items
+        trigger:
+
+            state_trigger_1:
+                type: bool
+                autotimer: 1 = False
+                initial_value: 0
+
+                state:
+                    type: str
+                    cache: 'on'
+                    initial_value: '99999-kein State-Trigger'
+
+            state_trigger_2:
+                type: bool
+                autotimer: 1 = False
+                initial_value: 0
+
+                state:
+                    type: str
+                    cache: 'on'
+                    initial_value: '99999-kein State-Trigger'
+
+            state_trigger_3:
+                type: bool
+                autotimer: 1 = False
+                initial_value: 0
+
+                state:
+                    type: str
+                    cache: 'on'
+                    initial_value: '99999-kein State-Trigger'
+
+            state_trigger_4:
+                type: bool
+                autotimer: 1 = False
+                initial_value: 0
+
+                state:
+                    type: str
+                    cache: 'on'
+                    initial_value: '99999-kein State-Trigger'
+
+            alarm_trigger_1:
+                type: bool
+                autotimer: 1 = False
+
+                alarm:
+                    type: str
+                    cache: 'on'
+                    initial_value: ''
+
+            alarm_trigger_2:
+                type: bool
+                autotimer: 1 = False
+
+                alarm:
+                    type: str
+                    cache: 'on'
+                    initial_value: ''
+
+            alarm_trigger_3:
+                type: bool
+                autotimer: 1 = False
+
+                alarm:
+                    type: str
+                    cache: 'on'
+                    initial_value: ''
+
+
+            alarm_trigger_4:
+                type: bool
+                autotimer: 1 = False
+
+                alarm:
+                    type: str
+                    cache: 'on'
+                    initial_value: ''
+
+
+# End - Definitions for the Trigger_Items
 
 # Start - Definitions for the webIf-Items
         webif:
@@ -311,6 +394,13 @@ item_structs:
                 indego_config_url: 'api/v1/alms/{}/config'
                 remark: 'bump_sensitivity = 0 = normal / bump_sensitivity = 1 = hohe / bump_sensitivity = 2 = niedrig'
 
+# Start - special Items to care about future developements
+        states:
+            type : dict
+            initial_value : {"0":["liestdenStatus","unknown"],"257":["lädtdenAkku","dock"],"258":["istangedockt","dock"],"259":["Softwareupdate!","dock"],"260":["lädtdenAkku","dock"],"261":["istangedockt","dock"],"262":["lädtdieKarte","dock"],"263":["speichertdieKarte","dock"],"266":["verlässtLadestation","dock"],"513":["mäht","moving"],"514":["bestimmtdenOrt","moving"],"515":["lädtdieKarte","moving"],"516":["lerntdenGarten","moving"],"517":["machtPause","pause"],"518":["schneidetdenRand","moving"],"519":["angehalten!","hilfe"],"523":["mähtimSpotMow","moving"],"524":["mähtzufällig","moving"],"768":["fährtindieStation","moving"],"769":["fährtzurückzurStation","moving"],"770":["fährtzurückzurStation","moving"],"771":["fährtzumLadenindieStation","moving"],"772":["hatdieMähzeitbeendet-fährtzurück","moving"],"773":["istüberhitzt-fährtzurück","help"],"774":["fährtinStation","moving"],"775":["hatfertiggemäht-fährtzurück","moving"],"776":["bestimmtseinePosition","moving"],"1025":["Diagnosemodus!","unknown"],"1026":["Endoflive","hilfe"],"1281":["Softwareupdate!","dock"],"1537":["Stromsparmodus!","dock"],"64513":["Statusabrufen...","dock"]}
+            cache: 'on'
+
+# Ende
 
         active_mode:
             type: num
@@ -481,9 +571,6 @@ item_structs:
             dhm:
                 type: str
                 visu_acl: rw
-                # database: 'yes'
-                # eval: round(sh.indego.runtimeTotalOperationMins()/60,0)
-                # eval_trigger: indego.runtimeTotalOperationMins
 
         runtimeTotalChargeMins:
             type: num
@@ -492,9 +579,6 @@ item_structs:
             dhm:
                 type: str
                 visu_acl: rw
-                # database: 'yes'
-                # eval: round(sh.indego.runtimeTotalChargeMins()/60,0)
-                # eval_trigger: indego.runtimeTotalChargeMins
 
         runtimeSessionOperationMins:
             type: num

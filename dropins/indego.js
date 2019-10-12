@@ -98,18 +98,6 @@ var htmlPopUp = "<div data-role='popup' data-overlay-theme='b' data-theme='a' cl
 
 //-------------Start - Functions for the Map ------------------------------
 
-function SvgLoaded()
-  {
-	var svgObject = document.getElementById('garden-image').contentDocument;
-	orgMap = svgObject.firstElementChild.innerHTML
-	console.log('orgMap was loaded and stored');
-	if (MowTrack != '')
-		{DrawMowTrack(MowTrack)}
-  }
-
-
-
-
 function HideMowTrack()
 {
 	try
@@ -188,6 +176,8 @@ function UpdateMowerPos(actPos)
 }
 
 //-------------End - Functions for the Map ------------------------------
+
+
 
 
 function MessageHandling(click_item) {
@@ -643,6 +633,14 @@ function FillDrawingCalendar(myCal, myColour, preFix) {
 					if (key == 'Params') {
 						continue
 					}
+					if (calendar[key].hasOwnProperty('Color'))
+						{
+						colour2Draw = calendar[key]['Color']
+						}
+					else
+						{
+						colour2Draw = myColour
+						}
 					myIndex = parseInt(key[0]) // which Calendar 1/2/3/4/5
 					myArray = calendar[key].Days.split(",")
 					for (var numberOfEntry = 0; numberOfEntry < myArray.length; numberOfEntry++) {
@@ -658,14 +656,14 @@ function FillDrawingCalendar(myCal, myColour, preFix) {
 										+ myArray[numberOfEntry] + "-"
 										+ String(actHour)
 								myCell = document.getElementById(myID)
-								myCell.bgColor = myColour
+								myCell.bgColor = colour2Draw
 							} else if (actHour < parseFloat(calendar[key].End
 									.substring(0, 2))) {
 								myID = preFix + '-' + myIndex + "-"
 										+ myArray[numberOfEntry] + "-"
 										+ String(actHour)
 								myCell = document.getElementById(myID)
-								myCell.bgColor = myColour
+								myCell.bgColor = colour2Draw
 							}
 
 							actHour += 1
@@ -1305,3 +1303,21 @@ $.widget("sv.garden_map", $.sv.widget, {
 
 
 ///////////////////////////
+//*****************************************************
+//Jump to Anchor
+//*****************************************************
+$(document).on('click', 'a[href^="#jump"]', function(e) {
+  // target element id
+  var id = $(this).attr('href');
+  // target element
+  var $id = $(id);
+  if ($id.length === 0) {
+      return;
+  }
+  // prevent standard hash navigation (avoid blinking in IE)
+  e.preventDefault();
+  // top position relative to the document
+  var pos = $id.offset().top-100;
+  // animated top scrolling
+  $('body, html').animate({scrollTop: pos});
+});

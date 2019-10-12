@@ -172,6 +172,8 @@ class Indego(SmartPlugin):
         #self.scheduler_add('get_smart_frequency', self.get_smart_frequency, cycle=500)
         # if you need to create child threads, do not make them daemon = True!
         # They will not shutdown properly. (It's a python bug)
+       
+        
 
     def stop(self):
         """
@@ -706,9 +708,6 @@ class Indego(SmartPlugin):
             if not self.cal_pred_update_running:
                 # get the predictve calendar for smartmowing
                 self.predictive_calendar = self.items.return_item(self.parent_item + '.' + 'calendar_predictive')
-                # Only for Tests
-                #myTest ={'cals': [{'cal': 1, 'days': [{'day': 0, 'slots': [{'StHr': 0, 'StMin': 0, 'EnHr': 12, 'En': True, 'EnMin': 0}, {'StHr': 20, 'StMin': 30, 'EnHr': 23, 'En': True, 'EnMin': 59}]}, {'day': 1, 'slots': [{'StHr': 0, 'StMin': 0, 'EnHr': 12, 'En': True, 'EnMin': 0}, {'StHr': 20, 'StMin': 30, 'EnHr': 23, 'En': True, 'EnMin': 59}]}, {'day': 2, 'slots': [{'StHr': 0, 'StMin': 0, 'EnHr': 12, 'En': True, 'EnMin': 0}, {'StHr': 20, 'StMin': 30, 'EnHr': 23, 'En': True, 'EnMin': 59}]}, {'day': 3, 'slots': [{'StHr': 0, 'StMin': 0, 'EnHr': 12, 'En': True, 'EnMin': 0}, {'StHr': 20, 'StMin': 30, 'EnHr': 23, 'En': True, 'EnMin': 59}]}, {'day': 4, 'slots': [{'StHr': 0, 'StMin': 0, 'EnHr': 12, 'En': True, 'EnMin': 0}, {'StHr': 20, 'StMin': 30, 'EnHr': 23, 'En': True, 'EnMin': 59}]}, {'day': 5, 'slots': [{'StHr': 0, 'StMin': 0, 'EnHr': 12, 'En': True, 'EnMin': 0}, {'StHr': 20, 'StMin': 30, 'EnHr': 23, 'En': True, 'EnMin': 59}]}, {'day': 6, 'slots': [{'StHr': 0, 'StMin': 0, 'EnHr': 23, 'En': True, 'EnMin': 59}]}]}], 'sel_cal': 1}
-                #self.predictive_calendar(myTest, 'indego')
                 self.predictive_calendar(self.get_predictive_calendar(), 'indego')
                 predictive_calendar_list = self.items.return_item(self.parent_item + '.' + 'calendar_predictive_list')
                 predictive_calendar_list(self.parse_cal_2_list(self.predictive_calendar._value,'PRED'),'indego')
@@ -748,8 +747,8 @@ class Indego(SmartPlugin):
         if (myLog == None):
             return
         try:
-            if len (myLog) >= 2500:
-                myLog = myLog[1:]
+            if len (myLog) >= 500:
+                myLog = myLog[1:500]
         except:
             return
         now = self.shtime.now()
@@ -1270,7 +1269,7 @@ class Indego(SmartPlugin):
                         myItem['time']=myItem['calculated']
                 myKey = "8-"+myItem['time']
                 if not myKey in myCal:
-                    myCal[myKey] = {'Days':'', 'Start':'','End':'','Key':'','Color' : ''}
+                    myCal[myKey] = {'Days':'', 'Start':'','End':'','Key':'','Color' : '#0AFF0A'}
                     start_hour = float(myItem['time'].split(':')[0])
                     myCal[myKey]['Start']=str("%02d" % start_hour)+':'+myItem['time'].split(':')[1]
                     #myCal[myKey]['Start'] = myItem['time']
@@ -1305,6 +1304,8 @@ class Indego(SmartPlugin):
                 stop_hour = float(start_hour)+4
                 if stop_hour > 23:
                     stop_hour = 23
+                    
+                myCal[myCalEntry]['Color']='#FFA985'    
                 myCal[myCalEntry]['End']=str("%02d" % stop_hour)+':'+myCal[myCalEntry]['Start'].split(':')[1]
                 myCal[myCalEntry]['Key']='8-'+myCal[myCalEntry]['Start']+'-'+myCal[myCalEntry]['End']
             final_Calender[myCal[myCalEntry]['Key']]=myCal[myCalEntry]
@@ -1349,6 +1350,19 @@ class Indego(SmartPlugin):
                                     'End'   : myEndTime1,
                                     'Days'  : str(myDay)
                                  }
+                        if 'Attr' in slots:
+                            if slots['Attr'] == "C":    # manual Exclusion Time
+                                mycolour = '#DC143C'
+                            elif slots['Attr'] == "p":  # Rain
+                                mycolour = '#2693FF'
+                            elif slots['Attr'] == "P":  # Heavy Rain
+                                mycolour = '#4400FF'
+                            elif slots['Attr'] == "D":
+                                mycolour = '#FF0FC7'    # dont know ??
+                            else:
+                                mycolour = '#FFE70A'    # Heat ??
+                            myDict['Color']= mycolour
+                            
                         if not myKey in str(myList):
                             myList[myKey] = myDict
     
@@ -1754,7 +1768,6 @@ class Indego(SmartPlugin):
 
             else:
                 actAlerts = self.get_childitem('visu.alerts')
-                
                 for myAlert in alert_response:
                     if not (myAlert['alert_id'] in actAlerts):
                         # add new alert to dict
@@ -1762,6 +1775,7 @@ class Indego(SmartPlugin):
                         myAlert['message'].replace(' Bitte folgen Sie den Anweisungen im Display des Mähers.', '')
                         actAlerts[myAlert['alert_id']]=myAlert
                         self.set_childitem('visu.alert_new', True)
+                        self.check_alarm_triggers(myAlert['message']+' '+myAlert['headline'])
                 
                 self.set_childitem('visu.alerts', actAlerts)
 
@@ -1875,11 +1889,34 @@ class Indego(SmartPlugin):
 
                     self.set_childitem('alm_firmware_version',alm_firmware_version)
                 self.logger.debug("alm_firmware_version " + str(alm_firmware_version))
+    
+    def check_state_triggers(self, myStatecode):
+        myStatecode = str('%0.5d' %myStatecode)
+        counter = 1
+        while counter <=4:
+            myItemName="trigger.state_trigger_" + str(counter) + ".state"
+            myTrigger = self.get_childitem(myItemName).split("-")[0]
+            if myStatecode == myTrigger:
+                myTriggerItem="trigger.state_trigger_"+ str(counter)
+                self.set_childitem(myTriggerItem, True)
+            counter += 1
 
+
+    def check_alarm_triggers(self, myAlarm):
+            counter = 1
+            while counter <=4:
+                myItemName="trigger.alarm_trigger_" + str(counter) + ".alarm"
+                myAlarmTrigger = self.get_childitem(myItemName)
+                if myAlarmTrigger.lower() !='' and myAlarmTrigger.lower() in myAlarm.lower() :
+                    myTriggerItem="trigger.alarm_trigger_"+ str(counter)
+                    self.set_childitem(myTriggerItem, True)
+                counter += 1        
+    
     def state(self):
         if (self.get_childitem("wartung.wintermodus") == True):
             return
-        
+        state__str = self.get_childitem('states')
+        '''
         state__str = {  0:  ['liest den Status', 'unknown'],
                       257:  ['lädt den Akku', 'dock'],
                       258:  ['ist angedockt', 'dock'],
@@ -1912,7 +1949,7 @@ class Indego(SmartPlugin):
                       1281: ['Softwareupdate!', 'dock'],
                       1537: ['Stromsparmodus!','dock'],
                       64513:['Status abrufen...','dock']}
-        
+        '''
         if (self.position_detection):
             self.position_count += 1
         state_response = self.get_url(self.indego_url + 'alms/' + self.alm_sn + '/state', self.context_id)
@@ -1941,12 +1978,13 @@ class Indego(SmartPlugin):
                 myLog = self.get_childitem('webif.state_protocoll')
                 try:
                     if len (myLog) >= 500:
-                        myLog = myLog[1:]
+                        myLog = myLog[1:500]
                 except:
                     pass
                 now = self.shtime.now()
                 myLog.append(str(now)[0:19]+'  State : '+str(state_code) + ' State-Message : ' + state__str[state_code][0])
                 self.set_childitem('webif.state_protocoll', myLog)
+                self.check_state_triggers(state_code)
                 
             self.logger.debug("state code " + str(state_code))
             if state__str[state_code][1] == 'dock':
@@ -2232,8 +2270,20 @@ class WebInterface(SmartPluginWebIf):
     @cherrypy.expose
     def store_color_html(self, newColor = None):
         self.plugin.set_childitem('visu.mower_colour','mower_colour:"'+newColor[1:]+'"')
-        
-        
+    
+    
+    @cherrypy.expose
+    def store_state_trigger_html(self, Trigger_State_Item = None,newState=None):
+        myItemSuffix=Trigger_State_Item
+        myItem="trigger." + myItemSuffix + ".state"
+        self.plugin.set_childitem(myItem,newState)    
+
+    
+    @cherrypy.expose
+    def store_alarm_trigger_html(self, Trigger_Alarm_Item = None,newAlarm=None):
+        myItemSuffix=Trigger_Alarm_Item
+        myItem="trigger." + myItemSuffix + ".alarm"
+        self.plugin.set_childitem(myItem,newAlarm)    
 
     @cherrypy.expose
     def index(self, reload=None):
@@ -2262,9 +2312,35 @@ class WebInterface(SmartPluginWebIf):
         com_log_file = ''
         for line in my_com_loglines:
             com_log_file += str(line)+'\n'
+        # get the login-times
         myExperitation_Time = datetime.fromtimestamp(self.plugin.expiration_timestamp).strftime('%Y-%m-%d %H:%M:%S')
         myLastLogin = datetime.fromtimestamp(float(self.plugin.last_login_timestamp)).strftime('%Y-%m-%d %H:%M:%S')
+        # get the mower-colour
         myColour = '#'+self.plugin.get_childitem('visu.mower_colour')[14:-1]
+        # get all the available states
+        selectStates = []
+        myStates = self.plugin.get_childitem('states')
+        for state in myStates:
+            newEntry={}
+            newEntry['ID']=str('%0.5d' %state)
+            newEntry['Caption']=myStates[state][0]
+            selectStates.append(newEntry)
+        # add empty Entry
+        newEntry={}
+        newEntry['ID']='99999'
+        newEntry['Caption']="kein State-Trigger"
+        selectStates.append(newEntry)
+        # get the actual triggers
+        Trigger_1_state=self.plugin.get_childitem('trigger.state_trigger_1.state')
+        Trigger_2_state=self.plugin.get_childitem('trigger.state_trigger_2.state')
+        Trigger_3_state=self.plugin.get_childitem('trigger.state_trigger_3.state')
+        Trigger_4_state=self.plugin.get_childitem('trigger.state_trigger_4.state')
+        
+        Alarm_Trigger_1=self.plugin.get_childitem('trigger.alarm_trigger_1.alarm')
+        Alarm_Trigger_2=self.plugin.get_childitem('trigger.alarm_trigger_2.alarm')
+        Alarm_Trigger_3=self.plugin.get_childitem('trigger.alarm_trigger_3.alarm')
+        Alarm_Trigger_4=self.plugin.get_childitem('trigger.alarm_trigger_4.alarm')
+        
         # add values to be passed to the Jinja2 template eg: tmpl.render(p=self.plugin, interface=interface, ...)
         return tmpl.render(p=self.plugin,
                            items=sorted(plgitems, key=lambda k: str.lower(k['_path'])),
@@ -2274,6 +2350,15 @@ class WebInterface(SmartPluginWebIf):
                            myExperitation_Time=myExperitation_Time,
                            myLastLogin=myLastLogin,
                            myColour=myColour,
-                           myMap=self.plugin.get_childitem('webif.garden_map'))
+                           myMap=self.plugin.get_childitem('webif.garden_map'),
+                           selectStates=sorted(selectStates, key=lambda k: str.lower(k['ID'])),
+                           Trigger_1_state=Trigger_1_state,
+                           Trigger_2_state=Trigger_2_state,
+                           Trigger_3_state=Trigger_3_state,
+                           Trigger_4_state=Trigger_4_state,
+                           Alarm_Trigger_1=Alarm_Trigger_1,
+                           Alarm_Trigger_2=Alarm_Trigger_2,
+                           Alarm_Trigger_3=Alarm_Trigger_3,
+                           Alarm_Trigger_4=Alarm_Trigger_4 )
 
 

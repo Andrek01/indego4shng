@@ -30,7 +30,7 @@ function BtnEncode(result)
 }
 
 //*******************************************
-// Function to Save Command-Let
+// Function to Store Color
 //*******************************************
 
 function StoreColor(Color) {
@@ -40,12 +40,69 @@ function StoreColor(Color) {
 		data: { newColor : Color,
               } ,
 		contentType: "application/json; charset=utf-8",
-		success: function (response) {console.log('error-setting Colour-Code')},
-		error: function () {console.log('OK-setting Colour-Code')}
+		success: function (response) {console.log('OK-setting Colour-Code')},
+		error: function () {console.log('error-setting Colour-Code')}
 	});
   return
 }
 
+//*******************************************
+// Function to Store State-Trigger-Events
+//*******************************************
+
+function StoreStateTrigger(TriggerItem, Value) {
+	$.ajax({
+		url: "store_state_trigger.html",
+		type: "GET",
+		data: { Trigger_State_Item : TriggerItem,
+                newState : Value
+              } ,
+		contentType: "application/json; charset=utf-8",
+		success: function (response) {console.log('OK-setting Trigger-State')},
+		error: function () {console.log('error-setting Trigger-State')}
+	});
+  return
+}
+
+//*******************************************
+// Function to Store Alarm-Trigger-Events
+//*******************************************
+
+function StoreAlarmTrigger(TriggerItem, Value) {
+	$.ajax({
+		url: "store_alarm_trigger.html",
+		type: "GET",
+		data: { Trigger_Alarm_Item : TriggerItem,
+                newAlarm : Value
+              } ,
+		contentType: "application/json; charset=utf-8",
+		success: function (response) {console.log('OK-setting Trigger-Alarm')},
+		error: function () {console.log('error-setting Trigger-Alarm')}
+	});
+  return
+}
+
+//*******************************************
+// Handler for Selecting State-Triggers
+//*******************************************
+
+function selectStateTrigger(SelectID)
+{
+    mySelect = document.getElementById(SelectID)
+    myValue = mySelect.options[mySelect.options.selectedIndex].text
+    StoreStateTrigger(SelectID, myValue)
+}
+
+//*******************************************
+// Handler for Selecting Alarm-Triggers
+//*******************************************
+
+function selectAlarmTrigger(SelectID)
+{
+    mySelect = document.getElementById(SelectID)
+    myValue = mySelect.value
+    StoreAlarmTrigger(SelectID, myValue)
+}
 
 
 //*******************************************

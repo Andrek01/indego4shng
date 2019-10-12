@@ -13,6 +13,22 @@ font-size: 12px;
 }
 </style>
 
+<script>
+
+
+function run()
+ {
+  statelogCodeMirror.refresh();
+  logCodeMirror.refresh();
+  alert('Dokument geladen');
+ }
+	
+
+
+//window.addEventListener('load', function(){ if (document.readyState==='complete') run(); });
+
+</script>
+
 {% extends "base_plugin.html" %}
 
 {% set logo_frame = false %}
@@ -103,6 +119,39 @@ font-size: 12px;
 {% set tab2title = "<strong>" ~ p.get_shortname() ~ " Gartenkarte/Settings</strong> " %}
 {% block bodytab2 %}
 <div class="container-fluid m-2">
+<div class="table-responsive" style="margin-left: 2px; margin-right: 2px; margin-bottom: 5px;margin-top: 5px;" class="row">
+
+	<table class="table table-striped table-hover">
+			<tr style="height: 10px;font-size: 12px" valign = "middle">
+				<td style="width: 10%; vertical-align:middle;align:left">Credentials:</td>
+				<td style="width: 15%" valign = "middle" align="left">
+			          <input type="input" style="margin-bottom: 1px; margin-left: 5px; width: 100%;font-size: 12px" class="form-control" name="txtUser" id="txtUser" placeholder="{{ _('Indego-User') }}" value="">			
+				</td>
+				<td style="width: 15%" valign = "middle" align="left">
+			          <input type="input" style="margin-bottom: 1px; margin-left: 5px; width: 100%;font-size: 12px" class="form-control" name="txtPwd" id="txtPwd" placeholder="{{ _('Indego-Password') }}" value="">			
+				</td>
+				<td style="width: 10%; vertical-align:middle;align:left">
+				<div class="custom-control custom-checkbox" style =" vertical-align:middle;align:left">
+				    <input type="checkbox" class="custom-control-input" id="store_2_config" name="store_2_config">
+				    <label class="custom-control-label" for="store_2_config">Store to Config</label>
+				</div>
+                </td>
+                <td style="width:10%">
+			          <button type="button" onclick="BtnEncode()"style="margin-left : 5px" class="btn btn-shng btn-sm" value="btnEncode" id="btnEncode">&nbsp;{{ _('Encode') }}</button>
+                <td>
+				<td style="width: 10%; vertical-align:middle;align:left">encoded Cred.:
+                </td>
+                <td style="width: 45%; vertical-align:middle;align:left">
+			          <input type="input" style="margin-bottom: 1px; margin-left: 5px; width: 100%;font-size: 12px" class="form-control" name="txtEncoded" id="txtEncoded" placeholder="{{ _('Encoded Credentials') }}" value="">			
+				</td>
+			</tr>
+
+
+
+	</table>
+
+</div>
+<!----------------------------------------->
 
 		<table class="table table-striped table-hover pluginList">
 			<thead>
@@ -113,25 +162,107 @@ font-size: 12px;
 					</tr>
 			</thead>
 			<tbody>
-				<tr height="20px">
-					<td style="width: 50%;" rowspan="2">
-<!--            			<img src="static/img/garden.svg" style="object-fit:contain; width:100%; height:100%; margin-left: auto; margin-right: auto; display: block;">-->
+				<tr height="10px">
+					<td style="width: 50%;" rowspan="15">
                             {{ myMap }}
                     </td>
 					<td class="py-1" style="vertical-align: middle;">{{ _('Farbwert für Mäher') }}</td>
 					<td>
                         <input id="mowercolour" class="jscolor {onFineChange:'SaveColor(this)'}" value={{myColour}}>
-<!--                    	<input id="mowercolour" style="vertical-align: middle; align:center"  class="jscolor" value= {{myColour}}>-->
                     </td>
 				</tr>
-				<tr>
-					<td>
-                    </td>
-					<td>
-                    </td>
-					<td>
-                    </td>
-				</tr>
+				<tr height="10%">
+	    			<td style="width: 5%; vertical-align:middle;align:left;font-size: 20px"><strong>State-Triggers</strong></td>
+                    <td></td>                 
+                </tr>
+                </tr>
+				<tr height="10%">
+    				<td style="width: 15%; align:left; vertical-align: middle;">State-Event für Trigger 1:</td>
+                    <td style="width: 25%">
+<select name="state_trigger_1" id="state_trigger_1" style="width:400px" onChange="selectStateTrigger(this.id)">
+    {% for state in selectStates %}
+        {% set selected = '' %}
+            {% if (state.ID ~ '-' ~ state.Caption) == Trigger_1_state %}
+               {% set selected = 'selected' %}
+            {% endif %}
+        <option value="{{state.ID}} {{state.Caption}}" id="{{ state.ID }}" {{ selected }}>{{state.ID}}-{{state.Caption}} </option>
+    {% endfor %}
+</select>
+                    </td>                 
+                </tr>
+				<tr height="10%">
+    				<td style="width: 15%; align:left; vertical-align: middle;">State-Event für Trigger 2:</td>
+                    <td style="width: 25%">
+<select name="state_trigger_2" id="state_trigger_2" style="width:400px" onChange="selectStateTrigger(this.id)">
+    {% for state in selectStates %}
+        {% set selected = '' %}
+            {% if (state.ID ~ '-' ~ state.Caption) == Trigger_2_state %}
+               {% set selected = 'selected' %}
+            {% endif %}
+        <option value="{{state.ID}} {{state.Caption}}" id="{{ state.ID }}" {{ selected }}>{{state.ID}}-{{state.Caption}} </option>
+    {% endfor %}
+</select>
+</td>
+                </tr>
+				<tr height="10%">
+    				<td style="width: 15%; align:left; vertical-align: middle;">State-Event für Trigger 3:</td>
+                    <td style="width: 25%">
+<select name="state_trigger_3" id="state_trigger_3" style="width:400px" onChange="selectStateTrigger(this.id)">
+    {% for state in selectStates %}
+        {% set selected = '' %}
+            {% if (state.ID ~ '-' ~ state.Caption) == Trigger_3_state %}
+               {% set selected = 'selected' %}
+            {% endif %}
+        <option value="{{state.ID}} {{state.Caption}}" id="{{ state.ID }}" {{ selected }}>{{state.ID}}-{{state.Caption}} </option>
+    {% endfor %}
+</select>
+</td>
+                </tr>
+                </tr>
+				<tr height="10%">
+    				<td style="width: 15%; align:left; vertical-align: middle;">State-Event für Trigger 4:</td>
+                    <td style="width: 25%">
+<select name="state_trigger_4" id="state_trigger_4" style="width:400px" onChange="selectStateTrigger(this.id)">
+    {% for state in selectStates %}
+        {% set selected = '' %}
+            {% if (state.ID ~ '-' ~ state.Caption) == Trigger_4_state %}
+               {% set selected = 'selected' %}
+            {% endif %}
+        <option value="{{state.ID}} {{state.Caption}}" id="{{ state.ID }}" {{ selected }}>{{state.ID}}-{{state.Caption}} </option>
+    {% endfor %}
+</select>
+</td>
+                </tr>
+				<tr height="10%">
+	    			<td style="width: 5%; vertical-align:middle;align:left;font-size: 20px"><strong>Alarm-Triggers</strong></td>
+                    <td></td>                 
+                </tr>
+                </tr>
+				<tr height="10%">
+    				<td style="width: 15%; align:left; vertical-align: middle;">Alarm-Event für Trigger 1:</td>
+                    <td>
+			          <input type="input" style="margin-bottom: 1px; margin-left: 5px; width: 100%;font-size: 12px" class="form-control" name="alarm_trigger_1" id="alarm_trigger_1" placeholder="{{ _('Alarm-Text') }}" value="{{ Alarm_Trigger_1}}" onChange="selectAlarmTrigger(this.id)">			
+                    </td>                 
+                </tr>
+				<tr height="10%">
+    				<td style="width: 15%; align:left; vertical-align: middle;">Alarm-Event für Trigger 2:</td>
+                    <td>
+			          <input type="input" style="margin-bottom: 1px; margin-left: 5px; width: 100%;font-size: 12px" class="form-control" name="alarm_trigger_2" id="alarm_trigger_2" placeholder="{{ _('Alarm-Text') }}" value="{{ Alarm_Trigger_2}}" onChange="selectAlarmTrigger(this.id)">			
+                    </td>                 
+                </tr>
+				<tr height="10%">
+    				<td style="width: 15%; align:left; vertical-align: middle;">Alarm-Event für Trigger 3:</td>
+                    <td>
+			          <input type="input" style="margin-bottom: 1px; margin-left: 5px; width: 100%;font-size: 12px" class="form-control" name="alarm_trigger_3" id="alarm_trigger_3" placeholder="{{ _('Alarm-Text') }}" value="{{ Alarm_Trigger_3}}" onChange="selectAlarmTrigger(this.id)">			
+                    </td>                 
+                </tr>
+                </tr>
+				<tr height="10%">
+    				<td style="width: 15%; align:left; vertical-align: middle;">Alarm-Event für Trigger 4:</td>
+                    <td>
+			          <input type="input" style="margin-bottom: 1px; margin-left: 5px; width: 100%;font-size: 12px" class="form-control" name="alarm_trigger_4" id="alarm_trigger_4" placeholder="{{ _('Alarm-Text') }}" value="{{ Alarm_Trigger_4}}" onChange="selectAlarmTrigger(this.id)">			
+                    </td>                 
+                </tr>
 			</tbody>
 		</table>
 
@@ -171,7 +302,7 @@ function setTextColor(picker) {
     </table>
 </div>
 <script type="text/javascript" language="javascript">
-var logCodeMirror = CodeMirror.fromTextArea(document.getElementById("state_log_file"),
+var statelogCodeMirror = CodeMirror.fromTextArea(document.getElementById("state_log_file"),
  {
     lineNumbers: true,
     readOnly: true,
@@ -179,12 +310,13 @@ var logCodeMirror = CodeMirror.fromTextArea(document.getElementById("state_log_f
     lineSeparator: '\n',
     mode: 'ttcn',
     lineWrapping: false,
-    indentWithTabs: false
+    indentWithTabs: false,
+    autoRefresh : true
 });
 
-window.addEventListener("resize", function(){resizeCodeMirror(logCodeMirror, 10)}, false);
-resizeCodeMirror(logCodeMirror, 10);
-logCodeMirror.refresh();
+window.addEventListener("resize", function(){resizeCodeMirror(statelogCodeMirror, 10)}, false);
+resizeCodeMirror(statelogCodeMirror, 10);
+statelogCodeMirror.refresh();
 console.log ("refreshed CodeMirrot")
 </script>
 
@@ -197,7 +329,7 @@ console.log ("refreshed CodeMirrot")
 {% block bodytab4 %}
 <div class="container-fluid" style="overflow: none; border-left: 1px solid #ccc;height: 60%">
     <div style="margin-bottom: 10px;">
-        {% if com_log_lines %}<textarea autocomplete="off" id="Com_log_file" name="Com_log_file">{% for line in com_log_lines %}{% if not loop.last %}{{ line }}{% else %}{{ line  | replace('\n', '') }}{% endif %}{% endfor %}</textarea>{% else %}{{ _('no data available') }}{% endif %}
+        {% if com_log_lines %}<textarea autocomplete="off" id="Com_log_file" name="Com_log_file" onload="run()">{% for line in com_log_lines %}{% if not loop.last %}{{ line }}{% else %}{{ line  | replace('\n', '') }}{% endif %}{% endfor %}</textarea>{% else %}{{ _('no data available') }}{% endif %}
     </div>
 </div>
 
@@ -211,12 +343,22 @@ var logCodeMirror = CodeMirror.fromTextArea(document.getElementById("Com_log_fil
     lineSeparator: '\n',
     mode: 'ttcn',
     lineWrapping: false,
-    indentWithTabs: false
+    indentWithTabs: false,
+    autoRefresh : true
 });
 
 window.addEventListener("resize", function(){resizeCodeMirror(logCodeMirror, 10)}, false);
 resizeCodeMirror(logCodeMirror, 10);
 logCodeMirror.refresh();
+
+setTimeout(function() {
+  resizeCodeMirror(logCodeMirror, 10);
+  statelogCodeMirror.refresh();
+  resizeCodeMirror(statelogCodeMirror, 10);
+  logCodeMirror.refresh();
+  console.log("TimeOut done");
+},5000);
+
 </script>
 
 {% endblock bodytab4 %}
