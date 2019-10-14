@@ -145,6 +145,14 @@ function run()
 			          <input type="input" style="margin-bottom: 1px; margin-left: 5px; width: 100%;font-size: 12px" class="form-control" name="txtEncoded" id="txtEncoded" placeholder="{{ _('Encoded Credentials') }}" value="">			
 				</td>
 			</tr>
+            <tr>
+            <td>
+            <strong>Protokoll : </strong>
+            </td>
+            <td colspan="5">
+					<textarea type="input" rows="2" style="width: 100%;height: 100%;font-size: 12px;" class="form-control" name="txt_Result" id="txt_Result" placeholder="{{ _('...') }}" disabled >{{ txt_Result }}</textarea>
+            </td>
+            </tr>
 
 
 
@@ -344,20 +352,19 @@ var logCodeMirror = CodeMirror.fromTextArea(document.getElementById("Com_log_fil
     mode: 'ttcn',
     lineWrapping: false,
     indentWithTabs: false,
-    autoRefresh : true
 });
 
 window.addEventListener("resize", function(){resizeCodeMirror(logCodeMirror, 10)}, false);
 resizeCodeMirror(logCodeMirror, 10);
 logCodeMirror.refresh();
 
-setTimeout(function() {
-  resizeCodeMirror(logCodeMirror, 10);
-  statelogCodeMirror.refresh();
-  resizeCodeMirror(statelogCodeMirror, 10);
-  logCodeMirror.refresh();
-  console.log("TimeOut done");
-},5000);
+$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+  var target = $(e.target).attr("href") // activated tab
+  if (target == "#bodytab_4")
+        { logCodeMirror.refresh(); }
+  else if (target == "#bodytab_3")
+        { statelogCodeMirror.refresh(); }
+});
 
 </script>
 

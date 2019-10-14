@@ -172,3 +172,32 @@
 	<div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.calendar_predictive_list" data-item="{{ item }}" data-designType="{{ _backend }}"></div>
 {% endmacro %}
 
+
+/*********************************************
+*
+*  Widget for the Weather-Pictures
+*
+*********************************************/
+/**
+* Displays an image witch is been reloaded after a given time
+*
+* @param {id} unique id for this widget
+* @param {image} the path/url to the image
+* @param {text(none,corner,corner-bottom,fill)=none} the mode: 'none', 'corner', 'corner-bottom', 'fill' (optional, default 'none')
+* @param {duration=10i} the reload-time in duration-format (optional, default '10i')
+*
+* @see misc/fundamentals#Duration-Format
+*/
+{% macro image(id, item) %}
+
+	<img id="{{ uid(page, id) }}" data-widget="indego.image" alt="indego.image" data-item="{{ item }}" data-designType="{{ _backend }}"
+		{% if mode == 'corner' %}
+			class="ui-corner-all"
+		{% elseif mode == 'corner-bottom' %}
+			class="ui-corner-bottom"
+		{% elseif mode == 'fill' %}
+			style="width: 100%"
+		{% endif %}
+		src="pages/base/pics/trans.png" style="width:100%;height:100%;" />
+
+{% endmacro %}

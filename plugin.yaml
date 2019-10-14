@@ -3,17 +3,17 @@ plugin:
     # Global plugin attributes
     type: interface                # plugin type (gateway, interface, protocol, system, web)
     description:
-        de: 'Indego Plugin zum Auslesen von Bosch Indego Mährobotern mit Connect Ausstattung'
-        en: 'Indego Plugin to read outBosch Indego mower robots with Connect interface'
-    maintainer: marcov, AndreK
+        de: 'Indego Plugin zum Auslesen und steuern von Bosch Indego Mährobotern mit Connect Ausstattung'
+        en: 'Indego Plugin to read out and control Bosch Indego mower robots with Connect interface'
+    maintainer: AndreK, schuma
 #    tester:                        # Who tests this plugin?
     state: develop                  # change to ready when done with development
     keywords: Indego smartmower
 #    documentation: https://github.com/smarthomeNG/smarthome/wiki/CLI-Plugin        # url of documentation (wiki) page
     support: https://knx-user-forum.de/forum/supportforen/smarthome-py
 
-    version: 1.6.0                  # Plugin version
-    sh_minversion: 1.4              # minimum shNG version to use this plugin
+    version: 3.0.0                  # Plugin version
+    sh_minversion: 1.6              # minimum shNG version to use this plugin
 #    sh_maxversion:                 # maximum shNG version to use this plugin (leave empty if latest)
     multi_instance: False           # plugin supports multi instance
     restartable: yes
@@ -46,6 +46,12 @@ parameters:
         description:
             de: 'Passwort wie in der Indego App angegeben'
             en: 'password like used in Indego App'
+    indego_credentials:
+        type: str
+        default: ''
+        description:
+            de: 'Zugangsdaten base64 encoded im Format user:passwort'
+            en: 'Credentials base64 encoded in format user:password'
     img_pfad:
         type: str
         default: '/tmp/garden.svg'
@@ -71,23 +77,14 @@ item_attributes:
     indego_command:
         type: str
         description:
-            de: 'Todo Beschreibung ergänzen'
-            en: 'Todo needs description'
+            de: 'sendet ein Kommando an den Bosch-Server'
+            en: 'sends Commands to the Bosch Server'
     indego_smart:
         type: str
         description:
-            de: 'Todo Beschreibung ergänzen'
-            en: 'Todo needs description'
-    indego_frequency:
-        type: str
-        description:
-            de: 'Todo Beschreibung ergänzen'
-            en: 'Todo needs description'
-    indego_add_key:
-        type: str
-        description:
-            de: 'Todo Beschreibung ergänzen'
-            en: 'Todo needs description'
+            de: 'Setzt den Mähmodus auf Smart-Mähen'
+            en: 'set the mode of the mower to smartmowing'
+
 
 logic_parameters: NONE
     # Definition of logic parameters defined by this plugin
@@ -355,7 +352,8 @@ item_structs:
                 cache: 'on'
                 visu_acl: rw
 
-# End - Definitions for the VISU-Items
+# End - Definitions for the webIf-Items
+
         wartung:
             
             messer_zaehler:
@@ -395,11 +393,14 @@ item_structs:
                 remark: 'bump_sensitivity = 0 = normal / bump_sensitivity = 1 = hohe / bump_sensitivity = 2 = niedrig'
 
 # Start - special Items to care about future developements
-        states:
-            type : dict
-            initial_value : {"0":["liestdenStatus","unknown"],"257":["lädtdenAkku","dock"],"258":["istangedockt","dock"],"259":["Softwareupdate!","dock"],"260":["lädtdenAkku","dock"],"261":["istangedockt","dock"],"262":["lädtdieKarte","dock"],"263":["speichertdieKarte","dock"],"266":["verlässtLadestation","dock"],"513":["mäht","moving"],"514":["bestimmtdenOrt","moving"],"515":["lädtdieKarte","moving"],"516":["lerntdenGarten","moving"],"517":["machtPause","pause"],"518":["schneidetdenRand","moving"],"519":["angehalten!","hilfe"],"523":["mähtimSpotMow","moving"],"524":["mähtzufällig","moving"],"768":["fährtindieStation","moving"],"769":["fährtzurückzurStation","moving"],"770":["fährtzurückzurStation","moving"],"771":["fährtzumLadenindieStation","moving"],"772":["hatdieMähzeitbeendet-fährtzurück","moving"],"773":["istüberhitzt-fährtzurück","help"],"774":["fährtinStation","moving"],"775":["hatfertiggemäht-fährtzurück","moving"],"776":["bestimmtseinePosition","moving"],"1025":["Diagnosemodus!","unknown"],"1026":["Endoflive","hilfe"],"1281":["Softwareupdate!","dock"],"1537":["Stromsparmodus!","dock"],"64513":["Statusabrufen...","dock"]}
+        states_str:
+            type: str
             cache: 'on'
+            initial_value: '{"0":["liest den Status","unknown"],"257":["lädt den Akku","dock"],"258":["ist angedockt","dock"],"259":["Softwareupdate!","dock"],"260":["lädt den Akku","dock"],"261":["ist angedockt","dock"],"262":["lädt di eKarte","dock"],"263":["speichert die Karte","dock"],"266":["verlässt Ladestation","dock"],"513":["mäht","moving"],"514":["bestimmt den Ort","moving"],"515":["lädt die Karte","moving"],"516":["lernt den Garten","moving"],"517":["macht Pause","pause"],"518":["schneidet den Rand","moving"],"519":["angehalten!","hilfe"],"523":["mäht im SpotMow","moving"],"524":["mäht zufällig","moving"],"768":["fährt in die Station","moving"],"769":["fährt zurück zur Station","moving"],"770":["fährt zurück zur Station","moving"],"771":["fährt zum Laden in die Station","moving"],"772":["hat die Mähzeit beendet-fährtzurück","moving"],"773":["ist überhitzt-fährt zurück","help"],"774":["fährt in Station","moving"],"775":["hat fertig gemäht-fährtzurück","moving"],"776":["bestimmt seine Position","moving"],"1025":["Diagnosemodus!","unknown"],"1026":["Endoflive","hilfe"],"1281":["Softwareupdate!","dock"],"1537":["Stromsparmodus!","dock"],"64513":["Statusabrufen...","dock"]}'
 
+        weather_pics:
+            type: str
+            initial_value: '{"100000":"sun_1.png","110000":"sun_3.png","110002":"sun_3.png","110001":"sun_10.png","120001":"sun_10.png","110010":"sun_12.png","110012":"sun_12.png","110030":"sun_12.png","110032":"sun_12.png","120010":"sun_12.png","120012":"sun_12.png","120020":"sun_12.png","120022":"sun_12.png","110011":"sun_11.png","110031":"sun_11.png","110101":"sun_11.png","111101":"sun_11.png","113301":"sun_11.png","120011":"sun_11.png","120021":"sun_11.png","120031":"sun_11.png","121101":"sun_11.png","122201":"sun_11.png","123001":"sun_11.png","110100":"sun_8.png","121100":"sun_8.png","121102":"sun_8.png","122200":"sun_8.png","122202":"sun_8.png","110102":"cloud_15.png","111100":"cloud_15.png","111102":"cloud_15.png","113300":"cloud_15.png","113302":"cloud_15.png","120030":"cloud_15.png","120032":"cloud_15.png","123300":"cloud_15.png","123302":"cloud_15.png","110300":"cloud_13.png","110302":"cloud_13.png","120100":"cloud_13.png","120102":"cloud_13.png","120200":"cloud_13.png","120202":"cloud_13.png","120300":"cloud_13.png","120302":"cloud_13.png","110301":"cloud_17.png","120101":"cloud_17.png","120201":"cloud_17.png","120301":"cloud_17.png","111000":"cloud_8.png","111002":"cloud_8.png","122000":"cloud_8.png","122002":"cloud_8.png","111001":"sun_10.png","122001":"sun_10.png","113000":"sun_7.png","113002":"sun_7.png","113001":"sun_8.png","121001":"sun_8.png","123001":"sun_8.png","120000":"sun_4.png","120002":"sun_4.png","121000":"sun_7.png","121002":"sun_7.png","123000":"sun_7.png","123002":"sun_7.png","200000":"moon_1.png","210000":"moon_3.png","210002":"moon_3.png","220000":"moon_3.png","220002":"moon_3.png","210001":"moon_9.png","220001":"moon_9.png","210010":"moon_13.png","210012":"moon_13.png","210030":"moon_13.png","210032":"moon_13.png","220010":"moon_13.png","220012":"moon_13.png","220020":"moon_13.png","220022":"moon_13.png","220030":"moon_13.png","220032":"moon_13.png","210011":"moon_11.png","210031":"moon_11.png","211101":"moon_11.png","213301":"moon_11.png","220011":"moon_11.png","220021":"moon_11.png","220031":"moon_11.png","221101":"moon_11.png","222201":"moon_11.png","223301":"moon_11.png","210100":"moon_13.png","210102":"moon_13.png","210300":"moon_13.png","210302":"moon_13.png","220100":"moon_13.png","220102":"moon_13.png","220200":"moon_13.png","220202":"moon_13.png","220300":"moon_13.png","220302":"moon_13.png","210101":"moon_10.png","210301":"moon_10.png","220101":"moon_10.png","220201":"moon_10.png","220301":"moon_10.png","211000":"moon_8.png","211002":"moon_8.png","222000":"moon_8.png","222002":"moon_8.png","211001":"moon_10.png","222001":"moon_10.png","211100":"moon_11.png","211102":"moon_11.png","213300":"moon_11.png","213302":"moon_11.png","221100":"moon_11.png","221102":"moon_11.png","223300":"moon_11.png","223302":"moon_11.png","213000":"moon_7.png","213002":"moon_7.png","221000":"moon_7.png","221002":"moon_7.png","213001":"moon_8.png","221001":"moon_8.png","223001":"moon_8.png","222200":"moon_8.png","222202":"moon_8.png","223000":"moon_7.png","223002":"moon_7.png","320000":"cloud_4.png","320002":"cloud_4.png","330000":"cloud_4.png","330002":"cloud_4.png","320001":"cloud_10.png","330001":"cloud_10.png","320010":"cloud_11.png","320012":"cloud_11.png","320020":"cloud_11.png","320022":"cloud_11.png","330010":"cloud_11.png","330012":"cloud_11.png","330020":"cloud_11.png","330022":"cloud_11.png","330030":"cloud_11.png","330032":"cloud_11.png","330010":"cloud_11.png","320011":"cloud_08.png","320021":"cloud_08.png","320031":"cloud_08.png","320101":"cloud_08.png","320201":"cloud_08.png","320301":"cloud_08.png","321101":"cloud_08.png","322201":"cloud_08.png","323001":"cloud_08.png","323301":"cloud_08.png","330011":"cloud_08.png","330021":"cloud_08.png","330031":"cloud_08.png","330011":"cloud_08.png","330101":"cloud_08.png","330201":"cloud_08.png","330301":"cloud_08.png","330201":"cloud_08.png","331001":"cloud_08.png","331101":"cloud_08.png","332201":"cloud_08.png","333001":"cloud_08.png","333301":"cloud_08.png","320030":"cloud_11.png","320032":"cloud_11.png","321100":"cloud_11.png","321102":"cloud_11.png","323300":"cloud_11.png","323302":"cloud_11.png","331100":"cloud_11.png","331102":"cloud_11.png","333300":"cloud_11.png","333302":"cloud_11.png","320100":"cloud_11.png","320102":"cloud_11.png","320200":"cloud_11.png","320202":"cloud_11.png","320300":"cloud_11.png","320302":"cloud_11.png","330100":"cloud_11.png","330102":"cloud_11.png","330200":"cloud_11.png","330202":"cloud_11.png","330300":"cloud_11.png","330302":"cloud_11.png","330200":"cloud_11.png","300204":"cloud_11.png","321000":"cloud_8.png","321002":"cloud_8.png","322000":"cloud_8.png","322002":"cloud_8.png","332000":"cloud_8.png","332002":"cloud_8.png","321001":"cloud_10.png","322001":"cloud_10.png","332001":"cloud_10.png","322200":"cloud_7.png","322202":"cloud_7.png","332200":"cloud_7.png","332202":"cloud_7.png","323000":"cloud_7.png","323002":"cloud_7.png","333000":"cloud_7.png","333002":"cloud_7.png","331000":"cloud_8.png","331002":"cloud_8.png","300003":"cloud_6.png","300004":"wind.png","300002":"blank.png","300005":"blank.png"}'
 # Ende
 
         active_mode:
@@ -768,6 +769,10 @@ item_structs:
                     type: bool
                     cache: 'on'
 
+                picture:
+                    type: str
+                    cache: 'on'
+
             int_1:
 
                 wwsymbol_mg2008:
@@ -821,6 +826,9 @@ item_structs:
                     type: bool
                     cache: 'on'
 
+                picture:
+                    type: str
+                    cache: 'on'
             int_2:
 
                 wwsymbol_mg2008:
@@ -872,6 +880,10 @@ item_structs:
 
                 Gewitter:
                     type: bool
+                    cache: 'on'
+
+                picture:
+                    type: str
                     cache: 'on'
 
             int_3:
@@ -927,6 +939,11 @@ item_structs:
                     type: bool
                     cache: 'on'
 
+                picture:
+                    type: str
+                    cache: 'on'
+
+
             int_4:
 
                 wwsymbol_mg2008:
@@ -979,6 +996,11 @@ item_structs:
                 Gewitter:
                     type: bool
                     cache: 'on'
+
+                picture:
+                    type: str
+                    cache: 'on'
+
 
             int_5:
 
@@ -1033,6 +1055,11 @@ item_structs:
                     type: bool
                     cache: 'on'
 
+                picture:
+                    type: str
+                    cache: 'on'
+
+
             int_6:
 
                 wwsymbol_mg2008:
@@ -1085,6 +1112,11 @@ item_structs:
                 Gewitter:
                     type: bool
                     cache: 'on'
+
+                picture:
+                    type: str
+                    cache: 'on'
+
 
             int_7:
 
@@ -1139,6 +1171,11 @@ item_structs:
                     type: bool
                     cache: 'on'
 
+                picture:
+                    type: str
+                    cache: 'on'
+
+
             int_8:
 
                 wwsymbol_mg2008:
@@ -1190,6 +1227,10 @@ item_structs:
 
                 Gewitter:
                     type: bool
+                    cache: 'on'
+
+                picture:
+                    type: str
                     cache: 'on'
 
             int_9:
@@ -1245,6 +1286,11 @@ item_structs:
                     type: bool
                     cache: 'on'
 
+                picture:
+                    type: str
+                    cache: 'on'
+
+
             int_10:
 
                 wwsymbol_mg2008:
@@ -1297,6 +1343,11 @@ item_structs:
                 Gewitter:
                     type: bool
                     cache: 'on'
+
+                picture:
+                    type: str
+                    cache: 'on'
+
 
             int_11:
 
@@ -1351,6 +1402,11 @@ item_structs:
                     type: bool
                     cache: 'on'
 
+                picture:
+                    type: str
+                    cache: 'on'
+
+
             int_12:
 
                 wwsymbol_mg2008:
@@ -1403,6 +1459,11 @@ item_structs:
                 Gewitter:
                     type: bool
                     cache: 'on'
+
+                picture:
+                    type: str
+                    cache: 'on'
+
 
             int_13:
 
@@ -1457,6 +1518,11 @@ item_structs:
                     type: bool
                     cache: 'on'
 
+                picture:
+                    type: str
+                    cache: 'on'
+
+
             int_14:
 
                 wwsymbol_mg2008:
@@ -1509,6 +1575,11 @@ item_structs:
                 Gewitter:
                     type: bool
                     cache: 'on'
+
+                picture:
+                    type: str
+                    cache: 'on'
+
 
             int_15:
 
@@ -1563,6 +1634,11 @@ item_structs:
                     type: bool
                     cache: 'on'
 
+                picture:
+                    type: str
+                    cache: 'on'
+
+
             int_16:
 
                 wwsymbol_mg2008:
@@ -1615,6 +1691,11 @@ item_structs:
                 Gewitter:
                     type: bool
                     cache: 'on'
+
+                picture:
+                    type: str
+                    cache: 'on'
+
 
             int_17:
 
@@ -1669,6 +1750,11 @@ item_structs:
                     type: bool
                     cache: 'on'
 
+                picture:
+                    type: str
+                    cache: 'on'
+
+
             int_18:
 
                 wwsymbol_mg2008:
@@ -1722,6 +1808,11 @@ item_structs:
                     type: bool
                     cache: 'on'
 
+                picture:
+                    type: str
+                    cache: 'on'
+
+
             int_19:
 
                 wwsymbol_mg2008:
@@ -1774,6 +1865,11 @@ item_structs:
                 Gewitter:
                     type: bool
                     cache: 'on'
+
+                picture:
+                    type: str
+                    cache: 'on'
+
 
             day_0:
 

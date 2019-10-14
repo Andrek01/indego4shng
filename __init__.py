@@ -32,7 +32,7 @@ import os
 import ast
 
 import json
-import http.client
+#import http.client
 from dateutil import tz
 import sys
 
@@ -46,6 +46,7 @@ from lib.shtime import Shtime
 from datetime import datetime
 from datetime import date
 from bs4 import BeautifulSoup
+import base64
 
 
 
@@ -65,7 +66,7 @@ class Indego(SmartPlugin):
     Main class of the Indego Plugin. Does all plugin specific stuff and provides
     the update functions for the items
     """
-    PLUGIN_VERSION = '1.6.0'
+    PLUGIN_VERSION = '3.0.0'
 
     def __init__(self, sh, *args, **kwargs):
         """
@@ -93,6 +94,10 @@ class Indego(SmartPlugin):
 
         self.user = self.get_parameter_value('user')
         self.password = self.get_parameter_value('password')
+        self.credentials = self.get_parameter_value('indego_credentials').encode('utf-8')
+        if (self.credentials != b'None'):
+            self.credentials = base64.decodebytes(self.credentials).decode('utf-8')
+        
         self.img_pfad = self.get_parameter_value('img_pfad')
         self.cycle = self.get_parameter_value('cycle')
         self.indego_url = self.get_parameter_value('indego_url')
@@ -101,6 +106,7 @@ class Indego(SmartPlugin):
         
         self.items = Items.get_instance()
         self.shtime = Shtime.get_instance()
+        self.sh = self.get_sh()
         
         self.image_file=self.get_sh().get_basedir()+"/plugins/indego/webif/static/img/garden.svg"
 
@@ -136,7 +142,41 @@ class Indego(SmartPlugin):
         if not self.parent_item:
            self._init_complete = False
            return
-
+        self.states = {}
+        '''
+        self.states = state__str = {    0:  ['liest den Status', 'unknown'],
+                                      257:  ['lädt den Akku', 'dock'],
+                                      258:  ['ist angedockt', 'dock'],
+                                      259:  ['Softwareupdate!', 'dock'],
+                                      260:  ['lädt den Akku', 'dock'],
+                                      261:  ['ist angedockt', 'dock'],
+                                      262:  ['lädt die Karte', 'dock'],
+                                      263:  ['speichert die Karte', 'dock'],
+                                      266:  ['verlässt Ladestation', 'dock'],
+                                      513:  ['mäht', 'moving'],
+                                      514:  ['bestimmt den Ort', 'moving'],
+                                      515:  ['lädt die Karte', 'moving'],
+                                      516:  ['lernt den Garten', 'moving'],
+                                      517:  ['macht Pause', 'pause'],
+                                      518:  ['schneidet den Rand', 'moving'],
+                                      519:  ['angehalten!', 'hilfe'],
+                                      523:  ['mäht im Spot Mow','moving'],
+                                      524:  ['mäht zufällig','moving'],
+                                      768:  ['fährt in die Station', 'moving'],
+                                      769:  ['fährt zurück zur Station', 'moving'],
+                                      770:  ['fährt zurück zur Station', 'moving'],
+                                      771:  ['fährt zum Laden in die Station', 'moving'],
+                                      772:  ['hat die Mähzeit beendet - fährt zurück', 'moving'],
+                                      773:  ['ist überhitzt - fährt zurück', 'help'],
+                                      774:  ['fährt in Station', 'moving'],
+                                      775:  ['hat fertig gemäht - fährt zurück', 'moving'],
+                                      776:  ['bestimmt seine Position', 'moving'],
+                                      1025: ['Diagnosemodus!', 'unknown'],
+                                      1026: ['Endoflive', 'hilfe'],
+                                      1281: ['Softwareupdate!', 'dock'],
+                                      1537: ['Stromsparmodus!','dock'],
+                                      64513:['Status abrufen...','dock']}
+        '''
         # The following part of the __init__ method is only needed, if a webinterface is being implemented:
 
         # if plugin should start even without web interface
@@ -153,10 +193,14 @@ class Indego(SmartPlugin):
         Run method for the plugin
         """
         self.logger.debug("Run method called")
+        if (self.credentials != b'None'):
+            self.user = self.credentials.split(":")[0]
+            self.password = self.credentials.split(":")[1]
         # taken from Init of the plugin
-        self.auth()
-        self.logged_in = self.check_auth()
-        self.alive = True
+        if (self.user != '' and self.password != ''):
+            self.auth()
+            self.logged_in = self.check_auth()
+            self.alive = True
         # Set Symlink for garden-map
         # ln /var/www/html/smartVISU2.9/dropins/garden.svg /usr/local/smarthome/plugins/indego/webif/static/img/garden.svg
 
@@ -205,11 +249,7 @@ class Indego(SmartPlugin):
         if self.has_iattr(item.conf, 'indego_command'):
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format( item, 'indego_command', self.get_iattr_value(item.conf, 'indego_command')))
             return self.update_item
-        '''        
-        if self.has_iattr(item.conf, 'indego_add_key'):
-            self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'indego_add_key', self.get_iattr_value(item.conf, 'indego_add_key')))
-            self.add_keys[item.conf['indego_add_key']] = item
-        '''
+
         if self.has_iattr(item.conf, 'indego_config'):
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'indego_plugin_handled', self.get_iattr_value(item.conf, 'indego_config')))
             return self.update_item
@@ -217,6 +257,13 @@ class Indego(SmartPlugin):
         if self.has_iattr(item.conf, 'indego_plugin_handled'):
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'indego_plugin_handled', self.get_iattr_value(item.conf, 'indego_plugin_handled')))
             return self.update_item
+        
+        if item.property.name ==  self.parent_item+'.states_str':
+            newStruct = {}
+            myStruct= json.loads(item())
+            for entry in myStruct:
+                newStruct[int(entry)]=myStruct[entry]
+            self.states = newStruct
         ################################################
         if item.property.name ==  self.parent_item+'.calendar_list':
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'calendar_list', self.get_iattr_value(item.conf, 'calendar_list')))
@@ -1354,13 +1401,13 @@ class Indego(SmartPlugin):
                             if slots['Attr'] == "C":    # manual Exclusion Time
                                 mycolour = '#DC143C'
                             elif slots['Attr'] == "p":  # Rain
-                                mycolour = '#2693FF'
+                                mycolour = '#BEBEBE'
                             elif slots['Attr'] == "P":  # Heavy Rain
-                                mycolour = '#4400FF'
+                                mycolour = '#BEBEBE'
                             elif slots['Attr'] == "D":
-                                mycolour = '#FF0FC7'    # dont know ??
+                                mycolour = '#BEBEBE'    # dont know ??
                             else:
-                                mycolour = '#FFE70A'    # Heat ??
+                                mycolour = '#BEBEBE'    # Heat ??
                             myDict['Color']= mycolour
                             
                         if not myKey in str(myList):
@@ -1394,14 +1441,17 @@ class Indego(SmartPlugin):
         except Exception as e:
             self.logger.warning("Problem fetching {}: {}".format(url, e))
             return false
-        self.set_childitem('location', location)
-        if "latitude" in location:
-            self.set_childitem('location.latitude', location["latitude"])
-        if "longitude" in location:
-            self.set_childitem('location.longitude', location["longitude"])
-        if "timezone" in location:
-            self.set_childitem('location.timezone', location["timezone"])
-        return True
+        if location != False:
+            self.set_childitem('location', location)
+            if "latitude" in location:
+                self.set_childitem('location.latitude', location["latitude"])
+            if "longitude" in location:
+                self.set_childitem('location.longitude', location["longitude"])
+            if "timezone" in location:
+                self.set_childitem('location.timezone', location["timezone"])
+            return True
+        else:
+            return False 
     
     def smart_mow_settings(self, mode =""):
         # get SmartMowSetup
@@ -1688,6 +1738,8 @@ class Indego(SmartPlugin):
             return 
         if weather == False:
             return
+        myDummy = self.get_childitem("weather_pics")
+        myPictures = json.loads(myDummy)
         for i in weather['LocationWeather']['forecast']['intervals']:
             position = str(weather['LocationWeather']['forecast']['intervals'].index(i))
             self.logger.debug("POSITION "+str(position))
@@ -1696,46 +1748,11 @@ class Indego(SmartPlugin):
                 wert = str(i[x])
                 self.logger.debug("ITEEEEEM "+'indego.weather.int_'+position+'.'+wertpunkt)
                 if wertpunkt == 'dateTime':
-                    #wert = wert.replace('+00:00','+0000')
                     self.logger.debug("DATE__TIME "+ wert)
                     wert= datetime.strptime(wert,'%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=self.shtime.tzinfo())
                 if wertpunkt == 'wwsymbol_mg2008':
+                    self.set_childitem('weather.int_'+position+'.'+'picture',"/smartVISU/lib/weather/pics/"+myPictures[wert])
                     self.logger.debug("WERTPUNKT "+ str(wertpunkt))
-                    if wert == '110000' or wert ==  '111000' or wert == '211000' or wert ==  '210000':
-                        self.logger.debug("WERTCHEN SPELLS "+ wert)
-                        self.set_childitem('weather.int_'+position+'.'+'spells',True)
-                        self.set_childitem('weather.int_'+position+'.'+'Sonne',False)
-                        self.set_childitem('weather.int_'+position+'.'+'Wolken',False)
-                        self.set_childitem('weather.int_'+position+'.'+'Regen',False)
-                        self.set_childitem('weather.int_'+position+'.'+'Gewitter',False)
-                    elif wert == '100000' or wert ==  '200000':
-                        self.logger.debug("WERTCHEN SONNE "+ wert)
-                        self.set_childitem('weather.int_'+position+'.'+'spells',False)
-                        self.set_childitem('weather.int_'+position+'.'+'Sonne',True)
-                        self.set_childitem('weather.int_'+position+'.'+'Wolken',False)
-                        self.set_childitem('weather.int_'+position+'.'+'Regen',False)
-                        self.set_childitem('weather.int_'+position+'.'+'Gewitter',False)
-                    elif wert == '220000' or wert == '121000' or wert == '120000' or wert == '330000' or wert == '320000':
-                        self.logger.debug("WERTCHEN WOLKEN "+ wert)
-                        self.set_childitem('weather.int_'+position+'.'+'spells',False)
-                        self.set_childitem('weather.int_'+position+'.'+'Sonne',False)
-                        self.set_childitem('weather.int_'+position+'.'+'Wolken',True)
-                        self.set_childitem('weather.int_'+position+'.'+'Regen',False)
-                        self.set_childitem('weather.int_'+position+'.'+'Gewitter',False)
-                    elif wert == '122000' or wert == '331000' or wert == '221000' or wert == '321000':
-                        self.logger.debug("WERTCHEN REGEN "+ wert)
-                        self.set_childitem('weather.int_'+position+'.'+'spells',False)
-                        self.set_childitem('weather.int_'+position+'.'+'Sonne',False)
-                        self.set_childitem('weather.int_'+position+'.'+'Wolken',False)
-                        self.set_childitem('weather.int_'+position+'.'+'Regen',True)
-                        self.set_childitem('weather.int_'+position+'.'+'Gewitter',False)
-                    elif wert == '110001' or wert == '113001' or wert == '123001' or wert == '223001' or wert == '213001' or wert == '210001':
-                        self.logger.debug("WERTCHEN GEWITTER "+ wert)
-                        self.set_childitem('weather.int_'+position+'.'+'spells',False)
-                        self.set_childitem('weather.int_'+position+'.'+'Sonne',False)
-                        self.set_childitem('weather.int_'+position+'.'+'Wolken',False)
-                        self.set_childitem('weather.int_'+position+'.'+'Regen',False)
-                        self.set_childitem('weather.int_'+position+'.'+'Gewitter',True)
                 self.set_childitem('weather.int_'+position+'.'+wertpunkt,wert)
 
         for i in weather['LocationWeather']['forecast']['days']:
@@ -1891,7 +1908,7 @@ class Indego(SmartPlugin):
                 self.logger.debug("alm_firmware_version " + str(alm_firmware_version))
     
     def check_state_triggers(self, myStatecode):
-        myStatecode = str('%0.5d' %myStatecode)
+        myStatecode = str('%0.5d' %int(myStatecode))
         counter = 1
         while counter <=4:
             myItemName="trigger.state_trigger_" + str(counter) + ".state"
@@ -1915,41 +1932,8 @@ class Indego(SmartPlugin):
     def state(self):
         if (self.get_childitem("wartung.wintermodus") == True):
             return
-        state__str = self.get_childitem('states')
-        '''
-        state__str = {  0:  ['liest den Status', 'unknown'],
-                      257:  ['lädt den Akku', 'dock'],
-                      258:  ['ist angedockt', 'dock'],
-                      259:  ['Softwareupdate!', 'dock'],
-                      260:  ['lädt den Akku', 'dock'],
-                      261:  ['ist angedockt', 'dock'],
-                      262:  ['lädt die Karte', 'dock'],
-                      263:  ['speichert die Karte', 'dock'],
-                      266:  ['verlässt Ladestation', 'dock'],
-                      513:  ['mäht', 'moving'],
-                      514:  ['bestimmt den Ort', 'moving'],
-                      515:  ['lädt die Karte', 'moving'],
-                      516:  ['lernt den Garten', 'moving'],
-                      517:  ['macht Pause', 'pause'],
-                      518:  ['schneidet den Rand', 'moving'],
-                      519:  ['angehalten!', 'hilfe'],
-                      523:  ['mäht im Spot Mow','moving'],
-                      524:  ['mäht zufällig','moving'],
-                      768:  ['fährt in die Station', 'moving'],
-                      769:  ['fährt zurück zur Station', 'moving'],
-                      770:  ['fährt zurück zur Station', 'moving'],
-                      771:  ['fährt zum Laden in die Station', 'moving'],
-                      772:  ['hat die Mähzeit beendet - fährt zurück', 'moving'],
-                      773:  ['ist überhitzt - fährt zurück', 'help'],
-                      774:  ['fährt in Station', 'moving'],
-                      775:  ['hat fertig gemäht - fährt zurück', 'moving'],
-                      776:  ['bestimmt seine Position', 'moving'],
-                      1025: ['Diagnosemodus!', 'unknown'],
-                      1026: ['Endoflive', 'hilfe'],
-                      1281: ['Softwareupdate!', 'dock'],
-                      1537: ['Stromsparmodus!','dock'],
-                      64513:['Status abrufen...','dock']}
-        '''
+        state__str = self.states
+
         if (self.position_detection):
             self.position_count += 1
         state_response = self.get_url(self.indego_url + 'alms/' + self.alm_sn + '/state', self.context_id)
@@ -2285,6 +2269,38 @@ class WebInterface(SmartPluginWebIf):
         myItem="trigger." + myItemSuffix + ".alarm"
         self.plugin.set_childitem(myItem,newAlarm)    
 
+
+    @cherrypy.expose
+    def store_credentials_html(self, encoded='', pwd = '', user= '', store_2_config=None):
+        txt_Result = []
+        myCredentials = user+':'+pwd
+        byte_credentials = base64.b64encode(myCredentials.encode('utf-8'))
+        encoded = byte_credentials.decode("utf-8")
+        txt_Result.append("encoded:"+encoded) 
+        txt_Result.append("Encoding done")
+        conf_file=self.plugin.sh.get_basedir()+'/etc/plugin.yaml'
+        if (store_2_config == 'true'):
+            new_conf = ""
+            with open (conf_file, 'r') as myFile:
+                for line in myFile:
+                    if line.find('indego_credentials') > 0:
+                        line = '    indego_credentials: '+encoded+ "\r\n"
+                    new_conf += line 
+            myFile.close()         
+            txt_Result.append("replaced credentials in temporary file")
+            with open (conf_file, 'w') as myFile:
+                for line in new_conf.splitlines():
+                    myFile.write(line+'\r\n')
+            myFile.close()
+            txt_Result.append("stored new config to filesystem")
+            self.plugin.user = user
+            self.plugin.password = pwd
+            if self.plugin.logged_in:
+                self.plugin.delete_auth()
+            self.plugin.auth()
+            self.plugin.logged_in = self.plugin.check_auth()
+        return json.dumps(txt_Result)
+    
     @cherrypy.expose
     def index(self, reload=None):
         """
@@ -2319,10 +2335,10 @@ class WebInterface(SmartPluginWebIf):
         myColour = '#'+self.plugin.get_childitem('visu.mower_colour')[14:-1]
         # get all the available states
         selectStates = []
-        myStates = self.plugin.get_childitem('states')
+        myStates = self.plugin.states
         for state in myStates:
             newEntry={}
-            newEntry['ID']=str('%0.5d' %state)
+            newEntry['ID']=str('%0.5d' %int(state))
             newEntry['Caption']=myStates[state][0]
             selectStates.append(newEntry)
         # add empty Entry

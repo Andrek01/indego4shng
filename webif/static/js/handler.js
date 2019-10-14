@@ -1,3 +1,27 @@
+//*************************************************************
+// ValidateEncodeResponse -checks the login-button
+//*************************************************************
+
+function ValidateEncodeResponse(response)
+{
+var myResult = ""
+var temp = ""
+var objResponse = JSON.parse(response)
+for (x in objResponse)
+    {
+     if (x == "0")
+ 	{
+	  document.getElementById("txtEncoded").value = objResponse[x].substr(8);	  
+	}
+     else
+	{
+	  temp = temp + objResponse[x]+"\n";
+	}
+    }
+
+document.getElementById("txt_Result").value = temp;
+}
+
 //*******************************************
 // Button Handler for Encoding credentials
 //*******************************************
@@ -9,7 +33,6 @@ function BtnEncode(result)
       store2config = document.getElementById("store_2_config").checked;
       encoded=user+":"+pwd;
       encoded=btoa(encoded);
-      //document.getElementById("txtEncoded").value = encoded;
 	$.ajax({
 		url: "store_credentials.html",
 		type: "GET",
@@ -23,7 +46,7 @@ function BtnEncode(result)
 				ValidateEncodeResponse(response);
 		},
 		error: function () {
-			document.getElementById("txt_Result").innerHTML = "Error while Communication !";
+            document.getElementById("txt_Result").innerHTML = "Error while Communication !";
 		}
 	});
   return

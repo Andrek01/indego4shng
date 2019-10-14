@@ -941,7 +941,7 @@ $.widget("sv.smartmow_calendar", $.sv.widget, {
 
 		DrawCalendar("indego-pred-draw-calendar-9", 9, "S")
 		FillDrawingCalendar([ response[0][0] ], "#bebebe", "S")
-		FillDrawingCalendar([ response[0][1] ], "#0099000", "S")
+		FillDrawingCalendar([ response[0][1] ], "#099000", "S")
 
 	}
 });
@@ -1301,6 +1301,22 @@ $.widget("sv.garden_map", $.sv.widget, {
 	}
 });
 
+//*****************************************************
+//Widget for the weather-pictures
+//*****************************************************
+$.widget("sv.image", $.sv.widget, {
+
+	initSelector : '[data-widget="indego.image"]',
+	options : {id : ''},
+	_create : function()
+	{
+		this._super();
+	},
+	_update : function(response)
+	{
+		this.bindings[0].src=response[0]
+	}
+});
 
 ///////////////////////////
 //*****************************************************
