@@ -183,10 +183,7 @@
 *
 * @param {id} unique id for this widget
 * @param {image} the path/url to the image
-* @param {text(none,corner,corner-bottom,fill)=none} the mode: 'none', 'corner', 'corner-bottom', 'fill' (optional, default 'none')
-* @param {duration=10i} the reload-time in duration-format (optional, default '10i')
-*
-* @see misc/fundamentals#Duration-Format
+
 */
 {% macro image(id, item) %}
 
@@ -200,4 +197,15 @@
 		{% endif %}
 		src="pages/base/pics/trans.png" style="width:100%" />
 
+{% endmacro %}
+
+/*********************************************
+*
+*  Widget for the Mode
+*
+*********************************************/
+{% macro mode(id, item,_backend ) %}
+
+{% import "basic.html" as basic %}
+	<div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.mode" data-item="{{ item }}" data-designType="{{ _backend }}"></div>
 {% endmacro %}

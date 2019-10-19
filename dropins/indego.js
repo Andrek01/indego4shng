@@ -1318,6 +1318,39 @@ $.widget("sv.image", $.sv.widget, {
 	}
 });
 
+//*****************************************************
+//Widget for mode
+//*****************************************************
+$.widget("sv.mode", $.sv.widget, {
+
+	initSelector : '[data-widget="indego.mode"]',
+	options : {id : ''},
+	_create : function()
+	{
+		this._super();
+	},
+	// 1 = Kalender, 2=Smart, 3 =AUS
+	_update : function(response)
+	{
+		if (parseInt(response[0]) == 1)
+			{
+			  $("#SmartCollapse").children().collapsible("collapse");
+			  $("#CalendarCollapse").children().collapsible("expand");
+			}
+		else if (parseInt(response[0]) == 2)
+			{
+			  $("#SmartCollapse").children().collapsible("expand");
+			  $("#CalendarCollapse").children().collapsible("collapse");
+			}
+		else if (parseInt(response[0]) == 3)
+			{
+			  $("#SmartCollapse").children().collapsible("collapse");
+			  $("#CalendarCollapse").children().collapsible("collapse");
+			}
+		
+	}
+});
+
 ///////////////////////////
 //*****************************************************
 //Jump to Anchor
