@@ -7,19 +7,26 @@ function ValidateEncodeResponse(response)
 var myResult = ""
 var temp = ""
 var objResponse = JSON.parse(response)
-for (x in objResponse)
+for (x in objResponse.Proto)
     {
-     if (x == "0")
- 	{
-	  document.getElementById("txtEncoded").value = objResponse[x].substr(8);	  
-	}
-     else
-	{
-	  temp = temp + objResponse[x]+"\n";
-	}
+      temp = temp + objResponse.Proto[x]+"\n";
     }
 
 document.getElementById("txt_Result").value = temp;
+document.getElementById("txtEncoded").innerHTML = objResponse.Params.encoded
+document.getElementById("text_session_id").innerHTML = objResponse.Params.SessionID
+document.getElementById("text_experitation").innerHTML = objResponse.Params.timeStamp
+if (objResponse.Params.logged_in == true)
+    {
+     document.getElementById("grafic_logged_in").src = "static/img/lamp_green.png"
+     document.getElementById("text_logged_in").innerHTML = "logged in"
+
+    }
+else
+    {
+     document.getElementById("grafic_logged_in").src = "static/img/lamp_red.png"
+     document.getElementById("text_logged_in").innerHTML = "logged off"
+    }
 }
 
 //*******************************************

@@ -22,30 +22,18 @@ plugin:
 
 parameters:
     # Definition of parameters to be configured in etc/plugin.yaml
-    instance:
-        type: foo
-        default: 0
-        description:
-            de: 'Instanz des Plugins'
-            en: 'Plugin instance'
     cycle:
         type: int
         default: 30
         description:
             de: 'Zeitlicher Abstand zwischen zwei Verbindungen zur Website'
             en: 'Time between two connects to the website'
-    user:
+    path_2_weather_pics:
         type: str
-        default: ''
+        default: '/smartVISU/lib/weather/pics/'
         description:
-            de: 'Benutzername wie in der Indego App angegeben'
-            en: 'username like used in Indego App'
-    password:
-        type: str
-        default: ''
-        description:
-            de: 'Passwort wie in der Indego App angegeben'
-            en: 'password like used in Indego App'
+            de: 'Pfad zu den Wetter-PNG-Dateien - default =/smartVISU/lib/weather/pics/'
+            en: 'path to the weather pictures - default =/smartVISU/lib/weather/pics/'
     indego_credentials:
         type: str
         default: ''
@@ -112,6 +100,7 @@ item_structs:
             refresh:
                 type: bool
                 visu_acl: rw
+                indego_plugin_handled: true
 
             network:
                 act_provider:
@@ -159,6 +148,7 @@ item_structs:
             store_sms_profile:
                 type: bool
                 visu_acl: rw
+                indego_plugin_handled: true
 
             alerts:
                 type: dict
@@ -181,10 +171,12 @@ item_structs:
             alerts_set_read:
                 type : list
                 visu_acl: rw
+                indego_plugin_handled: true
 
             alerts_set_clear:
                 type : list
                 visu_acl: rw
+                indego_plugin_handled: true
 
             cal_2_show:
                 type : str
@@ -199,6 +191,7 @@ item_structs:
                 type : str
                 visu_acl: rw
                 cache: 'on'
+                indego_plugin_handled: true
 
             svg_pos:
                 type : str
@@ -209,6 +202,7 @@ item_structs:
                 type : list
                 visu_acl: rw
                 cache: 'on'
+                indego_plugin_handled: true
 
                 last_percent_mowed:
                     type: num
@@ -223,17 +217,20 @@ item_structs:
                 type : bool
                 visu_acl: rw
                 cache: 'on'
+                indego_plugin_handled: true
 
             add_svg_images:
                 type : str
                 visu_acl: rw
                 cache: 'on'
+                indego_plugin_handled: true
 
             mower_colour:
                 visu_acl: rw
                 type : str
                 cache: 'on'
                 initial_value: "mower_colour|'#FFF601'"
+                indego_plugin_handled: true
 
             map_2_display:
                 type : str
@@ -351,6 +348,7 @@ item_structs:
                 type : str
                 cache: 'on'
                 visu_acl: rw
+                indego_plugin_handled: true
 
 # End - Definitions for the webIf-Items
 
@@ -368,11 +366,13 @@ item_structs:
             update_start:
                 type: bool
                 visu_acl: rw
+                indego_plugin_handled: true
 
             update_auto:
                 type: bool
                 visu_acl: rw
                 cache: 'on'
+                indego_plugin_handled: true
 
             wintermodus:
                 type: bool
@@ -401,13 +401,14 @@ item_structs:
         weather_pics:
             type: str
             cache: 'on'
-            initial_value: '{"100000":"sun_1.png","110000":"sun_3.png","110002":"sun_3.png","110001":"sun_10.png","120001":"sun_10.png","110010":"sun_12.png","110012":"sun_12.png","110030":"sun_12.png","110032":"sun_12.png","120010":"sun_12.png","120012":"sun_12.png","120020":"sun_12.png","120022":"sun_12.png","110011":"sun_11.png","110031":"sun_11.png","110101":"sun_11.png","111101":"sun_11.png","113301":"sun_11.png","120011":"sun_11.png","120021":"sun_11.png","120031":"sun_11.png","121101":"sun_11.png","122201":"sun_11.png","123001":"sun_11.png","110100":"sun_8.png","121100":"sun_8.png","121102":"sun_8.png","122200":"sun_8.png","122202":"sun_8.png","110102":"cloud_15.png","111100":"cloud_15.png","111102":"cloud_15.png","113300":"cloud_15.png","113302":"cloud_15.png","120030":"cloud_15.png","120032":"cloud_15.png","123300":"cloud_15.png","123302":"cloud_15.png","110300":"cloud_13.png","110302":"cloud_13.png","120100":"cloud_13.png","120102":"cloud_13.png","120200":"cloud_13.png","120202":"cloud_13.png","120300":"cloud_13.png","120302":"cloud_13.png","110301":"cloud_17.png","120101":"cloud_17.png","120201":"cloud_17.png","120301":"cloud_17.png","111000":"cloud_8.png","111002":"cloud_8.png","122000":"cloud_8.png","122002":"cloud_8.png","111001":"sun_10.png","122001":"sun_10.png","113000":"sun_7.png","113002":"sun_7.png","113001":"sun_8.png","121001":"sun_8.png","123001":"sun_8.png","120000":"sun_4.png","120002":"sun_4.png","121000":"sun_7.png","121002":"sun_7.png","123000":"sun_7.png","123002":"sun_7.png","200000":"moon_1.png","210000":"moon_3.png","210002":"moon_3.png","220000":"moon_3.png","220002":"moon_3.png","210001":"moon_9.png","220001":"moon_9.png","210010":"moon_13.png","210012":"moon_13.png","210030":"moon_13.png","210032":"moon_13.png","220010":"moon_13.png","220012":"moon_13.png","220020":"moon_13.png","220022":"moon_13.png","220030":"moon_13.png","220032":"moon_13.png","210011":"moon_11.png","210031":"moon_11.png","211101":"moon_11.png","213301":"moon_11.png","220011":"moon_11.png","220021":"moon_11.png","220031":"moon_11.png","221101":"moon_11.png","222201":"moon_11.png","223301":"moon_11.png","210100":"moon_13.png","210102":"moon_13.png","210300":"moon_13.png","210302":"moon_13.png","220100":"moon_13.png","220102":"moon_13.png","220200":"moon_13.png","220202":"moon_13.png","220300":"moon_13.png","220302":"moon_13.png","210101":"moon_10.png","210301":"moon_10.png","220101":"moon_10.png","220201":"moon_10.png","220301":"moon_10.png","211000":"moon_8.png","211002":"moon_8.png","222000":"moon_8.png","222002":"moon_8.png","211001":"moon_10.png","222001":"moon_10.png","211100":"moon_11.png","211102":"moon_11.png","213300":"moon_11.png","213302":"moon_11.png","221100":"moon_11.png","221102":"moon_11.png","223300":"moon_11.png","223302":"moon_11.png","213000":"moon_7.png","213002":"moon_7.png","221000":"moon_7.png","221002":"moon_7.png","213001":"moon_8.png","221001":"moon_8.png","223001":"moon_8.png","222200":"moon_8.png","222202":"moon_8.png","223000":"moon_7.png","223002":"moon_7.png","320000":"cloud_4.png","320002":"cloud_4.png","330000":"cloud_4.png","330002":"cloud_4.png","320001":"cloud_10.png","330001":"cloud_10.png","320010":"cloud_11.png","320012":"cloud_11.png","320020":"cloud_11.png","320022":"cloud_11.png","330010":"cloud_11.png","330012":"cloud_11.png","330020":"cloud_11.png","330022":"cloud_11.png","330030":"cloud_11.png","330032":"cloud_11.png","330010":"cloud_11.png","320011":"cloud_8.png","320021":"cloud_8.png","320031":"cloud_8.png","320101":"cloud_8.png","320201":"cloud_8.png","320301":"cloud_8.png","321101":"cloud_8.png","322201":"cloud_8.png","323001":"cloud_8.png","323301":"cloud_8.png","330011":"cloud_8.png","330021":"cloud_8.png","330031":"cloud_8.png","330011":"cloud_8.png","330101":"cloud_8.png","330201":"cloud_8.png","330301":"cloud_8.png","330201":"cloud_8.png","331001":"cloud_8.png","331101":"cloud_8.png","332201":"cloud_8.png","333001":"cloud_8.png","333301":"cloud_8.png","320030":"cloud_11.png","320032":"cloud_11.png","321100":"cloud_11.png","321102":"cloud_11.png","323300":"cloud_11.png","323302":"cloud_11.png","331100":"cloud_11.png","331102":"cloud_11.png","333300":"cloud_11.png","333302":"cloud_11.png","320100":"cloud_11.png","320102":"cloud_11.png","320200":"cloud_11.png","320202":"cloud_11.png","320300":"cloud_11.png","320302":"cloud_11.png","330100":"cloud_11.png","330102":"cloud_11.png","330200":"cloud_11.png","330202":"cloud_11.png","330300":"cloud_11.png","330302":"cloud_11.png","330200":"cloud_11.png","300204":"cloud_11.png","321000":"cloud_8.png","321002":"cloud_8.png","322000":"cloud_8.png","322002":"cloud_8.png","332000":"cloud_8.png","332002":"cloud_8.png","321001":"cloud_10.png","322001":"cloud_10.png","332001":"cloud_10.png","322200":"cloud_7.png","322202":"cloud_7.png","332200":"cloud_7.png","332202":"cloud_7.png","323000":"cloud_7.png","323002":"cloud_7.png","333000":"cloud_7.png","333002":"cloud_7.png","331000":"cloud_8.png","331002":"cloud_8.png","300003":"cloud_6.png","300004":"wind.png","300002":"blank.png","300005":"blank.png"}'
+            initial_value: '{"100000":"sun_1.png","110000":"sun_3.png","110002":"sun_3.png","110001":"sun_10.png","120001":"sun_10.png","110010":"sun_12.png","110012":"sun_12.png","110030":"sun_12.png","110032":"sun_12.png","120010":"sun_12.png","120012":"sun_12.png","120020":"sun_12.png","120022":"sun_12.png","110011":"sun_11.png","110031":"sun_11.png","110101":"sun_11.png","111101":"sun_11.png","113301":"sun_11.png","120011":"sun_11.png","120021":"sun_11.png","120031":"sun_11.png","121101":"sun_11.png","122201":"sun_11.png","123001":"sun_11.png","110100":"sun_8.png","121100":"sun_8.png","121102":"sun_8.png","122200":"sun_8.png","122202":"sun_8.png","110102":"cloud_15.png","111100":"cloud_15.png","111102":"cloud_15.png","113300":"cloud_15.png","113302":"cloud_15.png","120030":"cloud_15.png","120032":"cloud_15.png","123300":"cloud_15.png","123302":"cloud_15.png","110300":"cloud_13.png","110302":"cloud_13.png","120100":"cloud_13.png","120102":"cloud_13.png","120200":"cloud_13.png","120202":"cloud_13.png","120300":"cloud_13.png","120302":"cloud_13.png","110301":"cloud_17.png","120101":"cloud_17.png","120201":"cloud_17.png","120301":"cloud_17.png","111000":"cloud_8.png","111002":"cloud_8.png","122000":"cloud_8.png","122002":"cloud_8.png","111001":"sun_10.png","122001":"sun_10.png","113000":"sun_7.png","113002":"sun_7.png","113001":"sun_8.png","121001":"sun_8.png","123001":"sun_8.png","120000":"sun_4.png","120002":"sun_4.png","121000":"sun_7.png","121002":"sun_7.png","123000":"sun_7.png","123002":"sun_7.png","200000":"moon_1.png","210000":"sun_3.png","210002":"moon_3.png","220000":"moon_3.png","220002":"moon_3.png","210001":"moon_9.png","220001":"moon_9.png","210010":"moon_13.png","210012":"moon_13.png","210030":"moon_13.png","210032":"moon_13.png","220010":"moon_13.png","220012":"moon_13.png","220020":"moon_13.png","220022":"moon_13.png","220030":"moon_13.png","220032":"moon_13.png","210011":"moon_11.png","210031":"moon_11.png","211101":"moon_11.png","213301":"moon_11.png","220011":"moon_11.png","220021":"moon_11.png","220031":"moon_11.png","221101":"moon_11.png","222201":"moon_11.png","223301":"moon_11.png","210100":"moon_13.png","210102":"moon_13.png","210300":"moon_13.png","210302":"moon_13.png","220100":"moon_13.png","220102":"moon_13.png","220200":"moon_13.png","220202":"moon_13.png","220300":"moon_13.png","220302":"moon_13.png","210101":"moon_10.png","210301":"moon_10.png","220101":"moon_10.png","220201":"moon_10.png","220301":"moon_10.png","211000":"moon_8.png","211002":"moon_8.png","222000":"moon_8.png","222002":"moon_8.png","211001":"moon_10.png","222001":"moon_10.png","211100":"moon_11.png","211102":"moon_11.png","213300":"moon_11.png","213302":"moon_11.png","221100":"moon_11.png","221102":"moon_11.png","223300":"moon_11.png","223302":"moon_11.png","213000":"moon_7.png","213002":"moon_7.png","221000":"moon_7.png","221002":"moon_7.png","213001":"moon_8.png","221001":"moon_8.png","223001":"moon_8.png","222200":"moon_8.png","222202":"moon_8.png","223000":"moon_7.png","223002":"moon_7.png","320000":"cloud_4.png","320002":"cloud_4.png","330000":"cloud_4.png","330002":"cloud_4.png","320001":"cloud_10.png","330001":"cloud_10.png","320010":"cloud_11.png","320012":"cloud_11.png","320020":"cloud_11.png","320022":"cloud_11.png","330010":"cloud_11.png","330012":"cloud_11.png","330020":"cloud_11.png","330022":"cloud_11.png","330030":"cloud_11.png","330032":"cloud_11.png","330010":"cloud_11.png","320011":"cloud_8.png","320021":"cloud_8.png","320031":"cloud_8.png","320101":"cloud_8.png","320201":"cloud_8.png","320301":"cloud_8.png","321101":"cloud_8.png","322201":"cloud_8.png","323001":"cloud_8.png","323301":"cloud_8.png","330011":"cloud_8.png","330021":"cloud_8.png","330031":"cloud_8.png","330011":"cloud_8.png","330101":"cloud_8.png","330201":"cloud_8.png","330301":"cloud_8.png","330201":"cloud_8.png","331001":"cloud_8.png","331101":"cloud_8.png","332201":"cloud_8.png","333001":"cloud_8.png","333301":"cloud_8.png","320030":"cloud_11.png","320032":"cloud_11.png","321100":"cloud_11.png","321102":"cloud_11.png","323300":"cloud_11.png","323302":"cloud_11.png","331100":"cloud_11.png","331102":"cloud_11.png","333300":"cloud_11.png","333302":"cloud_11.png","320100":"cloud_11.png","320102":"cloud_11.png","320200":"cloud_11.png","320202":"cloud_11.png","320300":"cloud_11.png","320302":"cloud_11.png","330100":"cloud_11.png","330102":"cloud_11.png","330200":"cloud_11.png","330202":"cloud_11.png","330300":"cloud_11.png","330302":"cloud_11.png","330200":"cloud_11.png","300204":"cloud_11.png","321000":"cloud_8.png","321002":"cloud_8.png","322000":"cloud_8.png","322002":"cloud_8.png","332000":"cloud_8.png","332002":"cloud_8.png","321001":"cloud_10.png","322001":"cloud_10.png","332001":"cloud_10.png","322200":"cloud_7.png","322202":"cloud_7.png","332200":"cloud_7.png","332202":"cloud_7.png","323000":"cloud_7.png","323002":"cloud_7.png","333000":"cloud_7.png","333002":"cloud_7.png","331000":"cloud_8.png","331002":"cloud_8.png","300003":"cloud_6.png","300004":"wind.png","300002":"blank.png","300005":"blank.png"}'
 # Ende
 
         active_mode:
             type: num
             cache: 'on'
             visu_acl: rw
+            indego_plugin_handled: true
 
             kalender:
                 type: bool
@@ -598,11 +599,6 @@ item_structs:
             indego_smart: 'yes'
             cache: 'on'
 
-            frequenz:
-                type: num
-                indego_frequency: 'yes'
-                cache: 'on'
-
         MOW:
             type: bool
             visu_acl: rw
@@ -645,6 +641,7 @@ item_structs:
         alm_mode:
             type: str
             visu_acl: rw
+            indego_plugin_handled: true
 
             str:
                 type: str
@@ -676,6 +673,7 @@ item_structs:
         calendar_list:
             type: dict
             visu_acl: rw
+            indego_plugin_handled: true
 
         calendar_sel_cal:
             type: num
@@ -691,6 +689,7 @@ item_structs:
             type: bool
             visu_acl: rw
             autotimer: 185 = False
+            indego_plugin_handled: true
 
         calendar_predictive:
             type: dict
@@ -699,6 +698,7 @@ item_structs:
         calendar_predictive_list:
             type: dict
             visu_acl: rw
+            indego_plugin_handled: true
 
         calendar_predictive_sel_cal:
             type: num
@@ -714,6 +714,7 @@ item_structs:
             type: bool
             visu_acl: rw
             autotimer: 185 = False
+            indego_plugin_handled: true
 
         weather:
 
@@ -748,26 +749,6 @@ item_structs:
 
                 intervalLength:
                     type: num
-                    cache: 'on'
-
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
                     cache: 'on'
 
                 picture:
@@ -807,26 +788,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
-                    cache: 'on'
-
                 picture:
                     type: str
                     cache: 'on'
@@ -861,26 +822,6 @@ item_structs:
 
                 intervalLength:
                     type: num
-                    cache: 'on'
-
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
                     cache: 'on'
 
                 picture:
@@ -918,26 +859,6 @@ item_structs:
 
                 intervalLength:
                     type: num
-                    cache: 'on'
-
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
                     cache: 'on'
 
                 picture:
@@ -978,26 +899,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
-                    cache: 'on'
-
                 picture:
                     type: str
                     cache: 'on'
@@ -1034,26 +935,6 @@ item_structs:
 
                 intervalLength:
                     type: num
-                    cache: 'on'
-
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
                     cache: 'on'
 
                 picture:
@@ -1094,26 +975,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
-                    cache: 'on'
-
                 picture:
                     type: str
                     cache: 'on'
@@ -1150,26 +1011,6 @@ item_structs:
 
                 intervalLength:
                     type: num
-                    cache: 'on'
-
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
                     cache: 'on'
 
                 picture:
@@ -1210,26 +1051,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
-                    cache: 'on'
-
                 picture:
                     type: str
                     cache: 'on'
@@ -1265,26 +1086,6 @@ item_structs:
 
                 intervalLength:
                     type: num
-                    cache: 'on'
-
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
                     cache: 'on'
 
                 picture:
@@ -1325,26 +1126,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
-                    cache: 'on'
-
                 picture:
                     type: str
                     cache: 'on'
@@ -1381,26 +1162,6 @@ item_structs:
 
                 intervalLength:
                     type: num
-                    cache: 'on'
-
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
                     cache: 'on'
 
                 picture:
@@ -1441,26 +1202,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
-                    cache: 'on'
-
                 picture:
                     type: str
                     cache: 'on'
@@ -1497,26 +1238,6 @@ item_structs:
 
                 intervalLength:
                     type: num
-                    cache: 'on'
-
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
                     cache: 'on'
 
                 picture:
@@ -1557,26 +1278,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
-                    cache: 'on'
-
                 picture:
                     type: str
                     cache: 'on'
@@ -1613,26 +1314,6 @@ item_structs:
 
                 intervalLength:
                     type: num
-                    cache: 'on'
-
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
                     cache: 'on'
 
                 picture:
@@ -1673,26 +1354,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
-                    cache: 'on'
-
                 picture:
                     type: str
                     cache: 'on'
@@ -1729,26 +1390,6 @@ item_structs:
 
                 intervalLength:
                     type: num
-                    cache: 'on'
-
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
                     cache: 'on'
 
                 picture:
@@ -1789,26 +1430,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
-                    cache: 'on'
-
                 picture:
                     type: str
                     cache: 'on'
@@ -1845,26 +1466,6 @@ item_structs:
 
                 intervalLength:
                     type: num
-                    cache: 'on'
-
-                spells:
-                    type: bool
-                    cache: 'on'
-
-                Sonne:
-                    type: bool
-                    cache: 'on'
-
-                Wolken:
-                    type: bool
-                    cache: 'on'
-
-                Regen:
-                    type: bool
-                    cache: 'on'
-
-                Gewitter:
-                    type: bool
                     cache: 'on'
 
                 picture:
