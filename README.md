@@ -16,11 +16,13 @@ Das Plugin erhält die Version der aktuellen Bosch-API.
 
 ## Credits<a name="credits"/></a>
 
-Vielen Dank an schuma für die tolle Unterstützung während der Entwicklungsphase.
-schuma hat
+Vielen Dank an schuma für die tolle Unterstützung während der Entwicklungsphase,
+die Umsetzung vieler Teile in der Visu sowie den vielen unzähligen Tests und sehr viel Geduld.
+
 Vielen Dank an psilo für die Erlaubnis zur Verwendung der LED-Grafiken im Web-Interface.
 Vielen Dank an bmx für das Umstellen des Plugins auf Smart-Plugin.
 Vielen Dank an Marcov für die Entwicklung des ursprünglichen Plugins.
+Vielen Dank an das Core-Team für die Einführung der STRUCTS, das hat die Arbeit deutlich vereinfacht.
 Vielen Dank an Jan Odvarko für die Entwicklung des [Color-Pickers](#http://jscolor.com) unter Freigabe für Opensource mit GPLv3   
 
 ## Change Log<a name="changelog"/></a>
@@ -34,7 +36,7 @@ Vielen Dank an Jan Odvarko für die Entwicklung des [Color-Pickers](#http://jsco
 - Integration der Mähkalenderverwaltung
 - Integration der SmartMow-Einstellungen
 - Integration "Mähen nach UZSZ"
-- verbesserte Wetterdarstellung
+- verbesserte Darstellung der Icons für das Wetter
 - Gartenkarte als Item in Visu integriert
 - "pimpen" der Gartenkarte mit eigenen Vektoren
 - Mähspurdarstellung für die IndegoConnect 350/400
@@ -108,6 +110,8 @@ indego:
 
 Es wird ledigliche folgender Eintrag für die Items benötigt.
 Die restlichen Informationen werden aus der mitgelieferten Struct-Definition gelesen.
+Eine entsprechende Config-Datei ist im Ordner "items" des Plugins bereits vorhanden und
+muss nur in den Ordner "./smarthome/items" kopiert werden.
 
 ```yaml
 %YAML 1.1
@@ -117,4 +121,12 @@ indego:
     struct: indego.child
 ```
 
+### SmartVisu
 
+Die Inhalte des Ordners "./dropins" müssen in den entsprechenden Ordner der VISU.
+In der Regel "/var/www/html/smartVISU2.9/dropins" kopiert werden.
+
+Im Ordner "/pages" des plugins ist eine vorgefertigte Raumseite für die SmartVISU.
+Diese muss in den Ordner "/pages/DeinName/" kopiert werden und die Raumnavigation entsprechend ergänzt werden.
+
+<strong>!!! Immer auf die Rechte achten !!!</strong> 
