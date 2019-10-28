@@ -191,7 +191,6 @@ item_structs:
                 type : str
                 visu_acl: rw
                 cache: 'on'
-                indego_plugin_handled: true
 
             svg_pos:
                 type : str
@@ -378,6 +377,7 @@ item_structs:
                 type: bool
                 visu_acl: rw
                 cache: 'on'
+                indego_plugin_handled: true
 
             alm_config:
                 type: foo
