@@ -6,6 +6,7 @@
 2. [Credits](#credits)
 3. [Change Log](#changelog)<sup><span style="color:red"> **Neu**</sup></span>
 4. [Konfiguration](#konfiguration)<sup><span style="color:blue"> **Update**</sup></span>
+5. [Web-Interface](#webinterface)<sup><span style="color:blue"> **Update**</sup></span>
 
 
 ## Generell<a name="generell"/></a>
@@ -77,17 +78,17 @@ Das Plugin benötigt keine zusätzlichen requirements
 
 folgende Einträge werden in der "./etc/plugin.yaml" benötigt.
 
-<strong>"path_2_weather_pics" ist der Pfad zu den Bilder des Wetter-Widgets</strong>
-
+* `class_name`:  fix "Indego"
+* `class_path`:  fix "plugins.indego"
+* `path_2_weather_pics`: ist der Pfad zu den Bilder des Wetter-Widgets.
 (default ="/smartVISU/lib/weather/pics/")
-
-<strong>"img_pfad" ist der Pfad unter dem die Gartenkarte gespeichert wird.</strong> 
-
+* `img_pfad`:  ist der Pfad unter dem die Gartenkarte gespeichert wird. 
 (default = "/tmp/garden.svg")
 Die Datei wird nicht für die VISU benötigt. Man kann die Datei als Vorlage
 zum "pimpen" der Gartenkarte verwenden
-
-<strong>"indego_credentials" sind die Zugangsdaten für den Bosch-Server im Format base64 encoded.</strong>
+* `indego_credentials`:  sind die Zugangsdaten für den Bosch-Server im Format base64 encoded.
+* `parent_item`:  name des übergeordneten items für alle Child-Items
+* `cycle`:  Intervall in Sekunden für das Abrufen des Mäher-Status
 
 Die Zugangsdaten können nach dem Start des Plugins im Web-Interface erfasst und gespeichert werden 
 
@@ -97,9 +98,9 @@ indego:
     class_name: Indego
     class_path: plugins.indego
     #path_2_weather_pics: /smartVISU/lib/weather/pics/
+    #img_pfad: /tmp/garden.svg
     indego_credentials:
     parent_item: indego 
-    #img_pfad: /tmp/garden.svg
     cycle: '30'
     url: https://api.indego.iot.bosch-si.com/api/v1/
 ```
@@ -130,3 +131,41 @@ Im Ordner "/pages" des plugins ist eine vorgefertigte Raumseite für die SmartVI
 Diese muss in den Ordner "/pages/DeinName/" kopiert werden und die Raumnavigation entsprechend ergänzt werden.
 
 <strong>!!! Immer auf die Rechte achten !!!</strong> 
+
+## Web-Interface<a name="webinterface"/></a>
+
+### erster Tab - Übersicht Indego-Items
+![Webif-Tab1](./assets/webif1.jpg)
+
+
+
+### zweiter Tab - Originalgartenkarte / Settings
+Hier wird die Original-Gartenkarte wie sie von Bosch übertragen wird angezeigt.
+Es kann mit dem Colour-Picker die Farbe des Mähers in der Visu angepasst werden.
+Die Originalkarte bleibt unverändert. Im ersten Tab wird unter dem Item indego.visu.map_2_show
+die modifizierte Karte angzeigt
+Es können hier bis zu 4 Trigger für Stati gewählt werden. 999999 - kein Status gewählt.
+Immer wenn der Status des Mähers auf den gewählten Status wechselt wird das Trigger-item
+"indego.trigger.state_trigger_<strong>X</strong>:" (X = 1-4 ) gesetzt. Die Trigger können in einer Logik
+verarbeitet werden. Beispiel siehe bei Logiken.
+Es können bis zu 4 Texte für Meldungen erfasst werden. Wenn der Text in der Überschrift oder im Inhalt der
+Meldung ist wird der Trigger "indego.trigger.alarm_trigger_<strong>X</strong>:" (X = 1-4 ) beim eintreffen der Meldung gesetzt. 
+
+![Webif-Tab1](./assets/webif2.jpg)
+
+
+
+### dritter Tab - State-Protokoll
+Hier können die einzelnen Statuswechsel des Mähers eingesehen werden.
+Es erfolgt bei jedem Statuswechsel ein Eintrag, das Protokoll ist selbst rotierend und hat 
+maximal 500 Einträge
+
+![Webif-Tab1](./assets/webif3.jpg)
+
+
+
+### vierter Tab - Kommunikationsprotokoll
+Hier können Protokoll-Einträge zu den einzelnen Kommunikationsanfragen mit dem Bosch-Server eingesehen werden.
+Es erfolgt bei jedem Statuswechsel ein Eintrag, das Protokoll ist selbst rotierend und hat 
+maximal 500 Einträge
+![Webif-Tab1](./assets/webif4.jpg)
