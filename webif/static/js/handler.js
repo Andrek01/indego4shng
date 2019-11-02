@@ -77,6 +77,23 @@ function StoreColor(Color) {
 }
 
 //*******************************************
+// Function to add_svg_images
+//*******************************************
+
+function Store_add_svg(Value) {
+	$.ajax({
+		url: "store_add_svg.html",
+		type: "GET",
+		data: { add_svg_str : Value,
+              } ,
+		contentType: "application/json; charset=utf-8",
+		success: function (response) {console.log('OK add_svg_image stored')},
+		error: function () {console.log('error-add_svg_image stored')}
+	});
+  return
+}
+
+//*******************************************
 // Function to Store State-Trigger-Events
 //*******************************************
 
