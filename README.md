@@ -264,7 +264,7 @@ except:
 ## öffentliche Funkionen<a name="api"/></a>
 
 Es gibt eine Funktion die z.B. über Logiken aufgerufen werden kann.
-#### indego_send(Payload as String)
+#### send_command(Payload as String)
 
 Man kann so z.B. den Mäher bei einsetzendem Regen der durch die Wetterstation erkannt wird
 zurück in die Ladestation schicken.
