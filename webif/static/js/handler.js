@@ -1,4 +1,119 @@
 //*************************************************************
+// check Auto-Updates for protocols
+//*************************************************************
+setInterval(Checkupdate4Protocolls, 5000);
+
+
+//*************************************************************
+// delete Protocols
+//*************************************************************
+
+function DeleteProto(btn_Name)
+{
+  if (btn_Name =="btn_clear_proto_commun")
+    { proto_Name = "webif.communication_protocoll"}
+  else if (btn_Name == "btn_clear_proto_states")
+    { proto_Name = "webif.state_protocoll"} 
+
+ $.ajax({
+    url: "clear_proto.html",
+    type: "GET",
+    data: { proto_Name : proto_Name
+          },
+    contentType: "application/json; charset=utf-8",
+    success: function (response) {
+		     ClearProto(proto_Name);
+    },
+    error: function () {
+        console.log("Error - while clearing Protocol :"+proto_Name)
+    }
+ });
+};
+
+//*************************************************************
+// clear Protocol
+//*************************************************************
+function ClearProto(proto_Name)
+{
+
+    if (proto_Name == 'webif.communication_protocoll')
+    {
+        logCodeMirror.setValue("")
+    }
+    if (proto_Name == 'webif.state_protocoll')
+    {
+        statelogCodeMirror.setValue("")
+    }
+}
+
+
+//*************************************************************
+// check Auto-Updates for protocols
+//*************************************************************
+function Checkupdate4Protocolls()
+{ 
+    states_checked = document.getElementById("proto_states_check").checked
+    commun_checked = document.getElementById("proto_commun_check").checked
+    if (states_checked == true)
+    {
+     UpdateProto('state_log_file')
+    }
+    if (commun_checked == true)
+    {
+     UpdateProto('Com_log_file')
+    }
+}
+
+
+//*************************************************************
+// actualisation of Protocol
+//*************************************************************
+function actProto(response,proto_Name)
+{
+    myProto = document.getElementById(proto_Name)
+    myProto.value = ""
+    myText = ""
+    var objResponse = JSON.parse(response)
+    for (x in objResponse)
+        {
+         myText += objResponse[x]+"\n"
+        }
+    myProto.value = myText
+    if (proto_Name == 'Com_log_file')
+    {
+        logCodeMirror.setValue(myText)
+    }
+    if (proto_Name == 'state_log_file')
+    {
+        statelogCodeMirror.setValue(myText)
+    }
+}
+
+//*************************************************************
+// Auto-Update-Timer for protocol - States
+//*************************************************************
+
+function UpdateProto(proto_Name)
+{
+	$.ajax({
+		url: "get_proto.html",
+		type: "GET",
+		data: { proto_Name : proto_Name
+		      },
+		contentType: "application/json; charset=utf-8",
+		success: function (response) {
+				actProto(response,proto_Name);
+		},
+		error: function () {
+            console.log("Error - while updating Protocol :"+proto_Name)
+		}
+	});
+};
+
+
+
+
+//*************************************************************
 // ValidateEncodeResponse -checks the login-button
 //*************************************************************
 

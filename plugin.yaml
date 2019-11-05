@@ -6,10 +6,10 @@ plugin:
         de: 'Indego Plugin zum Auslesen und steuern von Bosch Indego Mährobotern mit Connect Ausstattung'
         en: 'Indego Plugin to read out and control Bosch Indego mower robots with Connect interface'
     maintainer: AndreK, schuma
-#    tester:                        # Who tests this plugin?
+    tester: schuma, AndreK
     state: develop                  # change to ready when done with development
-    keywords: Indego smartmower
-#    documentation: https://github.com/smarthomeNG/smarthome/wiki/CLI-Plugin        # url of documentation (wiki) page
+    keywords: Indego smartmower bosch connect
+    documentation: http://smarthomeng.de/user/plugins_doc/config/indego.html        # url of documentation (wiki) page
     support: https://knx-user-forum.de/forum/supportforen/smarthome-py
 
     version: 3.0.0                  # Plugin version
@@ -17,7 +17,7 @@ plugin:
 #    sh_maxversion:                 # maximum shNG version to use this plugin (leave empty if latest)
     multi_instance: False           # plugin supports multi instance
     restartable: yes
-    classname: Indego         # class containing the plugin
+    classname: Indego4shNG          # class containing the plugin
 
 
 parameters:
@@ -60,25 +60,38 @@ parameters:
             en: 'The parent item for all children relating to this instance'
 
 
-item_attributes:
+item_attributes: NONE
     # Definition of item attributes defined by this plugin
-    indego_command:
-        type: str
-        description:
-            de: 'sendet ein Kommando an den Bosch-Server'
-            en: 'sends Commands to the Bosch Server'
-    indego_smart:
-        type: str
-        description:
-            de: 'Setzt den Mähmodus auf Smart-Mähen'
-            en: 'set the mode of the mower to smartmowing'
 
 
 logic_parameters: NONE
     # Definition of logic parameters defined by this plugin
 
-plugin_functions: NONE
+plugin_functions:
     # Definition of function interface of the plugin
+    send_command:
+        type: str
+        description:
+            de: 'sendet ein Kommando an den Bosch-Server'
+            en: 'sends Commands to the Bosch Server'
+        parameters:
+            payload:
+                type: str
+                default: '{"state":"mow"}'
+                description:
+                    de: 'Payload für das zu sendende Kommando'
+                    en: 'payload for the command to send'
+                valid_list:
+                  - '{"state":"mow"}'
+                  - '{"state":"pause"}'
+                  - '{"state":"returnToDock"}'
+            trigger:
+                type: str
+                default: 'Logic'
+                description:
+                    de: 'Trigger der die Funktion ausgelöst hat'
+                    en: 'Trigger which caused the function'
+
 
 item_structs:
     child:
@@ -100,7 +113,7 @@ item_structs:
             refresh:
                 type: bool
                 visu_acl: rw
-                indego_plugin_handled: true
+                indego_function_4_all: '_handle_refresh'
 
             network:
                 act_provider:
@@ -148,7 +161,7 @@ item_structs:
             store_sms_profile:
                 type: bool
                 visu_acl: rw
-                indego_plugin_handled: true
+                indego_function_4_all: '_handel_store_cals'
 
             alerts:
                 type: dict
@@ -222,7 +235,7 @@ item_structs:
                 type : str
                 visu_acl: rw
                 cache: 'on'
-                indego_plugin_handled: true
+                indego_function_4_all: '_handle_parse_map'
 
             mower_colour:
                 visu_acl: rw
@@ -230,6 +243,7 @@ item_structs:
                 cache: 'on'
                 initial_value: "mower_colour|'#FFF601'"
                 indego_plugin_handled: true
+                indego_function_4_all: '_handle_parse_map'
 
             map_2_display:
                 type : str
@@ -347,7 +361,7 @@ item_structs:
                 type : str
                 cache: 'on'
                 visu_acl: rw
-                indego_plugin_handled: true
+                indego_function_4_all: '_handle_parse_map'
 
 # End - Definitions for the webIf-Items
 
@@ -413,19 +427,23 @@ item_structs:
             kalender:
                 type: bool
                 visu_acl: rw
+                indego_function_4_visu : '_handle_active_mode'
 
             aus:
                 type: bool
                 visu_acl: rw
+                indego_function_4_visu : '_handle_active_mode'
 
             smart:
                 type: bool
                 visu_acl: rw
+                indego_function_4_visu : '_handle_active_mode'
 
             uzsu:
                 type: num
                 visu_acl: rw
                 enforce_updates: 'yes'
+                indego_plugin_handled: true
 
                 schaltuhr:
                     type: dict
@@ -433,13 +451,14 @@ item_structs:
                     uzsu_item: indego.active_mode.uzsu
                     visu_acl: rw
                     cache: 'yes'
-                    indego_plugin_handled : true
+                    indego_function_4_visu : '_handle_active_mode'
                     
                     active:
                         type: bool
                         enforce_updates: 'yes'
                         cache: 'yes'
                         visu_acl: rw
+                        indego_plugin_handled: true
 
                 calendar_list:
                     type: dict
@@ -457,6 +476,7 @@ item_structs:
             type: bool
             visu_acl: rw
             initial_value: false
+            indego_plugin_handled: true
 
         online:
             type: bool
@@ -641,11 +661,11 @@ item_structs:
         alm_mode:
             type: str
             visu_acl: rw
-            indego_plugin_handled: true
+            indego_function_4_all: '_handle_alm_mode'
 
-            str:
-                type: str
-                visu_acl: rw
+        alm_mode.str:
+            type: str
+            visu_acl: rw
 
         bareToolnumber:
             type: str
@@ -674,6 +694,7 @@ item_structs:
             type: dict
             visu_acl: rw
             indego_plugin_handled: true
+            indego_function_4_visu : '_handle_calendar_list'
 
         calendar_sel_cal:
             type: num
@@ -689,7 +710,7 @@ item_structs:
             type: bool
             visu_acl: rw
             autotimer: 185 = False
-            indego_plugin_handled: true
+            indego_function_4_all: '_handle_store_cals'
 
         calendar_predictive:
             type: dict
@@ -699,6 +720,7 @@ item_structs:
             type: dict
             visu_acl: rw
             indego_plugin_handled: true
+            indego_function_4_visu : '_handle_calendar_list'
 
         calendar_predictive_sel_cal:
             type: num
@@ -714,7 +736,7 @@ item_structs:
             type: bool
             visu_acl: rw
             autotimer: 185 = False
-            indego_plugin_handled: true
+            indego_function_4_all: '_handle_store_cals'
 
         weather:
 

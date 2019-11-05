@@ -30,13 +30,9 @@ import time
 import base64
 import os
 import ast
-
 import json
-#import http.client
 from dateutil import tz
 import sys
-
-
 import requests
 
 from lib.module import Modules
@@ -45,8 +41,9 @@ from lib.item import Items
 from lib.shtime import Shtime
 from datetime import datetime
 from datetime import date
-from bs4 import BeautifulSoup
+
 import base64
+
 
 
 
@@ -61,7 +58,7 @@ import base64
 #     REQUIRED_PACKAGE_IMPORTED = False
 
 
-class Indego(SmartPlugin):
+class Indego4shNG(SmartPlugin):
     """
     Main class of the Indego Plugin. Does all plugin specific stuff and provides
     the update functions for the items
@@ -169,9 +166,9 @@ class Indego(SmartPlugin):
         # start the refresh timers
         self.scheduler_add('operating_data',self.get_operating_data,cycle = 300)
         self.scheduler_add('state', self.state, cycle = self.cycle)
-        self.scheduler_add('alert', self.alert, cycle=30)
+        self.scheduler_add('alert', self.alert, cycle=300)
         self.scheduler_add('get_calendars', self._get_calendars, cycle=300)
-        self.scheduler_add('check_login_state', self._check_login_state, cycle=90)
+        self.scheduler_add('check_login_state', self._check_login_state, cycle=120)
         self.scheduler_add('device_data', self.device_data, cycle=120)
         self.scheduler_add('get_weather', self.get_weather, cycle=600)
         self.scheduler_add('get_next_time', self.get_next_time, cycle=300)
@@ -179,21 +176,20 @@ class Indego(SmartPlugin):
         self.alive = True
         # if you need to create child threads, do not make them daemon = True!
         # They will not shutdown properly. (It's a python bug)
-       
         
 
     def stop(self):
         """
         Stop method for the plugin
         """
-        self.get_sh().scheduler.remove('operating_data')
-        self.get_sh().scheduler.remove('state')
-        self.get_sh().scheduler.remove('alert')
-        self.get_sh().scheduler.remove('get_calendars')
-        self.get_sh().scheduler.remove('check_login_state')
-        self.get_sh().scheduler.remove('device_date')
-        self.get_sh().scheduler.remove('get_weather')
-        self.get_sh().scheduler.remove('get_next_time')
+        self.scheduler_remove('operating_data')
+        self.scheduler_remove('state')
+        self.scheduler_remove('alert')
+        self.scheduler_remove('get_calendars')
+        self.scheduler_remove('check_login_state')
+        self.scheduler_remove('device_date')
+        self.scheduler_remove('get_weather')
+        self.scheduler_remove('get_next_time')
         
         self._delete_auth()   # Log off
         self.logger.debug("Stop method called")
@@ -222,6 +218,14 @@ class Indego(SmartPlugin):
         
         if self.has_iattr(item.conf, 'indego_plugin_handled'):
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'indego_plugin_handled', self.get_iattr_value(item.conf, 'indego_plugin_handled')))
+            return self.update_item
+        
+        if self.has_iattr(item.conf, 'indego_function_4_all'):
+            self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'indego_function_4_all', self.get_iattr_value(item.conf, 'indego_function_4_all')))
+            return self.update_item
+        
+        if self.has_iattr(item.conf, 'indego_function_4_visu'):
+            self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'indego_function_4_visu', self.get_iattr_value(item.conf, 'indego_function_4_visu')))
             return self.update_item
         
         if item.property.name ==  self.parent_item+'.states_str':
@@ -340,6 +344,8 @@ class Indego(SmartPlugin):
         if caller != self.get_shortname() and caller != 'Autotimer' and caller != 'Logic':
             # code to execute, only if the item has not been changed by this this plugin:
             self.logger.info("Update item: {}, item has been changed outside this plugin".format(item.id()))
+            
+            # Update-Hander for Items changed by Visu
     
             if self.has_iattr(item.conf, 'indego_config'):
                 self.logger.debug("update_item was called with item '{}' from caller '{}', source '{}' and dest '{}'".format(item,caller,source,dest))
@@ -353,59 +359,13 @@ class Indego(SmartPlugin):
                     myResult = self._send_config(myUrl, myBody)
                 except:
                     self.logger.warning("Error building config for item '{}' from caller '{}', source '{}' and dest '{}'".format(item,caller,source,dest))
-    
+
+            if self.has_iattr(item.conf, 'indego_function_4_visu'):
+                self.logger.debug("Item '{}' has attribute '{}' found with {}".format( item, 'indego_function_4_visu', self.get_iattr_value(item.conf, 'indego_function_4_visu')))
+                myFunction_Name = self.get_iattr_value(item.conf, 'indego_function_4_visu')
+                myFunction = getattr(self,myFunction_Name)
+                myFunction(item)    
                 
-            if item.property.name == self.parent_item+'.calendar_list':
-                myList = item()
-                self.parse_list_2_cal(myList, self.calendar,'MOW')
-
-
-            if item.property.name == self.parent_item+'.calendar_predictive_list':
-                myList = item()
-                self.parse_list_2_cal(myList, self.predictive_calendar,'PRED')
-                     
-
-            if item.property.name == self.parent_item+'.active_mode.kalender' and item() == True:
-                self.set_childitem('update_active_mode', True)
-                self.set_childitem('active_mode', 1)
-                self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate(False)
-                self.set_childitem('active_mode.smart', False)
-                self.set_childitem('active_mode.aus', False)
-                self._set_smart(False)
-                self.set_childitem('calendar_sel_cal', 2)
-                self.set_childitem('calendar_save', True)
-                self.set_childitem('alm_mode.str','Übersicht Kalender mähen:')
-                self.set_childitem('alm_mode','calendar')
-                self.set_childitem('update_active_mode', False)
-                self.set_childitem('active_mode.uzsu.schaltuhr.active', False)
-                
-            if item.property.name == self.parent_item+'.active_mode.aus' and item() == True:
-                self.set_childitem('update_active_mode', True)
-                self.set_childitem('active_mode', 3)
-                self.set_childitem('active_mode.kalender', False)
-                self.set_childitem('alm_mode.str','')
-                self.set_childitem('active_mode.smart', False)
-                self._set_smart(False)
-                self.set_childitem('calendar_sel_cal', 0)
-                self.set_childitem('calendar_save', True)
-                self.set_childitem('alm_mode','manual')
-                self.set_childitem('update_active_mode', False)
-            
-            if item.property.name == self.parent_item+'.active_mode.smart' and item() == True:
-                self.set_childitem('update_active_mode', True)
-                self.set_childitem('active_mode', 2)
-                self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate(False)
-                self.set_childitem('alm_mode.str','Übersicht SmartMow mähen:')
-                self.set_childitem('active_mode.aus', False)
-                self.set_childitem('active_mode.kalender', False)
-                self.set_childitem('calendar_sel_cal', 3)
-                self.set_childitem('calendar_save', True)
-                self._set_smart(True)
-                self.set_childitem('alm_mode','smart')
-                self.set_childitem('update_active_mode', False)
-                self.set_childitem('active_mode.uzsu.schaltuhr.active', False)
-            
-            
             
             if item.property.name == self.parent_item+'.visu.alerts_set_read':
                 self._set_read_messages()
@@ -423,94 +383,123 @@ class Indego(SmartPlugin):
                 
             if item._name == self.parent_item+'.active_mode.uzsu':
                 if item() == 10:
-                    self.set_childitem('MOW', True)
+                    self._set_childitem('MOW', True)
                 if item() == 20:
-                    self.set_childitem('RETURN', True)
+                    self._set_childitem('RETURN', True)
                 if item() == 30:              
-                    self.set_childitem('PAUSE', True)
+                    self._set_childitem('PAUSE', True)
             
             if ("show_uzsu_popup" in item.property.name and item() == True):
-                self.set_childitem('visu.fire_uszu_popup','fire_uszu_popup|True' )
+                self._set_childitem('visu.fire_uszu_popup','fire_uszu_popup|True' )
             
         
         # Function when item is triggered by anybody, also by plugin
-
-        if item.property.name == self.parent_item+'.alm_mode':
-            if   (item() == 'smart'):
-                self.set_childitem('active_mode', 2)      
-                self.set_childitem('active_mode.aus', False)
-                self.set_childitem('active_mode.kalender', False)          
-                self.set_childitem('active_mode.smart', True)
-                self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate(False)
-            elif (item() == 'calendar'):
-                self.set_childitem('active_mode', 1)
-                self.set_childitem('active_mode.aus', False)
-                self.set_childitem('active_mode.kalender', True)          
-                self.set_childitem('active_mode.smart', False)
-                self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate(False)
-            elif (item() == 'manual'):
-                self.set_childitem('active_mode', 3)
-                self.set_childitem('active_mode.aus', True)
-                self.set_childitem('active_mode.kalender', False)          
-                self.set_childitem('active_mode.smart', False)
-            
             
         if self.has_iattr(item.conf, 'indego_command'):
             self.logger.debug("Item '{}' has attribute '{}' triggered {}".format( item, 'indego_command', self.get_iattr_value(item.conf, 'indego_command')))
             try:    
-                self.send_command(item, caller=None, source=None, dest=None)
+                command = self.get_iattr_value(item.conf,'indego_command')
+                if item():
+                    self.send_command(command,item.property.name)
             except:
                     self.logger.warning("Error sending command for item '{}' from caller '{}', source '{}' and dest '{}'".format(item,caller,source,dest))
+
+        if self.has_iattr(item.conf, 'indego_function_4_all'):
+            try:
+                self.logger.debug("Item '{}' has attribute '{}' found with {}".format( item, 'indego_plugin_function', self.get_iattr_value(item.conf, 'indego_function_4_all')))
+                myFunction_Name = self.get_iattr_value(item.conf, 'indego_function_4_all')
+                myFunction = getattr(self,myFunction_Name)
+                myFunction(item)
+            except:
+                self.logger.warning("failed : Item '{}' has attribute '{}' found with {}".format( item, 'indego_function_4_all', self.get_iattr_value(item.conf, 'indego_function_4_all')))
+                            
+               
+        if "active_mode" in item.property.name:
+            self._set_childitem('visu.cal_2_show','cal2show|'+str(self._get_childitem('active_mode')))
         
+        if "wartung.wintermodus" in item.property.name:
+            self._set_childitem('visu.wintermodus','wintermodus|'+str(self._get_childitem('wartung.wintermodus')))
+        
+        if ("visu.mow_track" in item.property.name and self._get_childitem('visu.show_mow_track') == True) or ("visu.show_mow_track" in item.property.name and item() == True):
+                self._create_mow_track()
+        elif "visu.show_mow_track" in item.property.name and item() == False:
+            self._set_childitem('visu.svg_mow_track','svg_mow_track|'+str(''))
+
+
+
+                                                   
+        
+    ##############################################        
+    # Public functions
+    ##############################################
+    
+    def send_command(self, command, item_name):
+        command = json.loads(command)
+        self.logger.debug("Function Command " + json.dumps(command) + ' ' + item_name)
+        message, response = self._put_url(self.indego_url + 'alms/' + self.alm_sn + '/state', self.context_id, command, 10)
+        self.logger.debug("Command " + json.dumps(command) + ' gesendet! ' + str(message))
+
+                    
+    ##############################################
+    # Functions for Update-Items 
+    ##############################################
+    def _handle_store_cals(self, item):
         if item.property.name == self.parent_item+'.visu.store_sms_profile' and item() == True:
                 self.smart_mow_settings("write")
-                self.set_childitem('visu.store_sms_profile', False)
+                self._set_childitem('visu.store_sms_profile', False)
                     
                     
         if item.property.name == self.parent_item+'.calendar_save' and item() == True:
-            self.set_childitem('calendar_result', "speichern gestartet")
+            self._set_childitem('calendar_result', "speichern gestartet")
             # Now Save the Calendar on Bosch-API
             self.cal_update_count = 0
             self._auto_mow_cal_update()
 
 
         if item.property.name == self.parent_item+'.calendar_predictive_save' and item() == True:
-            self.set_childitem('calendar_predictive_result', "speichern gestartet")
+            self._set_childitem('calendar_predictive_result', "speichern gestartet")
             # Now Save the Calendar on Bosch-API
             self.upate_count_pred = 0
             self._auto_pred_cal_update()
-        
-        if "active_mode" in item.property.name:
-            self.set_childitem('visu.cal_2_show','cal2show|'+str(self.get_childitem('active_mode')))
-        
-        if "wartung.wintermodus" in item.property.name:
-            self.set_childitem('visu.wintermodus','wintermodus|'+str(self.get_childitem('wartung.wintermodus')))
-        
-        if ("visu.mow_track" in item.property.name and self.get_childitem('visu.show_mow_track') == True) or ("visu.show_mow_track" in item.property.name and item() == True):
-                self._create_mow_track()
-        elif "visu.show_mow_track" in item.property.name and item() == False:
-            self.set_childitem('visu.svg_mow_track','svg_mow_track|'+str(''))
-        
-        if "webif.garden_map" in item.property.name:
-                self.parse_map()
-        
-        if "visu.add_svg_images" in item.property.name:
-                self.parse_map()
-        
-        if "visu.mower_colour" in item.property.name:
-                self.parse_map()
-                
-        if item.property.name == self.parent_item+".active_mode.uzsu.schaltuhr":
-                myResult = self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate()
-                if myResult == True:
-                    self.set_childitem('active_mode.uzsu.schaltuhr.active', True)
-                    self.set_childitem('active_mode.uzsu.calendar_list',self.parse_uzsu_2_list(item()))
-                    self.set_childitem('alm_mode.str','Übersicht mähen nach UZSU:')
-                else:                  
-                    self.set_childitem('active_mode.uzsu.schaltuhr.active', False)
 
-        if item.property.name == self.parent_item+'.visu.refresh' and item()== True:
-            self.set_childitem('update_active_mode', True)
+        
+        
+    def _handle_parse_map(self, item):
+        self.parse_map()
+    
+    def _handle_calendar_list(self, item):
+        if item.property.name == self.parent_item+'.calendar_list':
+            myList = item()
+            self.parse_list_2_cal(myList, self.calendar,'MOW')
+
+
+        if item.property.name == self.parent_item+'.calendar_predictive_list':
+            myList = item()
+            self.parse_list_2_cal(myList, self.predictive_calendar,'PRED')
+                 
+        
+    def _handle_alm_mode(self, item):
+        if   (item() == 'smart'):
+            self._set_childitem('active_mode', 2)      
+            self._set_childitem('active_mode.aus', False)
+            self._set_childitem('active_mode.kalender', False)          
+            self._set_childitem('active_mode.smart', True)
+            self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate(False)
+        elif (item() == 'calendar'):
+            self._set_childitem('active_mode', 1)
+            self._set_childitem('active_mode.aus', False)
+            self._set_childitem('active_mode.kalender', True)          
+            self._set_childitem('active_mode.smart', False)
+            self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate(False)
+        elif (item() == 'manual'):
+            self._set_childitem('active_mode', 3)
+            self._set_childitem('active_mode.aus', True)
+            self._set_childitem('active_mode.kalender', False)          
+            self._set_childitem('active_mode.smart', False)
+            
+    def _handle_refresh(self, item):
+        if item()== True:
+            self._set_childitem('update_active_mode', True)
             self._get_calendars()
             self.state()
             self.alert()
@@ -518,9 +507,94 @@ class Indego(SmartPlugin):
             self.get_next_time()
             self.get_weather()
             self.load_map()
-            self.set_childitem('update_active_mode', False)
+            self._set_childitem('update_active_mode', False)
             item(False)
-                           
+        
+    def _handle_active_mode(self, item):
+        if item.property.name == self.parent_item+'.active_mode.kalender' and item() == True:
+            self._set_childitem('update_active_mode', True)
+            self._set_childitem('active_mode', 1)
+            self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate(False)
+            self._set_childitem('active_mode.smart', False)
+            self._set_childitem('active_mode.aus', False)
+            self._set_smart(False)
+            self._set_childitem('calendar_sel_cal', 2)
+            self._set_childitem('calendar_save', True)
+            self._set_childitem('alm_mode.str','Übersicht Kalender mähen:')
+            self._set_childitem('alm_mode','calendar')
+            self._set_childitem('update_active_mode', False)
+            self._set_childitem('active_mode.uzsu.schaltuhr.active', False)
+            
+        if item.property.name == self.parent_item+'.active_mode.aus' and item() == True:
+            self._set_childitem('update_active_mode', True)
+            self._set_childitem('active_mode', 3)
+            self._set_childitem('active_mode.kalender', False)
+            self._set_childitem('alm_mode.str','')
+            self._set_childitem('active_mode.smart', False)
+            self._set_smart(False)
+            self._set_childitem('calendar_sel_cal', 0)
+            self._set_childitem('calendar_save', True)
+            self._set_childitem('alm_mode','manual')
+            self._set_childitem('update_active_mode', False)
+        
+        if item.property.name == self.parent_item+'.active_mode.smart' and item() == True:
+            self._set_childitem('update_active_mode', True)
+            self._set_childitem('active_mode', 2)
+            self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate(False)
+            self._set_childitem('alm_mode.str','Übersicht SmartMow mähen:')
+            self._set_childitem('active_mode.aus', False)
+            self._set_childitem('active_mode.kalender', False)
+            self._set_childitem('calendar_sel_cal', 3)
+            self._set_childitem('calendar_save', True)
+            self._set_smart(True)
+            self._set_childitem('alm_mode','smart')
+            self._set_childitem('update_active_mode', False)
+            self._set_childitem('active_mode.uzsu.schaltuhr.active', False)
+        
+        if item.property.name == self.parent_item+".active_mode.uzsu.schaltuhr":
+            myResult = self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate()
+            if myResult == True:
+                self._set_childitem('active_mode.uzsu.schaltuhr.active', True)
+                self._set_childitem('active_mode.uzsu.calendar_list',self.parse_uzsu_2_list(item()))
+                self._set_childitem('alm_mode.str','Übersicht mähen nach UZSU:')
+            else:                  
+                self._set_childitem('active_mode.uzsu.schaltuhr.active', False)
+        
+
+    ##############################################
+    # End - Update-Items
+    
+    ##############################################
+    # Private functions
+    ##############################################
+    def _get_childitem(self, itemname):
+        """
+        a shortcut function to get value of an item if it exists
+        :param itemname:
+        :return:
+        """
+        item = self.items.return_item(self.parent_item + '.' + itemname)  
+        if (item != None):
+            return item()
+        else:
+            self.logger.warning("Could not get item '{}'".format(self.parent_item+'.'+itemname))    
+    
+    
+    def _set_childitem(self, itemname, value ):
+        """
+        a shortcut function to set an item with a given value if it exists
+        :param itemname:
+        :param value:
+        :return:
+        """
+        item = self.items.return_item(self.parent_item + '.' + itemname)  
+        if (item != None): 
+            item(value, 'indego')
+        else:
+            self.logger.warning("Could not set item '{}' to '{}'".format(self.parent_item+'.'+itemname, value))
+
+
+                               
     def _send_config(self,url,body=None):
         try:
             myResult, response = self._put_url( url, self.context_id, body)
@@ -529,24 +603,18 @@ class Indego(SmartPlugin):
             return False
         return True
 
-    def send_command(self, item, command=None, caller=None, source=None, dest=None):
-        if self.has_iattr(item.conf, 'indego_command'):
-            command = json.loads(self.get_iattr_value(item.conf,'indego_command'))
-            self.logger.debug("Function Command " + json.dumps(command) + ' ' + str(item()))
-            if item():
-                message, response = self._put_url(self.indego_url + 'alms/' + self.alm_sn + '/state', self.context_id, command, 10)
-                self.logger.debug("Command " + json.dumps(command) + ' gesendet! ' + str(message))
+
                     
     def _create_mow_track(self):
-        if self.get_childitem('visu.model_type') == 2:
+        if self._get_childitem('visu.model_type') == 2:
             mystroke     ='#C3FECE'
             mystrokewidth ='17'
         else:
             mystroke      ='#999999'
             mystrokewidth ='5'
-        myMowTrack = {'Points':self.get_childitem('visu.mow_track'),
+        myMowTrack = {'Points':self._get_childitem('visu.mow_track'),
                       'style':'fill:none; stroke:'+mystroke+ '; stroke-width: '+mystrokewidth+'; stroke-linecap:round; stroke-linejoin: round;'}
-        self.set_childitem('visu.svg_mow_track','svg_mow_track|'+json.dumps(myMowTrack))
+        self._set_childitem('visu.svg_mow_track','svg_mow_track|'+json.dumps(myMowTrack))
         
     def _daystring(self, zeitwert, ausgang):
         if ausgang == 'min':
@@ -566,28 +634,28 @@ class Indego(SmartPlugin):
         del myDict[myKey]
         
     def _set_read_essages(self):
-        msg2setread = self.get_childitem('visu.alerts_set_read')
-        myReadMsg = self.get_childitem('visu.alerts')
+        msg2setread = self._get_childitem('visu.alerts_set_read')
+        myReadMsg = self._get_childitem('visu.alerts')
         
         for message in msg2setread:
             myResult, response = self._put_url(self.indego_url +'alerts/{}'.format(message), self.context_id, None, 10)
             myReadMsg[message]['read_status'] = 'read'
             
-        self.set_childitem('visu.alerts', myReadMsg)
+        self._set_childitem('visu.alerts', myReadMsg)
         
         
     def _set_clear_message(self):
-        msg2clear = self.get_childitem('visu.alerts_set_clear')
-        myClearMsg = self.get_childitem('visu.alerts')
+        msg2clear = self._get_childitem('visu.alerts_set_clear')
+        myClearMsg = self._get_childitem('visu.alerts')
         
         for message in msg2clear:
             myResult = self._delete_url(self.indego_url +'alerts/{}'.format(message), self.context_id, 10,auth=(self.user,self.password))
             self._del_message_in_dict(myClearMsg, message)
             
-        self.set_childitem('visu.alerts', myClearMsg)
+        self._set_childitem('visu.alerts', myClearMsg)
         if (len(myClearMsg)) == 0:
             {
-                self.set_childitem('visu.alert_new', False)
+                self._set_childitem('visu.alert_new', False)
             } 
     
     def _check_login_state(self):
@@ -595,10 +663,11 @@ class Indego(SmartPlugin):
             return
         actTimeStamp = time.time()
         if self.expiration_timestamp < actTimeStamp+600:
+            self.logged_in = False
             self._delete_auth()
             self._auth()
             self.logged_in = self._check_auth()
-            self.set_childitem('online', self.logged_in)
+            self._set_childitem('online', self.logged_in)
             actDate = datetime.now()
             self.logger.info("refreshed Session-ID at : {}".format(actDate.strftime('Date: %a, %d %b %H:%M:%S %Z %Y')))
         else:
@@ -608,11 +677,11 @@ class Indego(SmartPlugin):
         self.cal_upate_count_pred += 1
         self.cal_pred_update_running = True
         
-        actCalendar = self.get_childitem('calendar_predictive_sel_cal')
+        actCalendar = self._get_childitem('calendar_predictive_sel_cal')
         # set actual Calendar in Calendar-structure
-        myCal = self.get_childitem('calendar_predictive')
+        myCal = self._get_childitem('calendar_predictive')
         myCal['sel_cal'] = actCalendar
-        self.set_childitem('calendar_predictive',myCal)
+        self._set_childitem('calendar_predictive',myCal)
         
         myResult = self._store_calendar(self.predictive_calendar(),'predictive/calendar')
         
@@ -620,32 +689,32 @@ class Indego(SmartPlugin):
             if myResult != 200:
                 if self.cal_upate_count_pred == 1:
                     self.scheduler_add('auto_pred_cal_update', self._auto_pred_cal_update, cycle=60)
-                myMsg = "Mäher konnte nicht erreicht werden "
-                myMsg += "nächster Versuch in 60 Sekunden "
-                myMsg += "Anzahl Versuche : " + str(self.cal_upate_count_pred)
+                myMsg = """Mäher konnte nicht erreicht werden 
+                           nächster Versuch in 60 Sekunden 
+                           Anzahl Versuche : """ + str(self.cal_upate_count_pred)
             else:
                 self.cal_pred_update_running = False
                 self.cal_upate_count_pred = 0
-                self.set_childitem('calendar_predictive_save', False)
+                self._set_childitem('calendar_predictive_save', False)
                 try:
-                    self.get_sh().scheduler.remove('auto_pred_cal_update')
+                    self.scheduler_remove('auto_pred_cal_update')
                 except:
                     pass
                 myMsg = "Ausschlusskalender wurde gespeichert"
 
         else: # Bereits drei Versuche getätigt
             try:
-                self.get_sh().scheduler.remove('auto_pred_cal_update')
+                self.scheduler_remove('auto_pred_cal_update')
             except:
                 pass
-            myMsg = "Ausschlusskalender konnte nach drei Versuchen nicht "
-            myMsg += "nicht gespeichert werden. "
-            myMsg += "Speichern abgebrochen"
+            myMsg = """Ausschlusskalender konnte nach drei Versuchen nicht 
+                       nicht gespeichert werden. "
+                       Speichern abgebrochen"""
             self.cal_pred_update_running = False
             self.cal_upate_count_pred = 0
-            self.set_childitem('calendar_predictive_save', False)
+            self._set_childitem('calendar_predictive_save', False)
         
-        self.set_childitem('calendar_predictive_result',myMsg)
+        self._set_childitem('calendar_predictive_result',myMsg)
 
             
 
@@ -653,52 +722,53 @@ class Indego(SmartPlugin):
         self.cal_update_count += 1
         self.cal_update_running = True
 
-        actCalendar = self.get_childitem('calendar_sel_cal')
+        actCalendar = self._get_childitem('calendar_sel_cal')
         # set actual Calendar in Calendar-structure
-        myCal = self.get_childitem('calendar')
+        myCal = self._get_childitem('calendar')
         myCal['sel_cal'] = actCalendar
-        self.set_childitem('calendar',myCal)
+        self._set_childitem('calendar',myCal)
         myResult = self._store_calendar(self.calendar(),'calendar')
         if self.cal_update_count <=3:
             if myResult != 200:
                 if self.cal_update_count == 1:
                     self.scheduler_add('auto_mow_cal_update', self._auto_mow_cal_update, cycle=60)
-                myMsg = "Mäher konnte nicht erreicht werden "
-                myMsg += "nächster Versuch in 60 Sekunden "
-                myMsg += "Anzahl Versuche : " + str(self.cal_update_count)
+                myMsg = """Mäher konnte nicht erreicht werden 
+                           nächster Versuch in 60 Sekunden 
+                           Anzahl Versuche : """ + str(self.cal_update_count)
+
             else:
                 self.cal_update_running = False
                 self.cal_update_count = 0
-                self.set_childitem('calendar_save', False)
+                self._set_childitem('calendar_save', False)
                 try:
-                    self.get_sh().scheduler.remove('auto_cal_update')
+                    self.scheduler_remove('auto_cal_update')
                 except:
                     pass
                 myMsg = "Mähkalender wurde gespeichert"
                 # Deactivate the UZSU, when saving the calendar, calendar-mode is activated
                 # and set the correctmode
-                self.set_childitem('active_mode.kalender',True)
+                self._set_childitem('active_mode.kalender',True)
                 
 
         else: # Bereits drei Versuche getätigt
             try:
-                self.get_sh().scheduler.remove('auto_mow_cal_update')
+                self.scheduler_remove('auto_mow_cal_update')
             except:
                 pass
-            myMsg = "Mähkalender konnte nach drei Versuchen nicht "
-            myMsg += "nicht gespeichert werden. "
-            myMsg += "Speichern abgebrochen"
+            myMsg = """Mähkalender konnte nach drei Versuchen nicht 
+                       nicht gespeichert werden. "
+                       Speichern abgebrochen"""
             self.cal_update_running = False
             self.cal_update_count = 0
-            self.set_childitem('calendar_save', False)
+            self._set_childitem('calendar_save', False)
         
-        self.set_childitem('calendar_result',myMsg)
+        self._set_childitem('calendar_result',myMsg)
     
     
     def _get_calendars(self):    
-        if (self.get_childitem("wartung.wintermodus") == True or self.logged_in == False):
+        if (self._get_childitem("wartung.wintermodus") == True or self.logged_in == False):
             return
-        if (self.get_childitem("alm_mode") == 'smart') and ((self.get_childitem('stateCode') == 513) or (self.get_childitem('stateCode') == 518)):
+        if (self._get_childitem("alm_mode") == 'smart') and ((self._get_childitem('stateCode') == 513) or (self._get_childitem('stateCode') == 518)):
             return     
         self.smart_mow_settings("read")
         try:
@@ -722,7 +792,7 @@ class Indego(SmartPlugin):
             self.logger.warning("Problem fetching Calendars: {0}".format(e))
         
         # Get the scheduled smart-mow-calendar
-        if self.get_childitem("alm_mode") == 'smart':
+        if self._get_childitem("alm_mode") == 'smart':
             try:
                 schedule = self._get_url(self.indego_url + 'alms/' + self.alm_sn +'/predictive/schedule', self.context_id)
 
@@ -745,20 +815,20 @@ class Indego(SmartPlugin):
             my_pred_list = self.parse_cal_2_list(my_pred_cal, None)
             my_smMow_list = self.parse_cal_2_list(my_smMow_cal, None)
             
-            self.set_childitem('visu.smartmow_days',[ my_pred_list,my_smMow_list])
+            self._set_childitem('visu.smartmow_days',[ my_pred_list,my_smMow_list])
         
     def _log_communication(self, type, url, result):
-        myLog = self.get_childitem('webif.communication_protocoll')
+        myLog = self._get_childitem('webif.communication_protocoll')
         if (myLog == None):
             return
         try:
             if len (myLog) >= 500:
-                myLog = myLog[1:500]
+                myLog = myLog[0:499]
         except:
             return
         now = self.shtime.now()
-        myLog.append(str(now)[0:19]+' Type: ' + str(type) + ' Result : '+str(result) + ' Url : ' + url)
-        self.set_childitem('webif.communication_protocoll', myLog)
+        myLog.insert(0,str(now)[0:19]+' Type: ' + str(type) + ' Result : '+str(result) + ' Url : ' + url)
+        self._set_childitem('webif.communication_protocoll', myLog)
 
     def _fetch_url(self, url, username=None, password=None, timeout=10, body=None):
         try:
@@ -781,32 +851,6 @@ class Indego(SmartPlugin):
         
         return content,expiration_timestamp
     
-    def get_childitem(self, itemname):
-        """
-        a shortcut function to get value of an item if it exists
-        :param itemname:
-        :return:
-        """
-        item = self.items.return_item(self.parent_item + '.' + itemname)  
-        if (item != None):
-            return item()
-        else:
-            self.logger.warning("Could not get item '{}'".format(self.parent_item+'.'+itemname))    
-    
-    
-    def set_childitem(self, itemname, value ):
-        """
-        a shortcut function to set an item with a given value if it exists
-        :param itemname:
-        :param value:
-        :return:
-        """
-        item = self.items.return_item(self.parent_item + '.' + itemname)  
-        if (item != None): 
-            item(value, 'indego')
-        else:
-            self.logger.warning("Could not set item '{}' to '{}'".format(self.parent_item+'.'+itemname, value))
-
     
     def _delete_url(self, url, contextid=None, timeout=40, auth=None):
         headers = {
@@ -932,10 +976,10 @@ class Indego(SmartPlugin):
 
 
     def _check_state_4_protocoll(self):
-        myActState = self.get_childitem("stateCode")
+        myActState = self._get_childitem("stateCode")
         if myActState == 772 or myActState == 775 or myActState == 769 or myActState == 770 or myActState == 771 or myActState == 773 or myActState == 774 or myActState == 257 or myActState == 260 or myActState == 261 or myActState == 262 or myActState == 263:                           # 769 = fährt zur Station / 772 = Mähzeit beendet / 775 = fertig gemäht
-            self.get_sh().scheduler.change('plugins.indego.state', cycle={self.cycle:None})
-            self.set_childitem("laststateCode", myActState)
+            self.scheduler_change('state', cycle={self.cycle:None})
+            self._set_childitem("laststateCode", myActState)
             self.position_detection = False
         
         
@@ -1038,7 +1082,7 @@ class Indego(SmartPlugin):
         https://api.indego.iot.bosch-si.com/api/v1/alms/{serial}/predictive/calendar
         x-im-context-id: {contextId}
         '''
-        if (self.get_childitem("alm_mode") == 'smart') and ((self.get_childitem('stateCode') == 513) or (self.get_childitem('stateCode') == 518)):
+        if (self._get_childitem("alm_mode") == 'smart') and ((self._get_childitem('stateCode') == 513) or (self._get_childitem('stateCode') == 518)):
             return        
         url = "{}alms/{}/predictive/calendar".format( self.indego_url, self.alm_sn)
         
@@ -1097,9 +1141,9 @@ class Indego(SmartPlugin):
             
     def build_new_calendar(self, myList = None,type = None):
         if (type =='MOW'):
-            selected_calendar = self.get_childitem('calendar_sel_cal')
+            selected_calendar = self._get_childitem('calendar_sel_cal')
         else:
-            selected_calendar = self.get_childitem('calendar_predictive_sel_cal')
+            selected_calendar = self._get_childitem('calendar_predictive_sel_cal')
         newCal = {}
         emptySlot = {
                     'StHr' : '00',
@@ -1383,7 +1427,7 @@ class Indego(SmartPlugin):
     def parse_dict_2_item(self,myDict, keyEntry):
         for m in myDict:
             if type(myDict[m]) != dict:
-                self.set_childitem(keyEntry+m, myDict[m])
+                self._set_childitem(keyEntry+m, myDict[m])
             else:
                 self.parse_dict_2_item(myDict[m],keyEntry+m+'.')
                 
@@ -1396,13 +1440,13 @@ class Indego(SmartPlugin):
             self.logger.warning("Problem fetching {}: {}".format(url, e))
             return false
         if location != False:
-            self.set_childitem('location', location)
+            self._set_childitem('location', location)
             if "latitude" in location:
-                self.set_childitem('location.latitude', location["latitude"])
+                self._set_childitem('location.latitude', location["latitude"])
             if "longitude" in location:
-                self.set_childitem('location.longitude', location["longitude"])
+                self._set_childitem('location.longitude', location["longitude"])
             if "timezone" in location:
-                self.set_childitem('location.timezone', location["timezone"])
+                self._set_childitem('location.timezone', location["timezone"])
             return True
         else:
             return False 
@@ -1416,9 +1460,9 @@ class Indego(SmartPlugin):
             except Exception as e:
                 self.logger.warning("Problem fetching {}: {}".format(url, e))
             if predictiveSetup != False:
-                self.set_childitem('smartmowsetup', predictiveSetup)
+                self._set_childitem('smartmowsetup', predictiveSetup)
             else:       # create empty dict
-                self.set_childitem('smartmowsetup',{
+                self._set_childitem('smartmowsetup',{
                                                       "full_cuts": 2,
                                                       "no_mow_calendar_days": [],
                                                       "avoid_rain": False,
@@ -1426,23 +1470,23 @@ class Indego(SmartPlugin):
                                                       "avoid_temperature": False,
                                                     })
                 
-            predictiveSetup = self.get_childitem('smartmowsetup')
+            predictiveSetup = self._get_childitem('smartmowsetup')
             try:
-                self.set_childitem('visu.avoid_temperature',predictiveSetup['avoid_temperature'] )
+                self._set_childitem('visu.avoid_temperature',predictiveSetup['avoid_temperature'] )
             except:
-                self.set_childitem('visu.avoid_temperature',False)
+                self._set_childitem('visu.avoid_temperature',False)
             try:
-                self.set_childitem('visu.avoid_rain',predictiveSetup['avoid_rain'] )
+                self._set_childitem('visu.avoid_rain',predictiveSetup['avoid_rain'] )
             except:
-                self.set_childitem('visu.avoid_rain',False)
+                self._set_childitem('visu.avoid_rain',False)
             try:
-                self.set_childitem('visu.use_grass_growth',predictiveSetup['use_grass_growth'])
+                self._set_childitem('visu.use_grass_growth',predictiveSetup['use_grass_growth'])
             except:
-                self.set_childitem('visu.use_grass_growth',False)
+                self._set_childitem('visu.use_grass_growth',False)
             try:
-                self.set_childitem('visu.full_cuts',predictiveSetup['full_cuts'] )
+                self._set_childitem('visu.full_cuts',predictiveSetup['full_cuts'] )
             except:
-                self.set_childitem('visu.full_cuts',2 )
+                self._set_childitem('visu.full_cuts',2 )
             
         if (mode == "write"):
             predictiveSetup = {   "full_cuts": 2,
@@ -1451,12 +1495,12 @@ class Indego(SmartPlugin):
                                   "use_grass_growth": False,
                                   "avoid_temperature": False,
                                }
-            predictiveSetup['avoid_temperature'] = self.get_childitem('visu.avoid_temperature')
-            predictiveSetup['avoid_rain'] = self.get_childitem('visu.avoid_rain')
-            predictiveSetup['use_grass_growth'] = self.get_childitem('visu.use_grass_growth')
-            predictiveSetup['full_cuts'] = self.get_childitem('visu.full_cuts')
-            if (self.get_childitem('visu.use_exclude_time_4_sms') == True):
-                predictiveSetup['no_mow_calendar_days'] = self.get_childitem('calendar_predictive')['cals'][0]['days']
+            predictiveSetup['avoid_temperature'] = self._get_childitem('visu.avoid_temperature')
+            predictiveSetup['avoid_rain'] = self._get_childitem('visu.avoid_rain')
+            predictiveSetup['use_grass_growth'] = self._get_childitem('visu.use_grass_growth')
+            predictiveSetup['full_cuts'] = self._get_childitem('visu.full_cuts')
+            if (self._get_childitem('visu.use_exclude_time_4_sms') == True):
+                predictiveSetup['no_mow_calendar_days'] = self._get_childitem('calendar_predictive')['cals'][0]['days']
             else:
                 predictiveSetup['no_mow_calendar_days']=[]
             
@@ -1470,7 +1514,7 @@ class Indego(SmartPlugin):
         '''
         @GET("alms/{alm_serial}/config")")
         '''
-        activeModel = self.get_childitem('visu.model_type')
+        activeModel = self._get_childitem('visu.model_type')
         if activeModel != 2:
             return
         
@@ -1481,7 +1525,7 @@ class Indego(SmartPlugin):
             self.logger.warning("Problem getting {}: {}".format(url, e))
         
         if alm_config != False:
-            self.set_childitem('wartung.alm_config', alm_config)
+            self._set_childitem('wartung.alm_config', alm_config)
     
     def start_manual_update(self):
         '''
@@ -1498,7 +1542,7 @@ class Indego(SmartPlugin):
         url = '{}alms/{}/automaticUpdate'.format( self.indego_url, self.alm_sn)
         automatic_updates = self._get_url( url, self.context_id, 20)
         if automatic_updates != False:
-            self.set_childitem('wartung.update_auto', automatic_updates['allow_automatic_update'])
+            self._set_childitem('wartung.update_auto', automatic_updates['allow_automatic_update'])
         
         
         
@@ -1506,7 +1550,7 @@ class Indego(SmartPlugin):
         '''
         @PUT("alms/{alm_serial}/automaticUpdate")
         '''
-        body = {"allow_automatic_update": self.get_childitem('wartung.update_auto')}
+        body = {"allow_automatic_update": self._get_childitem('wartung.update_auto')}
         url = '{}alms/{}/automaticUpdate'.format( self.indego_url, self.alm_sn)
         myResult, response = self._put_url(url, self.context_id, body, 10)
         
@@ -1522,16 +1566,16 @@ class Indego(SmartPlugin):
             self.logger.warning("Problem getting {}: {}".format(url, e))
         if available_updates != False:
             if (available_updates['available']) == True:
-                self.set_childitem('wartung.update','JA')
+                self._set_childitem('wartung.update','JA')
             else:
-                self.set_childitem('wartung.update','NEIN')
+                self._set_childitem('wartung.update','NEIN')
                 
                 
     def get_operating_data(self):
         '''
         @GET("alms/{alm_serial}/operatingData")
         '''
-        if (self.get_childitem("wartung.wintermodus") == True or self.logged_in == False):
+        if (self._get_childitem("wartung.wintermodus") == True or self.logged_in == False):
             return
             
         url = "{}alms/{}/operatingData".format( self.indego_url, self.alm_sn)
@@ -1542,25 +1586,25 @@ class Indego(SmartPlugin):
         if operating_data != False:
             self.parse_dict_2_item(operating_data,'operatingInfo.')
         # Set Visu-Items
-        activeModel = self.get_childitem('visu.model_type')
+        activeModel = self._get_childitem('visu.model_type')
         if (activeModel == 1):      # the big ones
             try:
-                myBatteryVoltage = self.get_childitem('operatingInfo.battery.voltage')
+                myBatteryVoltage = self._get_childitem('operatingInfo.battery.voltage')
                 if myBatteryVoltage > 35.0:
                     myBatteryVoltage = 35.0
                 myVoltage = myBatteryVoltage - 30.0
                 myLoad_percent = myVoltage/5.0 * 100.0
-                self.set_childitem('visu.battery_load', myLoad_percent)
+                self._set_childitem('visu.battery_load', myLoad_percent)
                 myLoad_icon = myVoltage/5.0*255.0
-                self.set_childitem('visu.battery_load_icon', myLoad_icon)
+                self._set_childitem('visu.battery_load_icon', myLoad_icon)
             except err as Exception:
                 self.logger.warning("Problem to calculate Battery load")
         elif (activeModel == 2):    # the small ones
             try:
-                myLoad_percent = self.get_childitem('operatingInfo.battery.percent')
-                self.set_childitem('visu.battery_load', myLoad_percent)
+                myLoad_percent = self._get_childitem('operatingInfo.battery.percent')
+                self._set_childitem('visu.battery_load', myLoad_percent)
                 myLoad_icon = myLoad_percent/100.0*255.0
-                self.set_childitem('visu.battery_load_icon', myLoad_icon)
+                self._set_childitem('visu.battery_load_icon', myLoad_icon)
             except err as Exception:
                 self.logger.warning("Problem to calculate Battery load")
         else:
@@ -1569,7 +1613,7 @@ class Indego(SmartPlugin):
 
         
         # Get Network-Info - only for the 350/400er
-        myType = self.get_childitem('visu.model_type')
+        myType = self._get_childitem('visu.model_type')
         if (myType == 2):
             url = "{}alms/{}/network".format( self.indego_url, self.alm_sn)
             try:
@@ -1603,25 +1647,25 @@ class Indego(SmartPlugin):
                         "26209"  :"Vodafone D2",
                         "26204"  :"Vodafone D2"
                         }
-            myMcc = self.get_childitem('network.mcc')
-            myMnc = self.get_childitem('network.mnc')
+            myMcc = self._get_childitem('network.mcc')
+            myMnc = self._get_childitem('network.mnc')
             try:
                 actProvider = Providers[str(myMcc)+str('%0.2d' %myMnc)]
             except:
                 actProvider = 'unknown('+str(myMcc)+str('%0.2d' %myMnc)+')'
                 
-            self.set_childitem('visu.network.act_provider', actProvider)
-            ProviderLst = self.get_childitem('network.networks')
+            self._set_childitem('visu.network.act_provider', actProvider)
+            ProviderLst = self._get_childitem('network.networks')
             myLst = ""
             for entry in ProviderLst:
                 myLst += Providers[str(entry)]+', '
                 
-            self.set_childitem('visu.network.available_provider', myLst[0:-2])
+            self._set_childitem('visu.network.available_provider', myLst[0:-2])
              
                            
     
     def get_next_time(self):
-        if (self.get_childitem("wartung.wintermodus") == True or self.logged_in == False):
+        if (self._get_childitem("wartung.wintermodus") == True or self.logged_in == False):
             return        
         # get the next mowing time
         url = "{}alms/{}/predictive/nextcutting?last=YYYY-MM-DD-HH:MM:SS%2BHH:MM".format( self.indego_url, self.alm_sn)
@@ -1632,7 +1676,7 @@ class Indego(SmartPlugin):
             next_time = False
             self.logger.warning("Problem fetching {0}: {1}".format(url, e))        
         if next_time == False:
-            self.set_childitem('next_time','nicht geplant')
+            self._set_childitem('next_time','nicht geplant')
             self.logger.info("Got next-time - nothing scheduled")
         else:
             try:
@@ -1649,9 +1693,9 @@ class Indego(SmartPlugin):
                 next_time = str(time_text)
 
                 self.logger.debug("Next time final : {}".format(next_time))
-                self.set_childitem('next_time',next_time)
+                self._set_childitem('next_time',next_time)
             except Exception as e:
-                self.set_childitem('next_time','kein Mähen geplant')
+                self._set_childitem('next_time','kein Mähen geplant')
                 self.logger.warning("Problem to decode {0} in function get_next_time(): {1}".format(next_time, e))
                 
         # get the last mowing time
@@ -1662,7 +1706,7 @@ class Indego(SmartPlugin):
             last_time = False
             self.logger.warning("Problem fetching {0}: {1}".format(url, e))        
         if last_time == False:
-            self.set_childitem('last_time','kein letztes Mähen bekannt')
+            self._set_childitem('last_time','kein letztes Mähen bekannt')
             self.logger.info("Got last-time - nothing stored")
         else:
             try:
@@ -1679,9 +1723,9 @@ class Indego(SmartPlugin):
                 last_time = str(time_text)
 
                 self.logger.debug("Next time final : {}".format(next_time))
-                self.set_childitem('last_time',last_time)
+                self._set_childitem('last_time',last_time)
             except Exception as e:
-                self.set_childitem('last_time','kein letztes Mähen bekannt')
+                self._set_childitem('last_time','kein letztes Mähen bekannt')
                 self.logger.warning("Problem to decode {0} in function get_next_time(): {1}".format(next_time, e))
 
                 
@@ -1694,7 +1738,7 @@ class Indego(SmartPlugin):
             return 
         if weather == False:
             return
-        myDummy = self.get_childitem("weather_pics")
+        myDummy = self._get_childitem("weather_pics")
         myPictures = json.loads(myDummy)
         for i in weather['LocationWeather']['forecast']['intervals']:
             position = str(weather['LocationWeather']['forecast']['intervals'].index(i))
@@ -1708,13 +1752,13 @@ class Indego(SmartPlugin):
                     wert= datetime.strptime(wert,'%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=self.shtime.tzinfo())
                 if wertpunkt == 'wwsymbol_mg2008':
                     try:
-                        self.set_childitem('weather.int_'+position+'.'+'picture',self.path_2_weather_pics+myPictures[wert])
+                        self._set_childitem('weather.int_'+position+'.'+'picture',self.path_2_weather_pics+myPictures[wert])
                     except:
                         # got known Weather-Symbol
                         self.logger.warning("Got unknown Value for Weather-Pic, Value: {}".format(str(wert)))
-                        self.set_childitem('weather.int_'+position+'.'+'picture',self.path_2_weather_pics+'na.png')
+                        self._set_childitem('weather.int_'+position+'.'+'picture',self.path_2_weather_pics+'na.png')
                     self.logger.debug("WERTPUNKT : {}".format(wertpunkt))
-                self.set_childitem('weather.int_'+position+'.'+wertpunkt,wert)
+                self._set_childitem('weather.int_'+position+'.'+wertpunkt,wert)
 
         for i in weather['LocationWeather']['forecast']['days']:
             position_day = str(weather['LocationWeather']['forecast']['days'].index(i))
@@ -1728,12 +1772,12 @@ class Indego(SmartPlugin):
                     days = ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"]
                     dayNumber = wert_day.weekday()
                     wochentag = days[dayNumber]
-                    self.set_childitem('weather.day_'+position_day+'.'+'wochentag',wochentag)
+                    self._set_childitem('weather.day_'+position_day+'.'+'wochentag',wochentag)
                 else:
-                    self.set_childitem('weather.day_'+position_day+'.'+wertpunkt_day,wert_day)
+                    self._set_childitem('weather.day_'+position_day+'.'+wertpunkt_day,wert_day)
 
     def alert(self):
-        if (self.get_childitem("wartung.wintermodus") == True or self.logged_in == False):
+        if (self._get_childitem("wartung.wintermodus") == True or self.logged_in == False):
             return
         alert_response = self._get_url(self.indego_url + 'alerts', self.context_id, 10)
         if alert_response == False:
@@ -1744,24 +1788,24 @@ class Indego(SmartPlugin):
                 self.logger.debug("No new Alert Messages")
 
             else:
-                actAlerts = self.get_childitem('visu.alerts')
+                actAlerts = self._get_childitem('visu.alerts')
                 for myAlert in alert_response:
                     if not (myAlert['alert_id'] in actAlerts):
                         # add new alert to dict
                         self.logger.debug("Got new Alarm : {} - {} ".format(myAlert['alert_id'], myAlert['message']))
                         myAlert['message'].replace(' Bitte folgen Sie den Anweisungen im Display des Mähers.', '')
                         actAlerts[myAlert['alert_id']]=myAlert
-                        self.set_childitem('visu.alert_new', True)
+                        self._set_childitem('visu.alert_new', True)
                         self.check_alarm_triggers(myAlert['message']+' '+myAlert['headline'])
                 
-                self.set_childitem('visu.alerts', actAlerts)
+                self._set_childitem('visu.alerts', actAlerts)
 
     def alert_delete(self, alert_id):
         self.logger.debug("deleting alert_id " + str(alert_id))
         result = self._delete_url(self.indego_url + 'alerts/' + alert_id, self.context_id, 50,auth=(username,password))
 
     def device_data(self):
-        if (self.get_childitem("wartung.wintermodus") == True or self.logged_in == False):
+        if (self._get_childitem("wartung.wintermodus") == True or self.logged_in == False):
             return        
         
         # Get Location
@@ -1781,41 +1825,41 @@ class Indego(SmartPlugin):
             self.logger.debug('device date JSON: {} '.format(json.dumps(device_data_response)))
 
             alm_sn = device_data_response['alm_sn']
-            self.set_childitem('alm_sn',alm_sn)
+            self._set_childitem('alm_sn',alm_sn)
             self.logger.debug("alm_sn :".format(alm_sn))
 
             if 'alm_name' in device_data_response:
                 alm_name = device_data_response['alm_name']
-                self.set_childitem('alm_name',alm_name)
+                self._set_childitem('alm_name',alm_name)
                 self.logger.debug("alm_name " + str(alm_name))
 
             service_counter = device_data_response['service_counter']
-            self.set_childitem('service_counter',service_counter)
+            self._set_childitem('service_counter',service_counter)
             self.logger.debug("service_counter :".format(service_counter))
             service_counter = self._daystring(service_counter, 'min')
-            self.set_childitem('service_counter.dhm',service_counter)
+            self._set_childitem('service_counter.dhm',service_counter)
 
             needs_service = device_data_response['needs_service']
-            self.set_childitem('needs_service',needs_service)
+            self._set_childitem('needs_service',needs_service)
             self.logger.debug("needs_service : {}".format(needs_service))
 
             alm_mode = device_data_response['alm_mode']
-            self.set_childitem('alm_mode',alm_mode)
+            self._set_childitem('alm_mode',alm_mode)
             if alm_mode == 'smart':
-                self.set_childitem('SMART', True)
+                self._set_childitem('SMART', True)
             else:
-                self.set_childitem('SMART', False)
+                self._set_childitem('SMART', False)
                 
             if alm_mode == 'smart':
-                self.set_childitem('alm_mode.str','Übersicht SmartMow mähen:')
+                self._set_childitem('alm_mode.str','Übersicht SmartMow mähen:')
             elif alm_mode == 'calendar':
-                self.set_childitem('alm_mode.str','Übersicht Kalender mähen:')
-            elif alm_mode == 'manual' and self.get_childitem('active_mode.uzsu.schaltuhr.active')== False:
-                self.set_childitem('alm_mode.str','')
-            elif alm_mode == 'manual' and self.get_childitem('active_mode.uzsu.schaltuhr.active')== True:
-                self.set_childitem('alm_mode.str','Übersicht mähen nach UZSU:')
+                self._set_childitem('alm_mode.str','Übersicht Kalender mähen:')
+            elif alm_mode == 'manual' and self._get_childitem('active_mode.uzsu.schaltuhr.active')== False:
+                self._set_childitem('alm_mode.str','')
+            elif alm_mode == 'manual' and self._get_childitem('active_mode.uzsu.schaltuhr.active')== True:
+                self._set_childitem('alm_mode.str','Übersicht mähen nach UZSU:')
             else:
-                self.set_childitem('alm_mode.str','unbekannt')
+                self._set_childitem('alm_mode.str','unbekannt')
             self.logger.debug("alm_mode " + str(alm_mode))
 
             bareToolnumber = device_data_response['bareToolnumber']
@@ -1835,20 +1879,20 @@ class Indego(SmartPlugin):
             except:
                 myModell = "unknown Modell ("+bareToolnumber+")"
                 myModellType = 0
-            self.set_childitem('visu.model', 'Indego '+myModell)
-            self.set_childitem('visu.model_type', myModellType)
+            self._set_childitem('visu.model', 'Indego '+myModell)
+            self._set_childitem('visu.model_type', myModellType)
             
-            self.set_childitem('bareToolnumber',bareToolnumber)
+            self._set_childitem('bareToolnumber',bareToolnumber)
             self.logger.debug("bareToolnumber " + str(bareToolnumber))
 
             if 'alm_firmware_version' in device_data_response:
                 alm_firmware_version = device_data_response['alm_firmware_version']
                 if alm_firmware_version != self.get_sh().indego.alm_firmware_version():
-                    self.set_childitem('alm_firmware_version.before',self.get_sh().indego.alm_firmware_version())
-                    self.set_childitem('alm_firmware_version.changed', self.shtime.now() )
+                    self._set_childitem('alm_firmware_version.before',self.get_sh().indego.alm_firmware_version())
+                    self._set_childitem('alm_firmware_version.changed', self.shtime.now() )
                     self.logger.info("indego updated firmware from {1} to {2}".format(self.get_sh().indego.alm_firmware_version(), str(alm_firmware_version)))
 
-                    self.set_childitem('alm_firmware_version',alm_firmware_version)
+                    self._set_childitem('alm_firmware_version',alm_firmware_version)
                 self.logger.debug("alm_firmware_version : {}".format(str(alm_firmware_version)))
     
     
@@ -1857,10 +1901,10 @@ class Indego(SmartPlugin):
         counter = 1
         while counter <=4:
             myItemName="trigger.state_trigger_" + str(counter) + ".state"
-            myTrigger = self.get_childitem(myItemName).split("-")[0]
+            myTrigger = self._get_childitem(myItemName).split("-")[0]
             if myStatecode == myTrigger:
                 myTriggerItem="trigger.state_trigger_"+ str(counter)
-                self.set_childitem(myTriggerItem, True)
+                self._set_childitem(myTriggerItem, True)
             counter += 1
 
 
@@ -1868,14 +1912,14 @@ class Indego(SmartPlugin):
             counter = 1
             while counter <=4:
                 myItemName="trigger.alarm_trigger_" + str(counter) + ".alarm"
-                myAlarmTrigger = self.get_childitem(myItemName)
+                myAlarmTrigger = self._get_childitem(myItemName)
                 if myAlarmTrigger.lower() !='' and myAlarmTrigger.lower() in myAlarm.lower() :
                     myTriggerItem="trigger.alarm_trigger_"+ str(counter)
-                    self.set_childitem(myTriggerItem, True)
+                    self._set_childitem(myTriggerItem, True)
                 counter += 1        
     
     def state(self):
-        if (self.get_childitem("wartung.wintermodus") == True or self.logged_in == False):
+        if (self._get_childitem("wartung.wintermodus") == True or self.logged_in == False):
             return
 
         if (self.position_detection):
@@ -1883,17 +1927,17 @@ class Indego(SmartPlugin):
         state_response = self._get_url(self.indego_url + 'alms/' + self.alm_sn + '/state', self.context_id)
         states = state_response
         if state_response != False:
-            self.set_childitem('online', True)
+            self._set_childitem('online', True)
             self.logger.debug("indego state received :{}".format(str(state_response)))
 
 
             if 'error' in states:
                 error_code = states['error']
-                self.set_childitem('stateError',error_code)
+                self._set_childitem('stateError',error_code)
                 self.logger.error("error_code : {]".format(str(error_code)))
             else:
                 error_code = 0
-                self.set_childitem('stateError',error_code)
+                self._set_childitem('stateError',error_code)
             state_code = states['state']
             try:
                 if not str(state_code) in str(self.states) and len(self.states) > 0:
@@ -1903,58 +1947,59 @@ class Indego(SmartPlugin):
                     newStruct = ""
                     for entry in self.states:
                         newStruct += '"'+str(entry)+'":'+ str(self.states[entry])
-                    self.set_childitem('states_str', str("{"+newStruct)+"}")
+                    self._set_childitem('states_str', str("{"+newStruct)+"}")
                         
             except err as Exception:
                 self.logger.warning("Error while adding new State-Code : {}".format(err))
                 pass
-            self.set_childitem('stateCode',state_code)
-            myLastStateCode = self.get_childitem('webif.laststateCode')
+            self._set_childitem('stateCode',state_code)
+            myLastStateCode = self._get_childitem('webif.laststateCode')
             
             # Loggin the states in Timeline for the Web-Interface
             if state_code != myLastStateCode:
-                self.set_childitem('webif.laststateCode', state_code)
+                self._set_childitem('webif.laststateCode', state_code)
                 # Add to self rotating Array
-                myLog = self.get_childitem('webif.state_protocoll')
+                myLog = self._get_childitem('webif.state_protocoll')
                 try:
                     if len (myLog) >= 500:
-                        myLog = myLog[1:500]
+                        myLog = myLog[0:499]
                 except:
                     pass
                 now = self.shtime.now()
-                myLog.append(str(now)[0:19]+'  State : '+str(state_code) + ' State-Message : ' + self.states[state_code][0])
-                self.set_childitem('webif.state_protocoll', myLog)
+                logLine =str(now)[0:19]+'  State : '+str(state_code) + ' State-Message : ' + self.states[state_code][0]
+                myLog.insert(0,logLine)
+                self._set_childitem('webif.state_protocoll', myLog)
                 self.check_state_triggers(state_code)
                 
             self.logger.debug("state code :".format(str(state_code)))
             if self.states[state_code][1] == 'dock':
                 self.logger.debug('indego docked')
                 self.alert_reset = True
-                self.set_childitem('docked', True)
-                self.set_childitem('moving', False)
-                self.set_childitem('pause', False)
-                self.set_childitem('help', False)
+                self._set_childitem('docked', True)
+                self._set_childitem('moving', False)
+                self._set_childitem('pause', False)
+                self._set_childitem('help', False)
             if self.states[state_code][1] == 'moving':
                 self.logger.debug('indego moving')
                 self.alert_reset = True
-                self.set_childitem('mowedDate', self.shtime.now())
-                self.set_childitem('docked', False)
-                self.set_childitem('moving', True)
-                self.set_childitem('pause', False)
-                self.set_childitem('help', False)
+                self._set_childitem('mowedDate', self.shtime.now())
+                self._set_childitem('docked', False)
+                self._set_childitem('moving', True)
+                self._set_childitem('pause', False)
+                self._set_childitem('help', False)
             if self.states[state_code][1] == 'pause':
                 self.logger.debug('indego pause')
                 self.alert_reset = True
-                self.set_childitem('docked', False)
-                self.set_childitem('moving', False)
-                self.set_childitem('pause', True)
-                self.set_childitem('help', False)
+                self._set_childitem('docked', False)
+                self._set_childitem('moving', False)
+                self._set_childitem('pause', True)
+                self._set_childitem('help', False)
             if self.states[state_code][1] == 'hilfe':
                 self.logger.debug('indego hilfe')
-                self.set_childitem('docked', False)
-                self.set_childitem('moving', False)
-                self.set_childitem('pause', False)
-                self.set_childitem('help', True)
+                self._set_childitem('docked', False)
+                self._set_childitem('moving', False)
+                self._set_childitem('pause', False)
+                self._set_childitem('help', True)
                 if self.alert_reset == True:
                     self.logger.debug("Alert aufgefrufen, self_alert_reset = True")
                     self.alert()
@@ -1962,17 +2007,17 @@ class Indego(SmartPlugin):
                     self.logger.debug("Alert nicht aufgefrufen, self_alert_reset = False")
 
             state_str = self.states[state_code][0]
-            self.set_childitem('state_str', state_str )
+            self._set_childitem('state_str', state_str )
             self.logger.debug("state str : {}".format(state_str))
 
             mowed = states['mowed']
-            self.set_childitem('mowedPercent', mowed)
+            self._set_childitem('mowedPercent', mowed)
             self.logger.debug("mowed " + str(mowed))
             
-            myLast_percent_mowed = self.get_childitem('visu.mow_track.last_percent_mowed')
+            myLast_percent_mowed = self._get_childitem('visu.mow_track.last_percent_mowed')
             if (mowed == 0.0 and myLast_percent_mowed > 0.0):
                 # New mow-Cycle startet
-                self.set_childitem("visu.mow_track", [])
+                self._set_childitem("visu.mow_track", [])
                 #################################
             if state_code == 518 or state_code == 513 or state_code ==515 or state_code == 514 :    # 518 = mähe / 513 = schneide Rand / 515 = lade Karte / 514 = mähen, bestimme Ort
                 # First run of position detection
@@ -1982,7 +2027,7 @@ class Indego(SmartPlugin):
                     if myResult != True:
                         pass
                     # Now set scheduler for state to 8 Sec.
-                    self.get_sh().scheduler.change('plugins.indego.state', cycle={8:None}) # Zum Testen von 6 auf 10 Sekunden geändert
+                    self.scheduler_change('state', cycle={7:None}) # Zum Testen von 6 auf 10 Sekunden geändert
                     self.position_detection = True
                     self.position_count = 0
                 # Following runs of position detection
@@ -1993,64 +2038,64 @@ class Indego(SmartPlugin):
                         pass
 
                 #################################
-            self.set_childitem('visu.mow_track.last_percent_mowed', mowed)
+            self._set_childitem('visu.mow_track.last_percent_mowed', mowed)
 
             mowmode = states['mowmode']
-            self.set_childitem('mowmode',mowmode)
+            self._set_childitem('mowmode',mowmode)
             self.logger.debug("mowmode  :".format(str(mowmode)))
 
             total_operate = states['runtime']['total']['operate']
-            self.set_childitem('runtimeTotalOperationMins',total_operate)
+            self._set_childitem('runtimeTotalOperationMins',total_operate)
             self.logger.debug("total_operate : {}".format(str(total_operate)))
             total_operate = self._daystring(total_operate, 'min')
-            self.set_childitem('runtimeTotalOperationMins.dhm',total_operate)
+            self._set_childitem('runtimeTotalOperationMins.dhm',total_operate)
 
             total_charge = states['runtime']['total']['charge']
-            self.set_childitem('runtimeTotalChargeMins',total_charge)
+            self._set_childitem('runtimeTotalChargeMins',total_charge)
             self.logger.debug("total_charge " + str(total_charge))
             total_charge = self._daystring(total_charge, 'min')
-            self.set_childitem('runtimeTotalChargeMins.dhm',total_charge)
+            self._set_childitem('runtimeTotalChargeMins.dhm',total_charge)
 
             session_operate = states['runtime']['session']['operate']
-            self.set_childitem('runtimeSessionOperationMins',session_operate)
+            self._set_childitem('runtimeSessionOperationMins',session_operate)
             self.logger.debug("session_operate : {}".format(str(session_operate)))
 
             session_charge = states['runtime']['session']['charge']
-            self.set_childitem('runtimeSessionChargeMins',session_charge)
+            self._set_childitem('runtimeSessionChargeMins',session_charge)
             self.logger.debug("session_charge " + str(session_charge))
 
             if 'xPos' in states:
                 xPos = states['xPos']
-                self.set_childitem('xPos',xPos)
+                self._set_childitem('xPos',xPos)
                 self.logger.debug("xPos :{}".format(str(xPos)))
 
                 yPos = states['yPos']
-                self.set_childitem('yPos',yPos)
+                self._set_childitem('yPos',yPos)
                 self.logger.debug("yPos : {}".format(str(yPos)))
 
                 svg_xPos = states['svg_xPos']
-                self.set_childitem('svg_xPos',svg_xPos)
+                self._set_childitem('svg_xPos',svg_xPos)
                 self.logger.debug("svg_xPos :{}".format(str(svg_xPos)))
 
                 svg_yPos = states['svg_yPos']
-                self.set_childitem('svg_yPos',svg_yPos)
+                self._set_childitem('svg_yPos',svg_yPos)
                 self.logger.debug("svg_yPos :{}".format(str(svg_yPos)))
                 
                 # SVG-Position
-                mySvgPos = self.get_childitem("visu.mow_track")
+                mySvgPos = self._get_childitem("visu.mow_track")
                 newPos = str(svg_xPos)+","+str(svg_yPos)
-                self.set_childitem('visu.svg_pos', 'svg_pos|'+newPos)
+                self._set_childitem('visu.svg_pos', 'svg_pos|'+newPos)
                 if (len(mySvgPos) == 0):
                     mySvgPos.append(newPos)
-                    self.set_childitem("visu.mow_track", mySvgPos)
+                    self._set_childitem("visu.mow_track", mySvgPos)
                 else:
                     if (newPos != mySvgPos[len(mySvgPos)-1]):
                         mySvgPos.append(newPos)
-                        self.set_childitem("visu.mow_track", mySvgPos)
+                        self._set_childitem("visu.mow_track", mySvgPos)
 
             map_update = states['map_update_available']
             self.logger.debug("map_update " + str(map_update))
-            self.set_childitem('mapUpdateAvailable',map_update)
+            self._set_childitem('mapUpdateAvailable',map_update)
 
             if map_update:
                 self.load_map()
@@ -2067,18 +2112,23 @@ class Indego(SmartPlugin):
             with open(self.img_pfad, 'wb') as outfile:
                 outfile.write(garden)
             self.logger.debug('You have a new MAP')
-            self.set_childitem('mapSvgCacheDate',self.shtime.now())
-            self.set_childitem('webif.garden_map', garden.decode("utf-8"))
+            self._set_childitem('mapSvgCacheDate',self.shtime.now())
+            self._set_childitem('webif.garden_map', garden.decode("utf-8"))
+            self.parse_map()
             
     def parse_map(self):
-        myMap = self.get_childitem('webif.garden_map')
-        myCustomDrawing = self.get_childitem('visu.add_svg_images')
-        mowerColour = self.get_childitem('visu.mower_colour')
+        myMap = self._get_childitem('webif.garden_map')
+        myCustomDrawing = self._get_childitem('visu.add_svg_images')
+        mowerColour = self._get_childitem('visu.mower_colour')
         mowerColour = mowerColour.split(':')[1]
 
         mowerColour = mowerColour.replace('"','')
-        soupMap = BeautifulSoup(myMap, 'html.parser')
-        mapArray = soupMap.prettify().split('\n')
+        #=======================================================================
+        # # after here replace bs4
+        #=======================================================================
+        myMap = myMap.replace(">",">\n")
+        mapArray = myMap.split('\n')
+        # till here new
         # Get the Mower-Position and extract it
         i= 0
         for line in mapArray:
@@ -2105,8 +2155,8 @@ class Indego(SmartPlugin):
         # Now add the custom paintings to the map
 
         if myCustomDrawing != None and myCustomDrawing != "":
-            myCustomSoup = BeautifulSoup(myCustomDrawing, 'html.parser')
-            customArray = myCustomSoup.prettify().split('\n')
+            myCustomSoup = myCustomDrawing.replace(">",">\n")
+            customArray = myCustomSoup.split('\n')
             for line in customArray:
                 mapArray.append(line)
 
@@ -2120,7 +2170,7 @@ class Indego(SmartPlugin):
         value = value.replace('\n','')
         value = value.replace('\r','')
         
-        self.set_childitem('visu.map_2_display', value)
+        self._set_childitem('visu.map_2_display', value)
             
     def init_webinterface(self):
         """"
@@ -2193,21 +2243,25 @@ class WebInterface(SmartPluginWebIf):
         
     @cherrypy.expose
     def store_color_html(self, newColor = None):
-        self.plugin.set_childitem('visu.mower_colour','mower_colour:"'+newColor[1:]+'"')
+        self.plugin._set_childitem('visu.mower_colour','mower_colour:"'+newColor[1:]+'"')
     
     
     @cherrypy.expose
     def store_state_trigger_html(self, Trigger_State_Item = None,newState=None):
         myItemSuffix=Trigger_State_Item
         myItem="trigger." + myItemSuffix + ".state"
-        self.plugin.set_childitem(myItem,newState)    
+        self.plugin._set_childitem(myItem,newState)    
 
     
     @cherrypy.expose
     def store_alarm_trigger_html(self, Trigger_Alarm_Item = None,newAlarm=None):
         myItemSuffix=Trigger_Alarm_Item
         myItem="trigger." + myItemSuffix + ".alarm"
-        self.plugin.set_childitem(myItem,newAlarm)    
+        self.plugin._set_childitem(myItem,newAlarm)    
+
+    @cherrypy.expose
+    def store_add_svg_html(self, add_svg_str = None):
+        self.plugin._set_childitem('visu.add_svg_images',add_svg_str)
 
 
     @cherrypy.expose
@@ -2253,12 +2307,27 @@ class WebInterface(SmartPluginWebIf):
             resultParams['timeStamp']= myLastLogin + " / " + myExperitation_Time
             resultParams['SessionID']= self.plugin.context_id 
             resultParams['encoded']= encoded
-            self.plugin.set_childitem('visu.refresh',True)
+            self.plugin._set_childitem('visu.refresh',True)
             txt_Result.append("refresh of Items initiated")
                 
         result2send['Proto']=txt_Result
         result2send['Params']=resultParams
         return json.dumps(result2send)
+    
+    
+    @cherrypy.expose
+    def get_proto_html(self, proto_Name= None):
+        if proto_Name == 'Com_log_file':
+            return json.dumps(self.plugin._get_childitem('webif.communication_protocoll'))
+        if proto_Name == 'state_log_file':
+            return json.dumps(self.plugin._get_childitem('webif.state_protocoll'))
+
+    @cherrypy.expose
+    def clear_proto_html(self, proto_Name= None):
+        self.plugin._set_childitem(proto_Name,[])
+        return None
+    
+            
     
     @cherrypy.expose
     def index(self, reload=None):
@@ -2279,7 +2348,7 @@ class WebInterface(SmartPluginWebIf):
                 item_count += 1
                 
         try:
-            my_state_loglines = self.plugin.get_childitem('webif.state_protocoll')
+            my_state_loglines = self.plugin._get_childitem('webif.state_protocoll')
             state_log_file = ''
             for line in my_state_loglines:
                 state_log_file += str(line)+'\n'
@@ -2287,7 +2356,7 @@ class WebInterface(SmartPluginWebIf):
             state_log_file = 'No Data available right now\n'
         
         try:
-            my_com_loglines = self.plugin.get_childitem('webif.communication_protocoll')
+            my_com_loglines = self.plugin._get_childitem('webif.communication_protocoll')
             com_log_file = ''
             for line in my_com_loglines:
                 com_log_file += str(line)+'\n'
@@ -2298,7 +2367,7 @@ class WebInterface(SmartPluginWebIf):
         myExperitation_Time = datetime.fromtimestamp(self.plugin.expiration_timestamp).strftime('%Y-%m-%d %H:%M:%S')
         myLastLogin = datetime.fromtimestamp(float(self.plugin.last_login_timestamp)).strftime('%Y-%m-%d %H:%M:%S')
         # get the mower-colour
-        myColour = '#'+self.plugin.get_childitem('visu.mower_colour')[14:-1]
+        myColour = '#'+self.plugin._get_childitem('visu.mower_colour')[14:-1]
         # get all the available states
         selectStates = []
         try:
@@ -2318,15 +2387,15 @@ class WebInterface(SmartPluginWebIf):
         
         try:
             # get the actual triggers
-            Trigger_1_state=self.plugin.get_childitem('trigger.state_trigger_1.state')
-            Trigger_2_state=self.plugin.get_childitem('trigger.state_trigger_2.state')
-            Trigger_3_state=self.plugin.get_childitem('trigger.state_trigger_3.state')
-            Trigger_4_state=self.plugin.get_childitem('trigger.state_trigger_4.state')
+            Trigger_1_state=self.plugin._get_childitem('trigger.state_trigger_1.state')
+            Trigger_2_state=self.plugin._get_childitem('trigger.state_trigger_2.state')
+            Trigger_3_state=self.plugin._get_childitem('trigger.state_trigger_3.state')
+            Trigger_4_state=self.plugin._get_childitem('trigger.state_trigger_4.state')
             
-            Alarm_Trigger_1=self.plugin.get_childitem('trigger.alarm_trigger_1.alarm')
-            Alarm_Trigger_2=self.plugin.get_childitem('trigger.alarm_trigger_2.alarm')
-            Alarm_Trigger_3=self.plugin.get_childitem('trigger.alarm_trigger_3.alarm')
-            Alarm_Trigger_4=self.plugin.get_childitem('trigger.alarm_trigger_4.alarm')
+            Alarm_Trigger_1=self.plugin._get_childitem('trigger.alarm_trigger_1.alarm')
+            Alarm_Trigger_2=self.plugin._get_childitem('trigger.alarm_trigger_2.alarm')
+            Alarm_Trigger_3=self.plugin._get_childitem('trigger.alarm_trigger_3.alarm')
+            Alarm_Trigger_4=self.plugin._get_childitem('trigger.alarm_trigger_4.alarm')
         except:
             pass
          
@@ -2339,7 +2408,8 @@ class WebInterface(SmartPluginWebIf):
                            myExperitation_Time=myExperitation_Time,
                            myLastLogin=myLastLogin,
                            myColour=myColour,
-                           myMap=self.plugin.get_childitem('webif.garden_map'),
+                           myMap=self.plugin._get_childitem('webif.garden_map'),
+                           txt_add_svg=self.plugin._get_childitem('visu.add_svg_images'),
                            selectStates=sorted(selectStates, key=lambda k: str.lower(k['ID'])),
                            Trigger_1_state=Trigger_1_state,
                            Trigger_2_state=Trigger_2_state,

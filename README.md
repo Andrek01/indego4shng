@@ -1,4 +1,4 @@
-# Indego
+# Indego4shNG
 
 ## Table of Content
 
@@ -14,16 +14,17 @@
 ## Generell<a name="generell"/></a>
 
 Das Indego-Plugin wurde durch ein Reverse-Engineering der aktuellen (Version 3.0) App
-von Bosch entwickelt. Als Basis diente das ursprüngliche Plugin von Marcov. Es werden alle Funktionen der App sowie einige zusätzliche bereitgestellt.
-Das Plugin erhält die Version der aktuellen Bosch-API.
+von Bosch entwickelt. Als Basis diente das ursprüngliche Plugin von Marcov. Es werden alle Funktionen der App für den Betrieb sowie einige zusätzliche bereitgestellt.
+Für die Ersteinrichtung wird weiterhin die Bosch-App benötigt.
+Das Plugin erhält die Version der aktuellen Bosch-API. (3.0)
 
 ## Credits<a name="credits"/></a>
 
 Vielen Dank an schuma für die tolle Unterstützung während der Entwicklungsphase,
 die Umsetzung vieler Teile in der Visu sowie den vielen unzähligen Tests und sehr viel Geduld.
 
-Vielen Dank an psilo für die Erlaubnis zur Verwendung der LED-Grafiken im Web-Interface.
 Vielen Dank an bmx für das Umstellen des Plugins auf Smart-Plugin.
+Vielen Dank an psilo für die Erlaubnis zur Verwendung der LED-Grafiken im Web-Interface.
 Vielen Dank an Marcov für die Entwicklung des ursprünglichen Plugins.
 Vielen Dank an das Core-Team für die Einführung der STRUCTS, das hat die Arbeit deutlich vereinfacht.
 Vielen Dank an Jan Odvarko für die Entwicklung des [Color-Pickers](#http://jscolor.com) unter Freigabe für Opensource mit GPLv3   
@@ -71,8 +72,22 @@ Das Plugin benötigt keine zusätzlichen requirements
 
 ### Supported Hardware
 
-* Indego Connect 350/S+350/400/S+400 - Indego Connect 800/1000/1200/1300
+* #### Indego Connect 350/S+350/400/S+400, im folgenden die "Kleinen" genannt
+* #### Indego Connect 800/1000/1200/1300, im folgenden die "Großen" genannt
 
+Die Firmware der "Kleinen" und der "Großen" liefern unterschiedliche Informationen
+ und stellen unterschiedliche Funktionen zur Verfügung. Hier werden kurz die Unterschiede erläutert:
+ 
+Bei den "Großen" gibt es folgende Einschränkungen:
+* der Ladezustand des Akkus wird auf Grund der abfallenden Spannung berechnet (35 Volt = 100 %, 28 Volt = 0%)
+Langzeitbeobachtungen haben gezeigt, dass die Mähe bei 31 Volt zurück in die Ladestation fahren. Es wird unterstellt,
+ dass 31 Volt noch 20 % Akkuladestand sind. 
+* Es werden aktuell keine Informationen zur Netznutzung bereitgestellt.
+* Die Aktualisierung der Mäherposition erfolgt nur ca. alle 30 Minuten während des Mähens
+* Die Sensor-Empfindlichkeit kann nicht eingestellt werden
+  
+Bei den "Kleinen" gibt es folgende Einschränkungen:
+* Es wird von Bosch keine gemähte Fläche übermittelt. Diese kann mittels des "MowTracks" aber angezeigt werden.
 
 ## Konfiguration<a name="konfiguration"/></a>
 
@@ -80,24 +95,27 @@ Das Plugin benötigt keine zusätzlichen requirements
 
 folgende Einträge werden in der "./etc/plugin.yaml" benötigt.
 
-* `class_name`:  fix "Indego"
-* `class_path`:  fix "plugins.indego"
-* `path_2_weather_pics`: ist der Pfad zu den Bilder des Wetter-Widgets.
+* `class_name: Indego4shNG`:  fix "Indego4shNG"
+* `class_path : plugins.indego`:  fix "plugins.indego"
+* `path_2_weather_pics: XXXXXXX`: ist der Pfad zu den Bilder des Wetter-Widgets.
 (default ="/smartVISU/lib/weather/pics/")
-* `img_pfad`:  ist der Pfad unter dem die Gartenkarte gespeichert wird. 
+* `img_pfad: XXXXXXX`:  ist der Pfad unter dem die Gartenkarte gespeichert wird. 
 (default = "/tmp/garden.svg")
 Die Datei wird nicht für die VISU benötigt. Man kann die Datei als Vorlage
 zum "pimpen" der Gartenkarte verwenden
-* `indego_credentials`:  sind die Zugangsdaten für den Bosch-Server im Format base64 encoded.
-* `parent_item`:  name des übergeordneten items für alle Child-Items
-* `cycle`:  Intervall in Sekunden für das Abrufen des Mäher-Status
+* `indego_credentials : XXXXXXX`:  sind die Zugangsdaten für den Bosch-Server im Format base64 encoded.
+* `parent_item : indego`:  name des übergeordneten items für alle Child-Items
+* `cycle : 30`:  Intervall in Sekunden für das Abrufen des Mäher-Status (default = 30 Sekunden)
 
-Die Zugangsdaten können nach dem Start des Plugins im Web-Interface erfasst und gespeichert werden 
+Die Zugangsdaten (indego_credentials) können nach dem Erststart des Plugins im Web-Interface erfasst und gespeichert werden
 
+<strong>!! Das parent-Item kann umbenannt werden ,es müssen dann aber alle items in der indego.html angepasst werden !!</strong> 
+
+Beispiel:
 
 ```yaml
-indego:
-    class_name: Indego
+Indego4shNG:
+    class_name: Indego4shNG
     class_path: plugins.indego
     #path_2_weather_pics: /smartVISU/lib/weather/pics/
     #img_pfad: /tmp/garden.svg
@@ -198,10 +216,6 @@ Beispiel :
 #!/usr/bin/env python3
 # indego2alexa.py
 
-#sys.path.append('/home/smarthome/.p2/pool/plugins/org.python.pydev.core_6.5.0.201809011628/pysrc')
-#import pydevd
-#pydevd.settrace("192.168.178.37", port=5678)
-
 text=''
 try:
     triggeredItem=trigger['source']
@@ -259,9 +273,11 @@ Anderes Beispiel wäre beim Verlassen des Hauses den Mäher starten.
 #!/usr/bin/env python3
 # indego_rc.py
 
-sh.indego.send_command('{"state":"mow"}')
-#sh.indego.send_command(payload:str= '{"state":"pause"}')
-#sh.indego.send_command(payload:str= '{"state":"returnToDock"}')
+sh.Indego4shNG.send_command('{"state":"returnToDock"}','Logic')
+#sh.Indego4shNG.send_command('{"state":"mow"}','Logic')
+#sh.Indego4shNG.send_command('{"state":"pause"}','Logic')
+
+
 
 ```
 

@@ -4,8 +4,6 @@
 
 
 
-
-
 <style>
 .CodeMirror {
 font-family: Arial, monospace;
@@ -65,7 +63,7 @@ window.addEventListener('load', function(){ if (document.readyState==='complete'
 	Additional buttons for the web interface (if any are needed) - displayed below the headtable-section
 -->
 {% block buttons %}
-{% if 1==1 %}
+{% if 1==2 %}
 	<form action="" method="post">
 	<button id="btn1" class="btn btn-shng btn-sm" name="learn" type="submit" value="on"><i class="fas fa-wifi"></i>&nbsp;&nbsp;&nbsp;Mach was&nbsp;</button>
 	</form>
@@ -138,7 +136,7 @@ window.addEventListener('load', function(){ if (document.readyState==='complete'
 				</div>
                 </td>
                 <td style="width:10%">
-			          <button type="button" onclick="BtnEncode()"style="margin-left : 5px" class="btn btn-shng btn-sm" value="btnEncode" id="btnEncode">&nbsp;{{ _('Encode') }}</button>
+			          <button type="button" onclick="BtnEncode()" style="margin-left : 5px" class="btn btn-shng btn-sm" value="btnEncode" id="btnEncode">&nbsp;{{ _('Encode') }}</button>
                 <td>
 				<td style="width: 10%; vertical-align:middle;align:left">encoded Cred.:
                 </td>
@@ -157,7 +155,7 @@ window.addEventListener('load', function(){ if (document.readyState==='complete'
 
             <tr>
             <td>
-            <strong>zusätzlich Garden-Map Vektoren : </strong>
+            <strong>zusätzliche Garden-Map Vektoren : </strong>
             </td>
             <td colspan="7">
 					<textarea type="input" rows="2" style="width: 100%;height: 100%;font-size: 12px;" class="form-control" name="txt_add_svg" id="txt_add_svg" placeholder="{{ _('...') }}" onChange="Store_add_svg(this.value)"> {{ txt_add_svg }} </textarea>
@@ -303,7 +301,21 @@ function setTextColor(picker) {
 -->
 {% set tab3title = "<strong>" ~ p.get_shortname() ~ " State-Protokoll</strong>" %}
 {% block bodytab3 %}
-
+<table class="table table-striped table-hover">
+	<tbody>
+    <tr>
+        <td>
+        	<button id="btn_clear_proto_states" class="btn btn-shng btn-sm" name="btn_clear_proto_states" value="on" onclick="DeleteProto(this.name)"><i class="fas fa-trash-alt"></i>&nbsp;&nbsp;&nbsp;States Protokoll löschen&nbsp;</button>
+        </td>
+        <td>
+            <div class="custom-control custom-checkbox" style =" vertical-align:middle;align:left">
+                <input type="checkbox" class="custom-control-input" id="proto_states_check" name="proto_states_check">
+                <label class="custom-control-label" for="proto_states_check">automatisch akutalisieren ( 5 Sek.)</label>
+            </div>
+        </td>
+    </tr>
+    </tbody>
+</table>
 <div class="container-fluid" style="overflow: none; border-left: 1px solid #ccc;height: 60%">
     <div style="margin-bottom: 10px;height: 100%">
 
@@ -344,6 +356,21 @@ console.log ("refreshed CodeMirrot")
 
 {% set tab4title = "<strong>" ~ p.get_shortname() ~ " Kommunikations-Protokoll</strong>" %}
 {% block bodytab4 %}
+<table class="table table-striped table-hover">
+	<tbody>
+    <tr>
+        <td>
+        	<button id="btn_clear_proto_commun" class="btn btn-shng btn-sm" name="btn_clear_proto_commun" value="on" onclick="DeleteProto(this.name)"><i class="fas fa-trash-alt"></i>&nbsp;&nbsp;&nbsp;Kommuinkations  Protokoll löschen&nbsp;</button>
+        </td>
+        <td>
+            <div class="custom-control custom-checkbox" style =" vertical-align:middle;align:left">
+                <input type="checkbox" class="custom-control-input" id="proto_commun_check" name="proto_commun_check">
+                <label class="custom-control-label" for="proto_commun_check">automatisch akutalisieren ( 5 Sek.)</label>
+            </div>
+        </td>
+    </tr>
+    </tbody>
+</table>
 <div class="container-fluid" style="overflow: none; border-left: 1px solid #ccc;height: 60%">
     <div style="margin-bottom: 10px;">
         {% if com_log_lines %}<textarea autocomplete="off" id="Com_log_file" name="Com_log_file" onload="run()">{% for line in com_log_lines %}{% if not loop.last %}{{ line }}{% else %}{{ line  | replace('\n', '') }}{% endif %}{% endfor %}</textarea>{% else %}{{ _('no data available') }}{% endif %}
