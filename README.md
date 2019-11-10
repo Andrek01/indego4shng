@@ -29,7 +29,7 @@ Vielen Dank an bmx für das Umstellen des Plugins auf Smart-Plugin.
 Vielen Dank an psilo für die Erlaubnis zur Verwendung der LED-Grafiken im Web-Interface.
 Vielen Dank an Marcov für die Entwicklung des ursprünglichen Plugins.
 Vielen Dank an das Core-Team für die Einführung der STRUCTS, das hat die Arbeit deutlich vereinfacht.
-Vielen Dank an Jan Odvarko für die Entwicklung des [Color-Pickers](#http://jscolor.com) unter Freigabe für Opensource mit GPLv3   
+Vielen Dank an Jan Odvarko für die Entwicklung des Color-Pickers (http://jscolor.com) unter Freigabe für Opensource mit GPLv3   
 
 ## Change Log<a name="changelog"/></a>
 
@@ -317,7 +317,7 @@ Im Standard werden für den Mäher die Symbole des originalen Plugins von Marcov
 Man kann alternativ auch die Bilder der Bosch 2.2.8 App verwenden. Diese werden aus Urheberrechtsgründen nicht mit ausgeliefert.
 Man kann sich die Bilder aus der "Legacy Bosch Smart Gardening"-App extrahieren.
 Sollte die "Legacy Bosch Smart Gardening"-App nicht mehr vorliegen, da diese "depraceted" ist, kann man
-die App nochmals herunterladen. ([Google](#https://www.google.com/search?sxsrf=ACYBGNR8BMk-x9S0HJr_qg-9i8T5g4gzng%3A1571577594574&ei=-l6sXZnXIoLFwQL2oInoCg&q=legacy+bosch+Smart+Gardening+2.2.8+APK+download&oq=legacy+bosch+Smart+Gardening+2.2.8+APK+download&gs_l=psy-ab.3...17003.21524..22444...1.0..0.96.672.8......0....1..gws-wiz.......35i304i39.IDCuZ5G9deI&ved=0ahUKEwiZvIvi9qrlAhWCYlAKHXZQAq0Q4dUDCAo&uact=5) hilft diese zu finden)
+die App nochmals herunterladen. (https://www.google.com/search?sxsrf=ACYBGNR8BMk-x9S0HJr_qg-9i8T5g4gzng%3A1571577594574&ei=-l6sXZnXIoLFwQL2oInoCg&q=legacy+bosch+Smart+Gardening+2.2.8+APK+download&oq=legacy+bosch+Smart+Gardening+2.2.8+APK+download&gs_l=psy-ab.3...17003.21524..22444...1.0..0.96.672.8......0....1..gws-wiz.......35i304i39.IDCuZ5G9deI&ved=0ahUKEwiZvIvi9qrlAhWCYlAKHXZQAq0Q4dUDCAo&uact=5) hilft diese zu finden)
 
 Die apk-Datei mit einer Archiv-Verwaltung öffnen und dort im Pfad "/assets/www/assets" die Bilder extrahieren und in den Dropins-Ordner kopieren.
 Die Bilder haben folgende Dateinamen :
