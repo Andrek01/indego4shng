@@ -10,6 +10,8 @@
 6. [Logik-Trigger](#logiktrigger)
 7. [öffentlich Funktionen (API)](#api)
 8. [Gartenkarte "pimpen"](#gardenmap)
+9. [Nutzung der Original Bosch-Mäher-Symbole](#boschpics)
+10. [Die Bosch-Api 3.0 - behind the scenes](#boschapi)
 
 ## Generell<a name="generell"/></a>
 
@@ -68,6 +70,7 @@ Das Plugin benötigt keine zusätzlichen requirements
 
 * SmartVISU 2.9
 * smarthomeNg 1.6 oder höher (es werden vordefinierte STRUCTS verwendet)
+* für die Darstellung der Charts muss eine Database-plugin aktiviert sein 
 
 
 ### Supported Hardware
@@ -282,29 +285,6 @@ sh.Indego4shNG.send_command('{"state":"returnToDock"}','Logic')
 ```
 
 
-Über die Items :
-<table>
-  <thead>
-    <tr>
-      <th style="text-align: left">Links ausgerichtet</th>
-      <th style="text-align: center">Mittig ausgerichtet</th>
-      <th style="text-align: right">Rechts ausgerichtet</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="text-align: left">Inhalt</td>
-      <td style="text-align: center">Inhalt</td>
-      <td style="text-align: right">Inhalt</td>
-    </tr>
-    <tr>
-      <td style="text-align: left">Inhalt</td>
-      <td style="text-align: center">Inhalt</td>
-      <td style="text-align: right">Inhalt</td>
-    </tr>
-  </tbody>
-</table>
-
 ## Gardenkarte "pimpen"<a name="gardenmap"/></a>
 
 Die Gartenkarte wird vom Bosch-Server heruntergeladen und als Item für die Visu verwendet.
@@ -330,3 +310,339 @@ Das Ergebnis ist in der VISU sofort sichtbar.
 ## Beispiel :
 
 ![pimp_my_map](./assets/pimp_my_map.jpg)
+
+## Nutzung der Original Bosch-Mäher-Symbole<a name="boschpics"/></a>
+
+Im Standard werden für den Mäher die Symbole des originalen Plugins von Marcov verwendet.
+Man kann alternativ auch die Bilder der Bosch 2.2.8 App verwenden. Diese werden aus Urheberrechtsgründen nicht mit ausgeliefert.
+Man kann sich die Bilder aus der "Legacy Bosch Smart Gardening"-App extrahieren.
+Sollte die "Legacy Bosch Smart Gardening"-App nicht mehr vorliegen, da diese "depraceted" ist, kann man
+die App nochmals herunterladen. ([Google](#https://www.google.com/search?sxsrf=ACYBGNR8BMk-x9S0HJr_qg-9i8T5g4gzng%3A1571577594574&ei=-l6sXZnXIoLFwQL2oInoCg&q=legacy+bosch+Smart+Gardening+2.2.8+APK+download&oq=legacy+bosch+Smart+Gardening+2.2.8+APK+download&gs_l=psy-ab.3...17003.21524..22444...1.0..0.96.672.8......0....1..gws-wiz.......35i304i39.IDCuZ5G9deI&ved=0ahUKEwiZvIvi9qrlAhWCYlAKHXZQAq0Q4dUDCAo&uact=5) hilft diese zu finden)
+
+Die apk-Datei mit einer Archiv-Verwaltung öffnen und dort im Pfad "/assets/www/assets" die Bilder extrahieren und in den Dropins-Ordner kopieren.
+Die Bilder haben folgende Dateinamen :
+
+Für die "Großen"
+```
+indego.png
+indego-docked.png
+indego-mowing.png
+```
+
+Für die "Kleinen"
+```
+indego-s.png
+indego-docked-s.png
+indego-mowing-s.png
+```
+Sobald die Dateien mit den Bildern vorhanden sind findet das Widget diese und verwendet sie automatisch.
+Die entsprechenden Bilder für die "Großen"/"Kleinen" werden auf Grund des Mähertyps automatisch gewählt und dargestellt. 
+
+
+## Die Bosch-Api 3.0 - behind the scenes<a name="boschapi"/></a>
+
+Hier ist die Schnittstelle der Bosch-API kurz beschrieben und die Implementierung im Plugin dokumentiert.
+
+Über die Items :
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center;width:50px">plugin-Supp.</th>
+      <th style="text-align: left;width:400px">API-URL</th>
+      <th style="text-align: center;width:200px">Payload</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">"@DELETE("alerts/{alert_id}")"</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@POST("users")</td>
+      <td style="text-align: center">{}</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@DELETE("alerts")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@DELETE("alms/{alm_serial}/map")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@DELETE("users/{user_id}")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}/config")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}")</td>
+      <td style="text-align: center">-</td>
+    </tr>       
+     <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+     <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@GET("pub/accessories")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+     <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@GET("alerts")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}/automaticUpdate")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}/updates")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+     <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}/operatingData")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+     <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}/calendar")</td>
+      <td style="text-align: center">{}</td>
+    </tr>
+     <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}/predictive/location")</td>
+      <td style="text-align: center">{}</td>
+    </tr>
+     <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}/predictive/lastcutting")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+     <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}/map")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}/info")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}/location")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}/network")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}/predictive/nextcutting")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}/info")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@GET("pub/accessories/{accessory_code}")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}/security")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}/predictive")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}/predictive/schedule")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}/predictive/setup")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}/state")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@GET("pub/static/{resource_id}")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@GET("pub/support/{country_code}")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@GET("users/{user_id}")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@GET("pub/video")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@GET("alms/{alm_serial}/predictive/weather")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@POST("authenticate")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@POST("authenticate?facebook")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@DELETE("authenticate")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@POST("alms/{alm_serial}/pair")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@POST("alms/{alm_serial}/map")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@POST("alms/{alm_serial}/requestPosition")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@PUT("alms/{alm_serial}")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@PUT("alerts/{alert_id}")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@PUT("alerts")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@PUT("alms/{alm_serial}/config")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@PUT("alms/{alm_serial}/automaticUpdate")</td>
+      <td style="text-align: center">{}</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@PUT("alms/{alm_serial}/updates/notification/{process_id}")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@PUT("alms/{alm_serial}/calendar")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@PUT("alms/{alm_serial}/dateAndTime")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@PUT("alms/{alm_serial}/predictive/location")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@PUT("alms/{alm_serial}/updates")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@PUT("alms/{alm_serial}/predictive/reset")</td>
+      <td style="text-align: center">@Query("reinitialize")</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@PUT("alms/{alm_serial}/security")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@PUT("alms/{alm_serial}/predictive")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@PUT("alms/{alm_serial}/predictive/setup")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@PUT("alms/{alm_serial}/state")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@PUT("users/{user_id}")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">ja</td>
+      <td style="text-align: left">@POST("authenticate/check")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@POST("pub/resetpassword")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">nein</td>
+      <td style="text-align: left">@DELETE("alms/{alm_serial}/pair")</td>
+      <td style="text-align: center">-</td>
+    </tr>
+  </tbody>
+</table>
+  
