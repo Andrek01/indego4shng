@@ -342,6 +342,17 @@ Die entsprechenden Bilder für die "Großen"/"Kleinen" werden auf Grund des Mäh
 ## Die Bosch-Api 3.0 - behind the scenes<a name="boschapi"/></a>
 
 Hier ist die Schnittstelle der Bosch-API kurz beschrieben und die Implementierung im Plugin dokumentiert.
+Der Header ist in den meisten Fällen mit der Session-ID zu füllen :
+```
+headers = {
+           'x-im-context-id' : SESSION-ID
+          }
+```
+@Get - steht für einen get-request in Python. Die URL lautet : "https://api.indego.iot.bosch-si.com/api/v1/" gefolgt vom entsprechenden Zugriffspunkt
+```
+url = "https://api.indego.iot.bosch-si.com/api/v1/" +"alms/{alm_serial}/automaticUpdate".format(alm_sn) 
+response = requests.get(url, headers=headers)
+```
 
 Über die Items :
 <table>
@@ -386,7 +397,7 @@ Hier ist die Schnittstelle der Bosch-API kurz beschrieben und die Implementierun
     <tr>
       <td style="text-align: center">ja</td>
       <td style="text-align: left">@GET("alms/{alm_serial}")</td>
-      <td style="text-align: center">-</td>
+      <td style="text-align: center">{"needs_service": false, "alm_firmware_version": "00647.01043", "service_counter": 159551, "bareToolnumber": "3600HA2300", "alm_name": "Indego", "alm_sn": "603702021", "alm_mode": "manual"}</td>
     </tr>       
      <tr>
       <td style="text-align: center">nein</td>
@@ -441,12 +452,12 @@ Hier ist die Schnittstelle der Bosch-API kurz beschrieben und die Implementierun
     <tr>
       <td style="text-align: center">nein</td>
       <td style="text-align: left">@GET("alms/{alm_serial}/info")</td>
-      <td style="text-align: center">-</td>
+      <td style="text-align: center">{"bareToolnumber": "3600HA2300"}</td>
     </tr>
     <tr>
       <td style="text-align: center">ja</td>
       <td style="text-align: left">@GET("alms/{alm_serial}/location")</td>
-      <td style="text-align: center">-</td>
+      <td style="text-align: center">{"longitude": x.xxxx, "latitude": xx.xxxxx}</td>
     </tr>
     <tr>
       <td style="text-align: center">ja</td>
@@ -481,7 +492,7 @@ Hier ist die Schnittstelle der Bosch-API kurz beschrieben und die Implementierun
     <tr>
       <td style="text-align: center">ja</td>
       <td style="text-align: left">@GET("alms/{alm_serial}/predictive/schedule")</td>
-      <td style="text-align: center">-</td>
+      <td style="text-align: left">{'exclusion_days': [{'slots': [{'StHr': 0, 'EnMin': 0, 'EnHr': 8, 'En': True, 'Attr': 'C', 'StMin': 0}, {'StHr': 8, 'EnMin': 0, 'EnHr': 14, 'En': True, 'Attr': 'tTD', 'StMin': 0}, {'StHr': 18, 'EnMin': 0, 'EnHr': 22, 'En': True, 'Attr': 't', 'StMin': 0}, {'StHr': 22, 'EnMin': 59, 'EnHr': 23, 'En': True, 'Attr': 'C', 'StMin': 0}], 'day': 0}, {'slots': [{'StHr': 0, 'EnMin': 0, 'EnHr': 8, 'En': True, 'Attr': 'C', 'StMin': 0}, {'StHr': 8, 'EnMin': 0, 'EnHr': 12, 'En': True, 'Attr': 'tT', 'StMin': 0}, {'StHr': 18, 'EnMin': 0, 'EnHr': 22, 'En': True, 'Attr': 'tT', 'StMin': 0}, {'StHr': 22, 'EnMin': 59, 'EnHr': 23, 'En': True, 'Attr': 'C', 'StMin': 0}], 'day': 1}, {'slots': [{'StHr': 0, 'EnMin': 0, 'EnHr': 8, 'En': True, 'Attr': 'C', 'StMin': 0}, {'StHr': 8, 'EnMin': 0, 'EnHr': 14, 'En': True, 'Attr': 'tTD', 'StMin': 0}, {'StHr': 16, 'EnMin': 0, 'EnHr': 22, 'En': True, 'Attr': 'tT', 'StMin': 0}, {'StHr': 22, 'EnMin': 59, 'EnHr': 23, 'En': True, 'Attr': 'C', 'StMin': 0}], 'day': 2}, {'slots': [{'StHr': 0, 'EnMin': 0, 'EnHr': 8, 'En': True, 'Attr': 'C', 'StMin': 0}, {'StHr': 8, 'EnMin': 0, 'EnHr': 22, 'En': True, 'Attr': 'tTD', 'StMin': 0}, {'StHr': 22, 'EnMin': 59, 'EnHr': 23, 'En': True, 'Attr': 'C', 'StMin': 0}], 'day': 3}, {'slots': [{'StHr': 0, 'EnMin': 0, 'EnHr': 8, 'En': True, 'Attr': 'C', 'StMin': 0}, {'StHr': 8, 'EnMin': 0, 'EnHr': 22, 'En': True, 'Attr': 'tTD', 'StMin': 0}, {'StHr': 22, 'EnMin': 59, 'EnHr': 23, 'En': True, 'Attr': 'C', 'StMin': 0}], 'day': 4}, {'slots': [{'StHr': 0, 'EnMin': 0, 'EnHr': 8, 'En': True, 'Attr': 'C', 'StMin': 0}, {'StHr': 8, 'EnMin': 0, 'EnHr': 14, 'En': True, 'Attr': 'tTD', 'StMin': 0}, {'StHr': 16, 'EnMin': 0, 'EnHr': 22, 'En': True, 'Attr': 'tT', 'StMin': 0}, {'StHr': 22, 'EnMin': 59, 'EnHr': 23, 'En': True, 'Attr': 'C', 'StMin': 0}], 'day': 5}, {'slots': [{'StHr': 0, 'EnMin': 59, 'EnHr': 23, 'En': True, 'Attr': 'C', 'StMin': 0}], 'day': 6}], 'schedule_days': [{'slots': [{'En': True, 'StHr': 14, 'EnMin': 0, 'StMin': 0, 'EnHr': 16}], 'day': 0}]}</td>
     </tr>
     <tr>
       <td style="text-align: center">ja</td>
@@ -491,7 +502,7 @@ Hier ist die Schnittstelle der Bosch-API kurz beschrieben und die Implementierun
     <tr>
       <td style="text-align: center">ja</td>
       <td style="text-align: left">@GET("alms/{alm_serial}/state")</td>
-      <td style="text-align: center">-</td>
+      <td style="text-align: center">{"svg_xPos": 768, "runtime": {"session": {"charge": 0, "operate": 4}, "total": {"charge": 34352, "operate": 193907}}, "mowed": 89, "mowmode": 0, "xPos": 14, "yPos": 96, "svg_yPos": 792, "mapsvgcache_ts": 1573585675296, "state": 64513, "map_update_available": false}</td>
     </tr>
     <tr>
       <td style="text-align: center">nein</td>
@@ -500,13 +511,13 @@ Hier ist die Schnittstelle der Bosch-API kurz beschrieben und die Implementierun
     </tr>
     <tr>
       <td style="text-align: center">nein</td>
-      <td style="text-align: left">@GET("pub/support/{country_code}")</td>
-      <td style="text-align: center">-</td>
+      <td style="text-align: left">@GET("pub/support/DE")</td>
+      <td style="text-align: center">{'email': 'indego.support@de.bosch.com', 'phone': '+49 711 400 40 470'}</td>
     </tr>
     <tr>
       <td style="text-align: center">nein</td>
       <td style="text-align: left">@GET("users/{user_id}")</td>
-      <td style="text-align: center">-</td>
+      <td style="text-align: center">{'optInApp': False, 'display_name': 'XXXXXXXXX', 'email': 'xxxxx.xxxx@xxxxxxxx.xxx', 'country': 'DE', 'language': 'de', 'optIn': False}</td>
     </tr>
     <tr>
       <td style="text-align: center">nein</td>
@@ -564,7 +575,7 @@ Hier ist die Schnittstelle der Bosch-API kurz beschrieben und die Implementierun
       <td style="text-align: center">-</td>
     </tr>
     <tr>
-      <td style="text-align: center">ja</td>
+      <td style="text-align: center">ja*</td>
       <td style="text-align: left">@PUT("alms/{alm_serial}/config")</td>
       <td style="text-align: center">-</td>
     </tr>
@@ -646,3 +657,4 @@ Hier ist die Schnittstelle der Bosch-API kurz beschrieben und die Implementierun
   </tbody>
 </table>
   
+'* nur bei 350/350+/400/400+
