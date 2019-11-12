@@ -397,7 +397,7 @@ response = requests.get(url, headers=headers)
     <tr>
       <td style="text-align: center">ja</td>
       <td style="text-align: left">@GET("alms/{alm_serial}")</td>
-      <td style="text-align: center">{"needs_service": false, "alm_firmware_version": "00647.01043", "service_counter": 159551, "bareToolnumber": "3600HA2300", "alm_name": "Indego", "alm_sn": "603702021", "alm_mode": "manual"}</td>
+      <td style="text-align: center">{"needs_service": false, "alm_firmware_version": "00647.01043", "service_counter": 159551, "bareToolnumber": "3600HA2300", "alm_name": "Indego", "alm_sn": "XXXXXXXXXX", "alm_mode": "manual"}</td>
     </tr>       
      <tr>
       <td style="text-align: center">nein</td>
