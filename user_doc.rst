@@ -1,13 +1,13 @@
 .. index:: Plugins; Indego (Anbindung der Bosch-Indego Connect Mäher)
-.. index:: Indego
+.. index:: indego4shng
 
-indego
+indego4shng
 ###
 
 Konfiguration
 =============
 
-Die Informationen zur Konfiguration des Plugins sind unter :doc:`/plugins_doc/config/indego` beschrieben.
+Die Informationen zur Konfiguration des Plugins sind unter :doc:`/plugins_doc/config/indego4shng` beschrieben.
 
 
 Konfiguration von SmarthoneNG
@@ -37,7 +37,7 @@ Aufruf des Webinterfaces
 Das Plugin kann aus dem backend aufgerufen werden. Dazu auf der Seite Plugins in der entsprechenden
 Zeile das Icon in der Spalte **Web Interface** anklicken.
 
-Außerdem kann das Webinterface direkt über ``http://smarthome.local:8383/indego``
+Außerdem kann das Webinterface direkt über ``http://smarthome.local:8383/indego4shng``
 
 
 

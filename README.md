@@ -120,8 +120,8 @@ Beispiel:
 ```yaml
 Indego4shNG:
     plugin_name: Indego4shNG
-    #path_2_weather_pics: /smartVISU/lib/weather/pics/
-    #img_pfad: /tmp/garden.svg
+    path_2_weather_pics: /smartVISU/lib/weather/pics/
+    img_pfad: /tmp/garden.svg
     indego_credentials:
     parent_item: indego
     cycle: '30'
@@ -260,7 +260,7 @@ try:
             text = ''
             
     if text != '':
-        sh.alexarc4shng.send_cmd_by_curl('Kueche', 'Text2Speech', text);
+        sh.alexarc4shng.send_cmd('Kueche', 'Text2Speech', text);
 except:
     pass
 ```

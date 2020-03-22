@@ -87,7 +87,7 @@ window.addEventListener('load', function(){ if (document.readyState==='complete'
 <!--
 	Content block for the first tab of the Webinterface
 -->
-{% set tab1title = "<strong>" ~ p.get_shortname() ~ " Items</strong> (" ~ item_count ~ ")" %}
+{% set tab1title = "Items (" ~ item_count ~ ")" %}
 {% block bodytab1 %}
 <div class="container-fluid m-2">
 		<table class="table table-striped table-hover pluginList" style="width:100%">
@@ -115,7 +115,7 @@ window.addEventListener('load', function(){ if (document.readyState==='complete'
 <!--
 	Content block for the second tab of the Webinterface
 -->
-{% set tab2title = "<strong>" ~ p.get_shortname() ~ " Gartenkarte/Settings</strong> " %}
+{% set tab2title =  _('Gartenkarte/Settings')  %}
 {% block bodytab2 %}
 <div class="container-fluid m-2">
 <div class="table-responsive" style="margin-left: 2px; margin-right: 2px; margin-bottom: 5px;margin-top: 5px;" class="row">
@@ -132,13 +132,13 @@ window.addEventListener('load', function(){ if (document.readyState==='complete'
 				<td style="width: 10%; vertical-align:middle;align:left">
 				<div class="custom-control custom-checkbox" style =" vertical-align:middle;align:left">
 				    <input type="checkbox" class="custom-control-input" id="store_2_config" name="store_2_config">
-				    <label class="custom-control-label" for="store_2_config">Store to Config</label>
+				    <label class="custom-control-label" for="store_2_config">{{ _('Store to Config') }}</label>
 				</div>
                 </td>
                 <td style="width:10%">
 			          <button type="button" onclick="BtnEncode()" style="margin-left : 5px" class="btn btn-shng btn-sm" value="btnEncode" id="btnEncode">&nbsp;{{ _('Encode') }}</button>
                 <td>
-				<td style="width: 10%; vertical-align:middle;align:left">encoded Cred.:
+				<td style="width: 10%; vertical-align:middle;align:left">{{ _('encoded Cred.:') }}
                 </td>
                 <td style="width: 45%; vertical-align:middle;align:left">
 			          <input type="input" style="margin-bottom: 1px; margin-left: 5px; width: 100%;font-size: 12px" class="form-control" name="txtEncoded" id="txtEncoded" placeholder="{{ _('Encoded Credentials') }}" value="">			
@@ -146,7 +146,7 @@ window.addEventListener('load', function(){ if (document.readyState==='complete'
 			</tr>
             <tr>
             <td>
-            <strong>Protokoll : </strong>
+            <strong>{{ _('Protokoll :') }} </strong>
             </td>
             <td colspan="5">
 					<textarea type="input" rows="2" style="width: 100%;height: 100%;font-size: 12px;" class="form-control" name="txt_Result" id="txt_Result" placeholder="{{ _('...') }}" disabled >{{ txt_Result }}</textarea>
@@ -155,7 +155,7 @@ window.addEventListener('load', function(){ if (document.readyState==='complete'
 
             <tr>
             <td>
-            <strong>zusätzliche Garden-Map Vektoren : </strong>
+            <strong>{{ _('zusätzliche Garden-Map Vektoren') }} </strong>
             </td>
             <td colspan="7">
 					<textarea type="input" rows="2" style="width: 100%;height: 100%;font-size: 12px;" class="form-control" name="txt_add_svg" id="txt_add_svg" placeholder="{{ _('...') }}" onChange="Store_add_svg(this.value)"> {{ txt_add_svg }} </textarea>
@@ -299,18 +299,18 @@ function setTextColor(picker) {
 	Content block for the third tab of the Webinterface
 	If wanted, a title for the tab can be defined as:
 -->
-{% set tab3title = "<strong>" ~ p.get_shortname() ~ " State-Protokoll</strong>" %}
+{% set tab3title = _('State-Protokoll') %}
 {% block bodytab3 %}
 <table class="table table-striped table-hover">
 	<tbody>
     <tr>
         <td>
-        	<button id="btn_clear_proto_states" class="btn btn-shng btn-sm" name="btn_clear_proto_states" value="on" onclick="DeleteProto(this.name)"><i class="fas fa-trash-alt"></i>&nbsp;&nbsp;&nbsp;States Protokoll löschen&nbsp;</button>
+        	<button id="btn_clear_proto_states" class="btn btn-shng btn-sm" name="btn_clear_proto_states" value="on" onclick="DeleteProto(this.name)"><i class="fas fa-trash-alt"></i>&nbsp;&nbsp;&nbsp;{{ _('States Protokoll löschen')}}&nbsp;</button>
         </td>
         <td>
             <div class="custom-control custom-checkbox" style =" vertical-align:middle;align:left">
                 <input type="checkbox" class="custom-control-input" id="proto_states_check" name="proto_states_check">
-                <label class="custom-control-label" for="proto_states_check">automatisch akutalisieren ( 5 Sek.)</label>
+                <label class="custom-control-label" for="proto_states_check">{{ _('automatisch akutalisieren ( 5 Sek.)') }}</label>
             </div>
         </td>
     </tr>
@@ -354,18 +354,18 @@ console.log ("refreshed CodeMirrot")
 
 
 
-{% set tab4title = "<strong>" ~ p.get_shortname() ~ " Kommunikations-Protokoll</strong>" %}
+{% set tab4title =  _('Kommunikations-Protokoll') %}
 {% block bodytab4 %}
 <table class="table table-striped table-hover">
 	<tbody>
     <tr>
         <td>
-        	<button id="btn_clear_proto_commun" class="btn btn-shng btn-sm" name="btn_clear_proto_commun" value="on" onclick="DeleteProto(this.name)"><i class="fas fa-trash-alt"></i>&nbsp;&nbsp;&nbsp;Kommuinkations  Protokoll löschen&nbsp;</button>
+        	<button id="btn_clear_proto_commun" class="btn btn-shng btn-sm" name="btn_clear_proto_commun" value="on" onclick="DeleteProto(this.name)"><i class="fas fa-trash-alt"></i>&nbsp;&nbsp;&nbsp;{{ _('Kommuinkations  Protokoll löschen') }}&nbsp;</button>
         </td>
         <td>
             <div class="custom-control custom-checkbox" style =" vertical-align:middle;align:left">
                 <input type="checkbox" class="custom-control-input" id="proto_commun_check" name="proto_commun_check">
-                <label class="custom-control-label" for="proto_commun_check">automatisch akutalisieren ( 5 Sek.)</label>
+                <label class="custom-control-label" for="proto_commun_check">{{ _('automatisch akutalisieren ( 5 Sek.)') }}</label>
             </div>
         </td>
     </tr>
