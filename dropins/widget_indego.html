@@ -58,54 +58,6 @@
 {% endmacro %}
 
 
-/*********************************************
-*
-*  Widget for the active  Calender
-*
-* id         = unique ID for the Widget
-* item       = item of shNG
-* type       = P:predictive Calendar M:MowCalendar
-* headline   = Headline for the Fieldset
-*********************************************/
-
-{% macro calendar_active(id, item, type, headline, _backend ) %}
-
-{% import "basic.html" as basic %}
-	<div{% if not id is empty %} id="{{ uid(page, id) }}"{% endif %} data-widget="indego.calendar_sel_cal" data-item="{{ item }}"
-	       data-mode="{{ type|default('P') }}" data-designType="{{ _backend }}">
-        <div class="calendar_active">
-			<html>
-				<h4>{{ headline }}</h4>
-				<body>
-					<form>
-					<fieldset data-role = "controlgroup" data-type = "horizontal" id="{{uid(type, '_cal_active' )}}">
-						<input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_1') }}" style="display:none">
-						<label id = "{{ uid(type,'caption_cal_1') }}" for = "{{ uid(type,'cal_1') }}" style="display:none">1</label>
-
-						<input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_2') }}" style="display:none">
-						<label id = "{{ uid(type,'caption_cal_2') }}" for = "{{ uid(type,'cal_2') }}" style="display:none">2</label>
-
-						<input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_3') }}" style="display:none">
-						<label id = "{{ uid(type,'caption_cal_3') }}" for = "{{ uid(type,'cal_3') }}" style="display:none">3</label>
-
-						<input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_4') }}" style="display:none">
-						<label id = "{{ uid(type,'caption_cal_4') }}" for = "{{ uid(type,'cal_4') }}" style="display:none">4</label>
-
-						<input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_5') }}" style="display:none">
-						<label id = "{{ uid(type,'caption_cal_5') }}" for = "{{ uid(type,'cal_5') }}" style="display:none">5</label>
-
-						<input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_6') }}" style="display:none">
-						<label id = "{{ uid(type,'caption_cal_6') }}" for = "{{ uid(type,'cal_6') }}" style="display:none" >EIN </label>
-
-						<input type = "radio" name=uid(type,'act_cal') id = "{{ uid(type,'cal_0') }}" >
-						<label id = "{{ uid(type,'caption_cal_0') }}" for = "{{ uid(type,'cal_0') }}">AUS</label>
-					</fieldset>
-					</form>
-				</body>
-			</html>
-        </div>
-	</div>
-{% endmacro %}
 
 
 /*********************************************

@@ -138,6 +138,8 @@ class Indego4shNG(SmartPlugin):
            self._init_complete = False
            return
         self.states = {}
+        self.providers = {}
+        self.mowertype = {}
         
         # The following part of the __init__ method is only needed, if a webinterface is being implemented:
 
@@ -164,14 +166,14 @@ class Indego4shNG(SmartPlugin):
             self.logged_in = self._check_auth()
 
         # start the refresh timers
-        self.scheduler_add('operating_data',self.get_operating_data,cycle = 300)
-        self.scheduler_add('state', self.state, cycle = self.cycle)
+        self.scheduler_add('operating_data',self._get_operating_data,cycle = 300)
+        self.scheduler_add('get_state', self._get_state, cycle = self.cycle)
         self.scheduler_add('alert', self.alert, cycle=300)
-        self.scheduler_add('get_calendars', self._get_calendars, cycle=300)
+        self.scheduler_add('get_all_calendars', self._get_all_calendars, cycle=300)
         self.scheduler_add('check_login_state', self._check_login_state, cycle=120)
-        self.scheduler_add('device_data', self.device_data, cycle=120)
-        self.scheduler_add('get_weather', self.get_weather, cycle=600)
-        self.scheduler_add('get_next_time', self.get_next_time, cycle=300)
+        self.scheduler_add('device_data', self._device_data, cycle=120)
+        self.scheduler_add('get_weather', self._get_weather, cycle=600)
+        self.scheduler_add('get_next_time', self._get_next_time, cycle=300)
         
         self.alive = True
         # if you need to create child threads, do not make them daemon = True!
@@ -183,9 +185,9 @@ class Indego4shNG(SmartPlugin):
         Stop method for the plugin
         """
         self.scheduler_remove('operating_data')
-        self.scheduler_remove('state')
+        self.scheduler_remove('get_state')
         self.scheduler_remove('alert')
-        self.scheduler_remove('get_calendars')
+        self.scheduler_remove('get_all_calendars')
         self.scheduler_remove('check_login_state')
         self.scheduler_remove('device_date')
         self.scheduler_remove('get_weather')
@@ -228,12 +230,17 @@ class Indego4shNG(SmartPlugin):
             self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'indego_function_4_visu', self.get_iattr_value(item.conf, 'indego_function_4_visu')))
             return self.update_item
         
-        if item.property.name ==  self.parent_item+'.states_str':
+        if self.has_iattr(item.conf, 'indego_parse_2_attr'):
+            _attr_name = item.conf['indego_attr_name']
             newStruct = {}
             myStruct= json.loads(item())
             for entry in myStruct:
-                newStruct[int(entry)]=myStruct[entry]
-            self.states = newStruct
+                if item.conf['indego_attr_type']=='int':
+                    newStruct[int(entry)]=myStruct[entry]
+                if item.conf['indego_attr_type']=='str':
+                    newStruct[entry]=myStruct[entry]
+            setattr(self, _attr_name, newStruct)
+
         ################################################
         '''
         if item.property.name ==  self.parent_item+'.calendar_list':
@@ -365,21 +372,7 @@ class Indego4shNG(SmartPlugin):
                 myFunction_Name = self.get_iattr_value(item.conf, 'indego_function_4_visu')
                 myFunction = getattr(self,myFunction_Name)
                 myFunction(item)    
-                
-            
-            if item.property.name == self.parent_item+'.visu.alerts_set_read':
-                self._set_read_messages()
-            
-            if item.property.name == self.parent_item+'.visu.alerts_set_clear':
-                self._set_clear_message()
-            
-            if item.property.name == self.parent_item+".wartung.update_auto":
-                self.set_automatic_updates()
-            
-            if item.property.name == self.parent_item+".wartung.update_start":
-                if  item() == True:
-                    self.start_manual_update()
-                    item(False)
+           
                 
             if item._name == self.parent_item+'.active_mode.uzsu':
                 if item() == 10:
@@ -417,13 +410,9 @@ class Indego4shNG(SmartPlugin):
         if "active_mode" in item.property.name:
             self._set_childitem('visu.cal_2_show','cal2show|'+str(self._get_childitem('active_mode')))
         
-        if "wartung.wintermodus" in item.property.name:
-            self._set_childitem('visu.wintermodus','wintermodus|'+str(self._get_childitem('wartung.wintermodus')))
         
-        if ("visu.mow_track" in item.property.name and self._get_childitem('visu.show_mow_track') == True) or ("visu.show_mow_track" in item.property.name and item() == True):
-                self._create_mow_track()
-        elif "visu.show_mow_track" in item.property.name and item() == False:
-            self._set_childitem('visu.svg_mow_track','svg_mow_track|'+str(''))
+        
+        
 
 
 
@@ -443,9 +432,35 @@ class Indego4shNG(SmartPlugin):
     ##############################################
     # Functions for Update-Items 
     ##############################################
+    def _handle_alerts(self, item):
+        if item.property.name == self.parent_item+'.visu.alerts_set_read':
+            self._set_read_messages()
+        
+        if item.property.name == self.parent_item+'.visu.alerts_set_clear':
+            self._set_clear_message()
+                
+    def _handle_mow_track(self, item):
+        if ("visu.mow_track" in item.property.name and self._get_childitem('visu.show_mow_track') == True) or ("visu.show_mow_track" in item.property.name and item() == True):
+                self._create_mow_track()
+        elif "visu.show_mow_track" in item.property.name and item() == False:
+            self._set_childitem('visu.svg_mow_track','svg_mow_track|'+str(''))
+            
+    def _handle_wartung(self, item):
+        
+        if "wartung.wintermodus" in item.property.name:
+            self._set_childitem('visu.wintermodus','wintermodus|'+str(self._get_childitem('wartung.wintermodus')))
+                    
+        if item.property.name == self.parent_item+".wartung.update_auto":
+            self._set_automatic_updates()
+        
+        if item.property.name == self.parent_item+".wartung.update_start":
+            if  item() == True:
+                self._start_manual_update()
+                item(False)
+        
     def _handle_store_cals(self, item):
         if item.property.name == self.parent_item+'.visu.store_sms_profile' and item() == True:
-                self.smart_mow_settings("write")
+                self._smart_mow_settings("write")
                 self._set_childitem('visu.store_sms_profile', False)
                     
                     
@@ -465,18 +480,22 @@ class Indego4shNG(SmartPlugin):
         
         
     def _handle_parse_map(self, item):
-        self.parse_map()
+        self._parse_map()
     
     def _handle_calendar_list(self, item):
         if item.property.name == self.parent_item+'.calendar_list':
             myList = item()
-            self.parse_list_2_cal(myList, self.calendar,'MOW')
+            myCal = self._get_childitem('calendar')
+            myNewCal = self._parse_list_2_cal(myList, myCal,'MOW')
+            self._set_childitem('calendar', myNewCal)
 
 
         if item.property.name == self.parent_item+'.calendar_predictive_list':
             myList = item()
-            self.parse_list_2_cal(myList, self.predictive_calendar,'PRED')
-                 
+            myCal = self._get_childitem('calendar_predictive')
+            myNewCal = self._parse_list_2_cal(myList, myCal,'PRED')
+            self._set_childitem('calendar_predictive', myNewCal)
+            
         
     def _handle_alm_mode(self, item):
         if   (item() == 'smart'):
@@ -500,13 +519,13 @@ class Indego4shNG(SmartPlugin):
     def _handle_refresh(self, item):
         if item()== True:
             self._set_childitem('update_active_mode', True)
-            self._get_calendars()
-            self.state()
+            self._get_all_calendars()
+            self._get_state()
             self.alert()
-            self.device_data()
-            self.get_next_time()
-            self.get_weather()
-            self.load_map()
+            self._device_data()
+            self._get_next_time()
+            self._get_weather()
+            self._load_map()
             self._set_childitem('update_active_mode', False)
             item(False)
         
@@ -555,7 +574,7 @@ class Indego4shNG(SmartPlugin):
             myResult = self.items.return_item('indego.active_mode.uzsu.schaltuhr').activate()
             if myResult == True:
                 self._set_childitem('active_mode.uzsu.schaltuhr.active', True)
-                self._set_childitem('active_mode.uzsu.calendar_list',self.parse_uzsu_2_list(item()))
+                self._set_childitem('active_mode.uzsu.calendar_list',self._parse_uzsu_2_list(item()))
                 self._set_childitem('alm_mode.str','Übersicht mähen nach UZSU:')
             else:                  
                 self._set_childitem('active_mode.uzsu.schaltuhr.active', False)
@@ -633,7 +652,7 @@ class Indego4shNG(SmartPlugin):
     def _del_message_in_dict(self, myDict, myKey):
         del myDict[myKey]
         
-    def _set_read_essages(self):
+    def _set_read_messages(self):
         msg2setread = self._get_childitem('visu.alerts_set_read')
         myReadMsg = self._get_childitem('visu.alerts')
         
@@ -660,10 +679,13 @@ class Indego4shNG(SmartPlugin):
     
     def _check_login_state(self):
         if self.logged_in == False:
+            self._set_childitem('online', False)
+            self.context_id = ''
             return
         actTimeStamp = time.time()
         if self.expiration_timestamp < actTimeStamp+600:
             self.logged_in = False
+            self.context_id = ''
             self._delete_auth()
             self._auth()
             self.logged_in = self._check_auth()
@@ -677,13 +699,16 @@ class Indego4shNG(SmartPlugin):
         self.cal_upate_count_pred += 1
         self.cal_pred_update_running = True
         
-        actCalendar = self._get_childitem('calendar_predictive_sel_cal')
+        
         # set actual Calendar in Calendar-structure
         myCal = self._get_childitem('calendar_predictive')
+        actCalendar = self._get_childitem('calendar_predictive_sel_cal')
+        
         myCal['sel_cal'] = actCalendar
         self._set_childitem('calendar_predictive',myCal)
         
-        myResult = self._store_calendar(self.predictive_calendar(),'predictive/calendar')
+        #myResult = self._store_calendar(self.predictive_calendar(),'predictive/calendar')
+        myResult = self._store_calendar(myCal,'predictive/calendar')
         
         if self.cal_upate_count_pred <=3:
             if myResult != 200:
@@ -721,13 +746,14 @@ class Indego4shNG(SmartPlugin):
     def _auto_mow_cal_update(self):
         self.cal_update_count += 1
         self.cal_update_running = True
-
-        actCalendar = self._get_childitem('calendar_sel_cal')
         # set actual Calendar in Calendar-structure
         myCal = self._get_childitem('calendar')
+        actCalendar = self._get_childitem('calendar_sel_cal')
         myCal['sel_cal'] = actCalendar
+        
         self._set_childitem('calendar',myCal)
-        myResult = self._store_calendar(self.calendar(),'calendar')
+        #myResult = self._store_calendar(self.calendar(),'calendar')
+        myResult = self._store_calendar(myCal,'calendar')
         if self.cal_update_count <=3:
             if myResult != 200:
                 if self.cal_update_count == 1:
@@ -765,29 +791,39 @@ class Indego4shNG(SmartPlugin):
         self._set_childitem('calendar_result',myMsg)
     
     
-    def _get_calendars(self):    
+    def _get_all_calendars(self):    
         if (self._get_childitem("wartung.wintermodus") == True or self.logged_in == False):
             return
         if (self._get_childitem("alm_mode") == 'smart') and ((self._get_childitem('stateCode') == 513) or (self._get_childitem('stateCode') == 518)):
             return     
-        self.smart_mow_settings("read")
+        self._smart_mow_settings("read")
         try:
             if not self.cal_update_running:
                 # get the mowing calendar
+                myMowCal = self._get_calendar()
+                self._set_childitem('calendar', myMowCal)
+                
+                myMowCalList = self._parse_cal_2_list(myMowCal,'MOW')
+                self._set_childitem('calendar_list', myMowCalList)
+                
+                myActiveMowCal = self._get_active_calendar(myMowCal)
+                self._set_childitem('calendar_sel_cal', myActiveMowCal)
+                '''
                 self.calendar = self.items.return_item(self.parent_item + '.' + 'calendar')
-                self.calendar(self.get_calendar(), 'indego')
+                self.calendar(self._get_calendar(), 'indego')
                 calendar_list = self.items.return_item(self.parent_item + '.' + 'calendar_list')
-                calendar_list(self.parse_cal_2_list(self.calendar._value,'MOW'),'indego')
+                calendar_list(self._parse_cal_2_list(self.calendar._value,'MOW'),'indego')
                 self.act_Calender = self.items.return_item(self.parent_item + '.' + 'calendar_sel_cal')
-                self.act_Calender(self.get_active_calendar(self.calendar()),'indego')
+                self.act_Calender(self._get_active_calendar(self.calendar()),'indego')
+                '''
             if not self.cal_pred_update_running:
                 # get the predictve calendar for smartmowing
                 self.predictive_calendar = self.items.return_item(self.parent_item + '.' + 'calendar_predictive')
-                self.predictive_calendar(self.get_predictive_calendar(), 'indego')
+                self.predictive_calendar(self._get_predictive_calendar(), 'indego')
                 predictive_calendar_list = self.items.return_item(self.parent_item + '.' + 'calendar_predictive_list')
-                predictive_calendar_list(self.parse_cal_2_list(self.predictive_calendar._value,'PRED'),'indego')
+                predictive_calendar_list(self._parse_cal_2_list(self.predictive_calendar._value,'PRED'),'indego')
                 self.act_pred_Calender = self.items.return_item(self.parent_item + '.' + 'calendar_predictive_sel_cal')
-                self.act_pred_Calender(self.get_active_calendar(self.predictive_calendar()),'indego')
+                self.act_pred_Calender(self._get_active_calendar(self.predictive_calendar()),'indego')
         except Exception as e:
             self.logger.warning("Problem fetching Calendars: {0}".format(e))
         
@@ -812,8 +848,8 @@ class Indego4shNG(SmartPlugin):
                                         'days' : schedule['schedule_days']
                                      }]
                           }
-            my_pred_list = self.parse_cal_2_list(my_pred_cal, None)
-            my_smMow_list = self.parse_cal_2_list(my_smMow_cal, None)
+            my_pred_list = self._parse_cal_2_list(my_pred_cal, None)
+            my_smMow_list = self._parse_cal_2_list(my_smMow_cal, None)
             
             self._set_childitem('visu.smartmow_days',[ my_pred_list,my_smMow_list])
         
@@ -978,7 +1014,7 @@ class Indego4shNG(SmartPlugin):
     def _check_state_4_protocoll(self):
         myActState = self._get_childitem("stateCode")
         if myActState == 772 or myActState == 775 or myActState == 769 or myActState == 770 or myActState == 771 or myActState == 773 or myActState == 774 or myActState == 257 or myActState == 260 or myActState == 261 or myActState == 262 or myActState == 263:                           # 769 = fährt zur Station / 772 = Mähzeit beendet / 775 = fertig gemäht
-            self.scheduler_change('state', cycle={self.cycle:None})
+            self.scheduler_change('get_state', cycle={self.cycle:None})
             self._set_childitem("laststateCode", myActState)
             self.position_detection = False
         
@@ -1075,8 +1111,9 @@ class Indego4shNG(SmartPlugin):
             self.logger.info("User ID received :{}".format(self.user_id))
             self.alm_sn = auth_response['alm_sn']
             self.logger.info("Serial received : {}".format(self.alm_sn))
+            self._log_communication('Auth  ', 'Expiration time {}'.format(expiration_timestamp), str(auth_response))
     
-    def get_predictive_calendar(self):
+    def _get_predictive_calendar(self):
         '''
         GET
         https://api.indego.iot.bosch-si.com/api/v1/alms/{serial}/predictive/calendar
@@ -1092,7 +1129,6 @@ class Indego4shNG(SmartPlugin):
 
         try:
             response = self._get_url(url, self.context_id, 10)
-            #response = requests.get(url, headers=headers)
         except err as Exception:
             self.logger.warning("Error during getting predictive Calendar-Infos")
             return None
@@ -1102,7 +1138,7 @@ class Indego4shNG(SmartPlugin):
             return response
 
     
-    def get_calendar(self):
+    def _get_calendar(self):
         '''
         GET
         https://api.indego.iot.bosch-si.com/api/v1/alms/{serial}/calendar
@@ -1115,7 +1151,6 @@ class Indego4shNG(SmartPlugin):
 
         try:
             response = self._get_url(url, self.context_id, 10)
-            #response = requests.get(url, headers=headers)
         except err as Exception:
             self.logger.warning("Error during getting Calendar-Infos")
             return None
@@ -1124,7 +1159,7 @@ class Indego4shNG(SmartPlugin):
             self.logger.info("Got correct Calendar settings for mowing")
             return response
     
-    def clear_calendar(self, myCal = None):
+    def _clear_calendar(self, myCal = None):
         for cal_item in myCal['cals']:
             myCalendarNo = cal_item['cal']
             for days in cal_item['days']:
@@ -1139,7 +1174,7 @@ class Indego4shNG(SmartPlugin):
         return myCal
     
             
-    def build_new_calendar(self, myList = None,type = None):
+    def _build_new_calendar(self, myList = None,type = None):
         if (type =='MOW'):
             selected_calendar = self._get_childitem('calendar_sel_cal')
         else:
@@ -1216,53 +1251,23 @@ class Indego4shNG(SmartPlugin):
         return final_Cal
         
     
-    def create_empty_calendar(self,needed_cals=None):
-        needed_cals=[2,3]
-        newCal = {'cals':[]}
-        emptySlot = {
-                    'StHr' : '00',
-                    'StMin' : '00',
-                    'EnHr' : '00',
-                    'EnMin' : '00',
-                    'En' : False
-                    }
-    
-        days=[]
-        #Create a complete week
-        dayCount = 0
-        while dayCount <= 6:
-            newDay = {
-                     'slots': [emptySlot,emptySlot],
-                     'day' : int(dayCount)
-                     }
-            days.append(newDay)
-            dayCount +=1
-    
-        newCal['sel_cal'] = 2
-        for cal in needed_cals:
-            newCalEntry={'days':days}
-            newCalEntry['cal']=cal
-            newCal['cals'].append(newCalEntry)
-    
-        print (json.dumps(newCal))
-    
-    
+ 
                 
-    def parse_list_2_cal(self,myList = None, myCal = None,type = None):
+    def _parse_list_2_cal(self,myList = None, myCal = None,type = None):
         if (type == 'MOW' and len(self.calendar_count_mow) == 5):
-            self.clear_calendar(myCal._value)
+            self._clear_calendar(myCal)
 
         if (type == 'PRED' and len(self.calendar_count_pred) == 5):
-            self.clear_calendar(myCal._value)
+            self._clear_calendar(myCal)
                 
         if (type == 'MOW' and len(self.calendar_count_mow) < 5):
-            myCal._value = self.build_new_calendar(myList,type)
+            myCal = self_.build_new_calendar(myList,type)
         
         elif (type == 'PRED' and len(self.calendar_count_pred) < 5):
-            myCal._value = self.build_new_calendar(myList,type)
+            myCal = self_.build_new_calendar(myList,type)
         
         else:
-            self.clear_calendar(myCal._value)
+            self._clear_calendar(myCal)
             for myKey in myList:
                 if (myKey == "Params"):
                     continue
@@ -1282,24 +1287,25 @@ class Indego4shNG(SmartPlugin):
                         myCalNo = int(myEntry[1][0:1])-1
                 # Now Fill the Entry in the Calendar
                 for day in Days.split((',')):
-                    if (myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][0]['En'] == True):
+                    if (myCal['cals'][myCalNo]['days'][int(day)]['slots'][0]['En'] == True):
                         actSlot = 1
                     else:
                         actSlot = 0
-                    myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['StHr'] = Start[0:2]
-                    myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['StMin'] = Start[3:5]
-                    myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['EnHr'] = End[0:2]
-                    myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['EnMin'] = End[3:5]
-                    myCal._value['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['En'] = True  
+                    myCal['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['StHr'] = Start[0:2]
+                    myCal['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['StMin'] = Start[3:5]
+                    myCal['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['EnHr'] = End[0:2]
+                    myCal['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['EnMin'] = End[3:5]
+                    myCal['cals'][myCalNo]['days'][int(day)]['slots'][actSlot]['En'] = True  
 
-        self.logger.info("Calendar was updated Name :'{}'".format(myCal._name))
+        self.logger.info("Calendar was updated Name :'{}'".format(type))
+        return myCal
     
-    def get_active_calendar(self, myCal = None):    
+    def _get_active_calendar(self, myCal = None):    
         # First get active Calendar
         activeCal = myCal['sel_cal']
         return activeCal
     
-    def parse_uzsu_2_list(self, uzsu_dict=None):
+    def _parse_uzsu_2_list(self, uzsu_dict=None):
         weekDays = {'MO' : "0" ,'TU' : "1" ,'WE' : "2" ,'TH' : "3",'FR' : "4",'SA' : "5" ,'SU' : "6" }
         myCal = {}
         
@@ -1362,7 +1368,7 @@ class Indego4shNG(SmartPlugin):
     
     
     
-    def parse_cal_2_list(self, myCal = None, type=None):
+    def _parse_cal_2_list(self, myCal = None, type=None):
         myList = {}
         myList['Params']={}
         myCalList = []
@@ -1422,17 +1428,23 @@ class Indego4shNG(SmartPlugin):
             self.calendar_count_pred = myCalList
         
         return myList
+
+    def _store_dict_2_item(self, myDict, item_name):
+        newStruct = ""
+        for entry in myDict:
+            newStruct += '"'+str(entry)+'":'+ str(myDict[entry])
+        self._set_childitem(item_name, str("{"+newStruct+"}"))
     
     
-    def parse_dict_2_item(self,myDict, keyEntry):
+    def _parse_dict_2_item(self,myDict, keyEntry):
         for m in myDict:
             if type(myDict[m]) != dict:
                 self._set_childitem(keyEntry+m, myDict[m])
             else:
-                self.parse_dict_2_item(myDict[m],keyEntry+m+'.')
+                self._parse_dict_2_item(myDict[m],keyEntry+m+'.')
                 
                 
-    def get_location(self):
+    def _get_location(self):
         url = "{}alms/{}/predictive/location".format( self.indego_url, self.alm_sn)
         try:
             location = self._get_url( url, self.context_id, 20)    
@@ -1451,7 +1463,7 @@ class Indego4shNG(SmartPlugin):
         else:
             return False 
     
-    def smart_mow_settings(self, mode =""):
+    def _smart_mow_settings(self, mode =""):
         # get SmartMowSetup
         url = "{}alms/{}/predictive/setup".format( self.indego_url, self.alm_sn)
         if (mode == 'read'):
@@ -1510,7 +1522,7 @@ class Indego4shNG(SmartPlugin):
                 self.logger.warning("Problem putting {}: {}".format(url, e))
     
     
-    def get_alm_config(self):
+    def _get_alm_config(self):
         '''
         @GET("alms/{alm_serial}/config")")
         '''
@@ -1527,7 +1539,7 @@ class Indego4shNG(SmartPlugin):
         if alm_config != False:
             self._set_childitem('wartung.alm_config', alm_config)
     
-    def start_manual_update(self):
+    def _start_manual_update(self):
         '''
         @PUT("alms/{alm_serial}/updates")
         '''
@@ -1535,7 +1547,7 @@ class Indego4shNG(SmartPlugin):
         myResult, response = self._put_url(url, self.context_id, None, 10)
         
            
-    def get_automatic_updates(self):
+    def _get_automatic_updates(self):
         '''
         @GET("alms/{alm_serial}/automaticUpdate")
         '''
@@ -1546,7 +1558,7 @@ class Indego4shNG(SmartPlugin):
         
         
         
-    def set_automatic_updates(self):
+    def _set_automatic_updates(self):
         '''
         @PUT("alms/{alm_serial}/automaticUpdate")
         '''
@@ -1555,7 +1567,7 @@ class Indego4shNG(SmartPlugin):
         myResult, response = self._put_url(url, self.context_id, body, 10)
         
         
-    def check_update(self):
+    def _check_update(self):
         '''
         @GET("alms/{alm_serial}/updates")
         '''
@@ -1571,7 +1583,7 @@ class Indego4shNG(SmartPlugin):
                 self._set_childitem('wartung.update','NEIN')
                 
                 
-    def get_operating_data(self):
+    def _get_operating_data(self):
         '''
         @GET("alms/{alm_serial}/operatingData")
         '''
@@ -1584,7 +1596,7 @@ class Indego4shNG(SmartPlugin):
         except Exception as e:
             self.logger.warning("Problem getting {}: {}".format(url, e))
         if operating_data != False:
-            self.parse_dict_2_item(operating_data,'operatingInfo.')
+            self._parse_dict_2_item(operating_data,'operatingInfo.')
         # Set Visu-Items
         activeModel = self._get_childitem('visu.model_type')
         if (activeModel == 1):      # the big ones
@@ -1622,49 +1634,32 @@ class Indego4shNG(SmartPlugin):
                 self.logger.warning("Problem fetching {}: {}".format(url, e))
             if network_data != False:
                 try:
-                    self.parse_dict_2_item(network_data,'network.')
+                    self._parse_dict_2_item(network_data,'network.')
                 except err as Exception:
                     self.logger.warning("Problem parsing Network-Info : {}".format(err))
-            Providers = {
-                        "26217"  :"E-Plus",
-                        "26210"  :"DB Netz AG",
-                        "26205"  :"E-Plus",
-                        "26277"  :"E-Plus",
-                        "26203"  :"E-Plus",
-                        "26212"  :"E-Plus",
-                        "26220"  :"E-Plus",
-                        "26214"  :"Group 3G UMTS",
-                        "26243"  :"Lycamobile",
-                        "26213"  :"Mobilcom",
-                        "26208"  :"O2",
-                        "26211"  :"O2",
-                        "26207"  :"O2",
-                        "26206"  :"T-mobile/Telekom",
-                        "26201"  :"T-mobile/Telekom",
-                        "26216"  :"Telogic/ViStream",
-                        "26202"  :"Vodafone D2",
-                        "26242"  :"Vodafone D2",
-                        "26209"  :"Vodafone D2",
-                        "26204"  :"Vodafone D2"
-                        }
+            
             myMcc = self._get_childitem('network.mcc')
             myMnc = self._get_childitem('network.mnc')
             try:
-                actProvider = Providers[str(myMcc)+str('%0.2d' %myMnc)]
+                actProvider = self.providers[str(myMcc)+str('%0.2d' %myMnc)]
             except:
                 actProvider = 'unknown('+str(myMcc)+str('%0.2d' %myMnc)+')'
+                self.providers[str(myMcc)+str('%0.2d' %myMnc)] = str(myMcc)+str('%0.2d' %myMnc)+'unknown'
+                self._store_dict_2_item(self.providers,'providers')
                 
             self._set_childitem('visu.network.act_provider', actProvider)
             ProviderLst = self._get_childitem('network.networks')
             myLst = ""
             for entry in ProviderLst:
-                myLst += Providers[str(entry)]+', '
-                
+                try:
+                    myLst += self.providers[str(entry)]+', '
+                except:
+                    myLst += entry + ' - unknown'+', '
             self._set_childitem('visu.network.available_provider', myLst[0:-2])
              
                            
     
-    def get_next_time(self):
+    def _get_next_time(self):
         if (self._get_childitem("wartung.wintermodus") == True or self.logged_in == False):
             return        
         # get the next mowing time
@@ -1729,7 +1724,7 @@ class Indego4shNG(SmartPlugin):
                 self.logger.warning("Problem to decode {0} in function get_next_time(): {1}".format(next_time, e))
 
                 
-    def get_weather(self):
+    def _get_weather(self):
         if self.logged_in == False:
             return
         try:
@@ -1796,26 +1791,23 @@ class Indego4shNG(SmartPlugin):
                         myAlert['message'].replace(' Bitte folgen Sie den Anweisungen im Display des Mähers.', '')
                         actAlerts[myAlert['alert_id']]=myAlert
                         self._set_childitem('visu.alert_new', True)
-                        self.check_alarm_triggers(myAlert['message']+' '+myAlert['headline'])
+                        self._check_alarm_triggers(myAlert['message']+' '+myAlert['headline'])
                 
                 self._set_childitem('visu.alerts', actAlerts)
 
-    def alert_delete(self, alert_id):
-        self.logger.debug("deleting alert_id " + str(alert_id))
-        result = self._delete_url(self.indego_url + 'alerts/' + alert_id, self.context_id, 50,auth=(username,password))
 
-    def device_data(self):
+    def _device_data(self):
         if (self._get_childitem("wartung.wintermodus") == True or self.logged_in == False):
             return        
         
         # Get Location
-        self.get_location()
+        self._get_location()
         # CheckUpdates
-        self.check_update()
+        self._check_update()
         # Get ALM-Config
-        self.get_alm_config()
+        self._get_alm_config()
         # Get Auto-Updates enabled
-        self.get_automatic_updates()
+        self._get_automatic_updates()
         
         self.logger.debug('getting device_date')
         device_data_response = self._get_url(self.indego_url + 'alms/' + self.alm_sn, self.context_id)
@@ -1864,21 +1856,15 @@ class Indego4shNG(SmartPlugin):
 
             bareToolnumber = device_data_response['bareToolnumber']
             # Detect Modell
-            myModells = {
-                            "3600HA2300":"1000,1",
-                            "3600HA2301":"1200,1",
-                            "3600HA2302":"1100,1",
-                            "3600HA2303":"13C,1",
-                            "3600HA2304":"10C,1",
-                            "3600HB0100":"350,2",
-                            "3600HB0101":"400,2"
-                        }
+            myModells = self.mowertype
             try:
                 myModell = myModells[bareToolnumber].split(',')[0]
                 myModellType = int(myModells[bareToolnumber].split(',')[1])
             except:
                 myModell = "unknown Modell ("+bareToolnumber+")"
                 myModellType = 0
+                self.mowertype[bareToolnumber]="unknown"
+                self._store_dict_2_item(self.mowertype,'mowertype')
             self._set_childitem('visu.model', 'Indego '+myModell)
             self._set_childitem('visu.model_type', myModellType)
             
@@ -1896,7 +1882,7 @@ class Indego4shNG(SmartPlugin):
                 self.logger.debug("alm_firmware_version : {}".format(str(alm_firmware_version)))
     
     
-    def check_state_triggers(self, myStatecode):
+    def _check_state_triggers(self, myStatecode):
         myStatecode = str('%0.5d' %int(myStatecode))
         counter = 1
         while counter <=4:
@@ -1908,7 +1894,7 @@ class Indego4shNG(SmartPlugin):
             counter += 1
 
 
-    def check_alarm_triggers(self, myAlarm):
+    def _check_alarm_triggers(self, myAlarm):
             counter = 1
             while counter <=4:
                 myItemName="trigger.alarm_trigger_" + str(counter) + ".alarm"
@@ -1918,7 +1904,7 @@ class Indego4shNG(SmartPlugin):
                     self._set_childitem(myTriggerItem, True)
                 counter += 1        
     
-    def state(self):
+    def _get_state(self):
         if (self._get_childitem("wartung.wintermodus") == True or self.logged_in == False):
             return
 
@@ -1944,10 +1930,8 @@ class Indego4shNG(SmartPlugin):
                     # got new unknown State-Code
                     self.states[state_code]=[str(state_code)+" unknown","unknown"]
                     # Store to Item 
-                    newStruct = ""
-                    for entry in self.states:
-                        newStruct += '"'+str(entry)+'":'+ str(self.states[entry])
-                    self._set_childitem('states_str', str("{"+newStruct)+"}")
+                    self._store_dict_2_item(self.states,'states_str')
+                   
                         
             except err as Exception:
                 self.logger.warning("Error while adding new State-Code : {}".format(err))
@@ -1969,7 +1953,7 @@ class Indego4shNG(SmartPlugin):
                 logLine =str(now)[0:19]+'  State : '+str(state_code) + ' State-Message : ' + self.states[state_code][0]
                 myLog.insert(0,logLine)
                 self._set_childitem('webif.state_protocoll', myLog)
-                self.check_state_triggers(state_code)
+                self._check_state_triggers(state_code)
                 
             self.logger.debug("state code :".format(str(state_code)))
             if self.states[state_code][1] == 'dock':
@@ -2027,7 +2011,7 @@ class Indego4shNG(SmartPlugin):
                     if myResult != True:
                         pass
                     # Now set scheduler for state to 8 Sec.
-                    self.scheduler_change('state', cycle={7:None}) # Zum Testen von 6 auf 10 Sekunden geändert
+                    self.scheduler_change('get_state', cycle={7:None}) # Zum Testen von 6 auf 10 Sekunden geändert
                     self.position_detection = True
                     self.position_count = 0
                 # Following runs of position detection
@@ -2042,7 +2026,7 @@ class Indego4shNG(SmartPlugin):
 
             mowmode = states['mowmode']
             self._set_childitem('mowmode',mowmode)
-            self.logger.debug("mowmode  :".format(str(mowmode)))
+            self.logger.debug("mowmode  :{}".format(str(mowmode)))
 
             total_operate = states['runtime']['total']['operate']
             self._set_childitem('runtimeTotalOperationMins',total_operate)
@@ -2098,12 +2082,12 @@ class Indego4shNG(SmartPlugin):
             self._set_childitem('mapUpdateAvailable',map_update)
 
             if map_update:
-                self.load_map()
+                self._load_map()
                         
             # Postion-Detection during mowing
             self._check_state_4_protocoll()
 
-    def load_map(self):
+    def _load_map(self):
         self.logger.debug('lade neue Karte')
         garden = self._get_url(self.indego_url + 'alms/' + self.alm_sn + '/map?cached=0&showMower=1', self.context_id, 120)
         if garden == False:
@@ -2114,9 +2098,9 @@ class Indego4shNG(SmartPlugin):
             self.logger.debug('You have a new MAP')
             self._set_childitem('mapSvgCacheDate',self.shtime.now())
             self._set_childitem('webif.garden_map', garden.decode("utf-8"))
-            self.parse_map()
+            self._parse_map()
             
-    def parse_map(self):
+    def _parse_map(self):
         myMap = self._get_childitem('webif.garden_map')
         myCustomDrawing = self._get_childitem('visu.add_svg_images')
         mowerColour = self._get_childitem('visu.mower_colour')
@@ -2306,10 +2290,10 @@ class WebInterface(SmartPluginWebIf):
             resultParams['logged_in']= self.plugin.logged_in
             resultParams['timeStamp']= myLastLogin + " / " + myExperitation_Time
             resultParams['SessionID']= self.plugin.context_id 
-            resultParams['encoded']= encoded
             self.plugin._set_childitem('visu.refresh',True)
             txt_Result.append("refresh of Items initiated")
-                
+        
+        resultParams['encoded']= encoded    
         result2send['Proto']=txt_Result
         result2send['Params']=resultParams
         return json.dumps(result2send)

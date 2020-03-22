@@ -131,17 +131,21 @@ document.getElementById("txt_Result").value = temp;
 document.getElementById("txtEncoded").innerHTML = objResponse.Params.encoded
 document.getElementById("text_session_id").innerHTML = objResponse.Params.SessionID
 document.getElementById("text_experitation").innerHTML = objResponse.Params.timeStamp
-if (objResponse.Params.logged_in == true)
-    {
-     document.getElementById("grafic_logged_in").src = "static/img/lamp_green.png"
-     document.getElementById("text_logged_in").innerHTML = "logged in"
 
-    }
-else
-    {
-     document.getElementById("grafic_logged_in").src = "static/img/lamp_red.png"
-     document.getElementById("text_logged_in").innerHTML = "logged off"
-    }
+if (document.getElementById("store_2_config").checked = true)
+{
+    if (objResponse.Params.logged_in == true)
+        {
+         document.getElementById("grafic_logged_in").src = "static/img/lamp_green.png"
+         document.getElementById("text_logged_in").innerHTML = "logged in"
+
+        }
+    else
+        {
+         document.getElementById("grafic_logged_in").src = "static/img/lamp_red.png"
+         document.getElementById("text_logged_in").innerHTML = "logged off"
+        }
+ }
 }
 
 //*******************************************

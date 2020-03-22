@@ -31,7 +31,8 @@ Vielen Dank an Marcov für die Entwicklung des ursprünglichen Plugins.
 Vielen Dank an das Core-Team für die Einführung der STRUCTS, das hat die Arbeit deutlich vereinfacht.
 Vielen Dank an Jan Odvarko für die Entwicklung des Color-Pickers (http://jscolor.com) unter Freigabe für Opensource mit GPLv3   
 
-## Change Log<a name="changelog"/></a>
+<a name="changelog"/></a>
+## Change Log
 
 #### 2019-10-28 V3.0.0
 - Kommunikation auf requests geändert
@@ -92,14 +93,14 @@ Langzeitbeobachtungen haben gezeigt, dass die Mähe bei 31 Volt zurück in die L
 Bei den "Kleinen" gibt es folgende Einschränkungen:
 * Es wird von Bosch keine gemähte Fläche übermittelt. Diese kann mittels des "MowTracks" aber angezeigt werden.
 
-## Konfiguration<a name="konfiguration"/></a>
+<a name="konfiguration"/></a>
+## Konfiguration
 
 ### plugin.yaml
 
 folgende Einträge werden in der "./etc/plugin.yaml" benötigt.
 
-* `class_name: Indego4shNG`:  fix "Indego4shNG"
-* `class_path : plugins.indego`:  fix "plugins.indego"
+* `plugin_name: Indego4shNG`:  fix "Indego4shNG"
 * `path_2_weather_pics: XXXXXXX`: ist der Pfad zu den Bilder des Wetter-Widgets.
 (default ="/smartVISU/lib/weather/pics/")
 * `img_pfad: XXXXXXX`:  ist der Pfad unter dem die Gartenkarte gespeichert wird. 
@@ -118,12 +119,11 @@ Beispiel:
 
 ```yaml
 Indego4shNG:
-    class_name: Indego4shNG
-    class_path: plugins.indego
+    plugin_name: Indego4shNG
     #path_2_weather_pics: /smartVISU/lib/weather/pics/
     #img_pfad: /tmp/garden.svg
     indego_credentials:
-    parent_item: indego 
+    parent_item: indego
     cycle: '30'
     url: https://api.indego.iot.bosch-si.com/api/v1/
 ```
@@ -142,7 +142,7 @@ muss nur in den Ordner "./smarthome/items" kopiert werden.
 ---
 
 indego:
-    struct: indego.child
+    struct: indego4shng.child
 ```
 
 ### SmartVisu
@@ -155,7 +155,8 @@ Diese muss in den Ordner "/pages/DeinName/" kopiert werden und die Raumnavigatio
 
 <strong>!!! Immer auf die Rechte achten !!!</strong> 
 
-## Web-Interface<a name="webinterface"/></a>
+<a name="webinterface"/></a>
+## Web-Interface
 Kurze Erläuterung zum Web-Interface
 ### erster Tab - Übersicht Indego-Items
 ![Webif-Tab1](./assets/webif1.jpg)
@@ -197,8 +198,8 @@ Es erfolgt bei jedem Statuswechsel ein Eintrag, das Protokoll ist selbst rotiere
 maximal 500 Einträge
 ![Webif-Tab1](./assets/webif4.jpg)
 
-
-## Logik-Trigger<a name="logiktrigger"/></a>
+<a name="logiktrigger"/></a>
+## Logik-Trigger
 
 Über die Items :
 
@@ -264,7 +265,8 @@ except:
     pass
 ```
 
-## öffentliche Funkionen<a name="api"/></a>
+<a name="api"/></a>
+## öffentliche Funkionen
 
 Es gibt eine Funktion die z.B. über Logiken aufgerufen werden kann.
 #### send_command(Payload as String)
@@ -284,8 +286,8 @@ sh.Indego4shNG.send_command('{"state":"returnToDock"}','Logic')
 
 ```
 
-
-## Gardenkarte "pimpen"<a name="gardenmap"/></a>
+<a name="gardenmap"/></a>
+## Gardenkarte "pimpen"
 
 Die Gartenkarte wird vom Bosch-Server heruntergeladen und als Item für die Visu verwendet.
 Die Datei wird als Vorlage zum Erweitern unter dem angegebenen Pfad gespeichert ( vgl. ```img_pfad``` im Konfig-Teil).
@@ -311,7 +313,8 @@ Das Ergebnis ist in der VISU sofort sichtbar.
 
 ![pimp_my_map](./assets/pimp_my_map.jpg)
 
-## Nutzung der Original Bosch-Mäher-Symbole<a name="boschpics"/></a>
+<a name="boschpics"/></a>
+## Nutzung der Original Bosch-Mäher-Symbole
 
 Im Standard werden für den Mäher die Symbole des originalen Plugins von Marcov verwendet.
 Man kann alternativ auch die Bilder der Bosch 2.2.8 App verwenden. Diese werden aus Urheberrechtsgründen nicht mit ausgeliefert.
@@ -338,8 +341,8 @@ indego-mowing-s.png
 Sobald die Dateien mit den Bildern vorhanden sind findet das Widget diese und verwendet sie automatisch.
 Die entsprechenden Bilder für die "Großen"/"Kleinen" werden auf Grund des Mähertyps automatisch gewählt und dargestellt. 
 
-
-## Die Bosch-Api 3.0 - behind the scenes<a name="boschapi"/></a>
+<a name="boschapi"/></a>
+## Die Bosch-Api 3.0 - behind the scenes
 
 Hier ist die Schnittstelle der Bosch-API kurz beschrieben und die Implementierung im Plugin dokumentiert.
 Der Header ist in den meisten Fällen mit der Session-ID zu füllen :
@@ -350,11 +353,12 @@ headers = {
 ```
 @Get - steht für einen get-request in Python. Die URL lautet : "https://api.indego.iot.bosch-si.com/api/v1/" gefolgt vom entsprechenden Zugriffspunkt
 ```
-url = "https://api.indego.iot.bosch-si.com/api/v1/" +"alms/{alm_serial}/automaticUpdate".format(alm_sn) 
+url = "https://api.indego.iot.bosch-si.com/api/v1/" +"alms/{}/automaticUpdate".format(alm_sn) 
 response = requests.get(url, headers=headers)
 ```
 
 Über die Items :
+
 <table>
   <thead>
     <tr>
@@ -482,12 +486,12 @@ response = requests.get(url, headers=headers)
     <tr>
       <td style="text-align: center">nein</td>
       <td style="text-align: left">@GET("alms/{alm_serial}/security")</td>
-      <td style="text-align: center">-</td>
+      <td style="text-align: center">{"enabled": true, "autolock": false}</td>
     </tr>
     <tr>
       <td style="text-align: center">ja</td>
       <td style="text-align: left">@GET("alms/{alm_serial}/predictive")</td>
-      <td style="text-align: center">-</td>
+      <td style="text-align: center">{"enabled": false}</td>
     </tr>
     <tr>
       <td style="text-align: center">ja</td>
@@ -521,7 +525,7 @@ response = requests.get(url, headers=headers)
     </tr>
     <tr>
       <td style="text-align: center">nein</td>
-      <td style="text-align: left">@GET("pub/video")</td>
+      <td style="text-align: left">@GET("pub/video&country_code=DE&language=de&mowerType=XXXX")</td>
       <td style="text-align: center">-</td>
     </tr>
     <tr>
