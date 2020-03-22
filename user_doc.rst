@@ -1,5 +1,5 @@
 .. index:: Plugins; Indego (Anbindung der Bosch-Indego Connect Mäher)
-.. index:: indego4shng
+.. index:: Indego4shNG
 
 indego4shng
 ###
