@@ -48,6 +48,7 @@ import base64
 
 
 
+
 # If a package is needed, which might be not installed in the Python environment,
 # import it like this:
 #
@@ -114,8 +115,6 @@ class Indego4shNG(SmartPlugin):
         self.alm_sn = ''
         self.alert_reset = True
         
-        self.logged_in = False
-
         self.add_keys = {}
         self.cal_update_count = 0
         self.cal_update_running = False
@@ -349,6 +348,7 @@ class Indego4shNG(SmartPlugin):
         """
         # Function when item is triggered by VISU
         if caller != self.get_shortname() and caller != 'Autotimer' and caller != 'Logic':
+            
             # code to execute, only if the item has not been changed by this this plugin:
             self.logger.info("Update item: {}, item has been changed outside this plugin".format(item.id()))
             
@@ -608,7 +608,7 @@ class Indego4shNG(SmartPlugin):
         """
         item = self.items.return_item(self.parent_item + '.' + itemname)  
         if (item != None): 
-            item(value, 'indego')
+            item(value, self.get_shortname())
         else:
             self.logger.warning("Could not set item '{}' to '{}'".format(self.parent_item+'.'+itemname, value))
 
@@ -871,9 +871,9 @@ class Indego4shNG(SmartPlugin):
             myResult, response = self._post_url(url, self.context_id, body, timeout,auth=(username,password))
         except Exception as e:
             self.logger.warning("Problem fetching {0}: {1}".format(url, e))
-            return False
+            return False,''
         if myResult == False:
-            return False
+            return False,''
         
         if response.status_code == 200 or response.status_code == 201:
             content = response.json()
@@ -1030,7 +1030,7 @@ class Indego4shNG(SmartPlugin):
                   }
         url = self.indego_url + 'authenticate'
         try:
-            response = self._delete_url(url, self.context_id, 10, auth=(self.user,self.password))
+            response = self._delete_url(url, self.context_id, 10,auth=(self.user,self.password))
         except Exception as e:
             self.logger.warning("Problem logging off {0}: {1}".format(url, e))
             return False
@@ -1103,7 +1103,7 @@ class Indego4shNG(SmartPlugin):
             self.logger.error('AUTHENTICATION INDEGO FAILED! Plugin not working now.')
         else:
             self.last_login_timestamp = datetime.timestamp(datetime.now())
-            self.expiration_timestamp = expiration_timestamp
+            self.expiration_timestamp = expiration_timestamp 
             self.logger.debug("String Auth: " + str(auth_response))
             self.context_id = auth_response['contextId']
             self.logger.info("context ID received :{}".format(self.context_id))
@@ -1261,10 +1261,10 @@ class Indego4shNG(SmartPlugin):
             self._clear_calendar(myCal)
                 
         if (type == 'MOW' and len(self.calendar_count_mow) < 5):
-            myCal = self_.build_new_calendar(myList,type)
+            myCal = self._build_new_calendar(myList,type)
         
         elif (type == 'PRED' and len(self.calendar_count_pred) < 5):
-            myCal = self_.build_new_calendar(myList,type)
+            myCal = self._build_new_calendar(myList,type)
         
         else:
             self._clear_calendar(myCal)
@@ -1323,7 +1323,6 @@ class Indego4shNG(SmartPlugin):
                     myCal[myKey] = {'Days':'', 'Start':'','End':'','Key':'','Color' : '#0AFF0A'}
                     start_hour = float(myItem['time'].split(':')[0])
                     myCal[myKey]['Start']=str("%02d" % start_hour)+':'+myItem['time'].split(':')[1]
-                    #myCal[myKey]['Start'] = myItem['time']
                     calDays =""
                 else:
                     calDays = myCal[myKey]['Days']

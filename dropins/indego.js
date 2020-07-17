@@ -288,6 +288,7 @@ function ShowPopUp(calType, myKey) {
 	indegoPopup.popup('open');// .css({ position: 'fixed', top: '30px' });
 }
 
+/*
 function EnableCalendar(calType) {
 	return
 
@@ -321,7 +322,7 @@ function EnableCalendar(calType) {
 		document.getElementById(strCaption).value = CalCount[0]
 	}
 }
-
+*/
 function DrawCalendar(TableName, CalNo, preFix) {
 	if (preFix == "m") {
 		$("#indego-draw-calendar-2-act").html("")
@@ -821,7 +822,7 @@ $.widget("sv.indego_calendar", $.sv.widget,
 					{
 					orgCalendar = $.extend(true, [], response);
 					newCalendar = $.extend(true, [], response);
-					EnableCalendar('M')
+					//EnableCalendar('M')
 					}
 				UpdateTable($.extend(true, [], response), 'indego-draw-calendar',
 						'indego-calendar', 'm')
@@ -861,7 +862,7 @@ $.widget("sv.calendar_predictive_list", $.sv.widget, {
 		orgPredictiveCalendar = $.extend(true, [], response);
 		newPredictiveCalendar = $.extend(true, [], response);
 
-		EnableCalendar('P')
+		//EnableCalendar('P')
 		UpdateTable(orgPredictiveCalendar, 'indego-pred-draw-calendar',
 				'indego-pred-calendar', 'p')
 		ReDrawActCalendar('P')
@@ -1142,30 +1143,52 @@ $
 					},
 
 					_update : function(response) {
-						logo_small_ok = document.getElementById("logo_small_OK").value
-						logo_big_ok = document.getElementById("logo_big_OK").value
+						try
+						{ logo_small_ok = document.getElementById("logo_small_OK").value }
+						catch (e)
+						{}
+						try
+						{  logo_big_ok = document.getElementById("logo_big_OK").value }
+						catch (e)
+						{}
 
 						if (response[0] == 1 && logo_big_ok == 1) {
 							document.getElementById("Indego_big").style.display = "block"
 							document.getElementById("Indego_small").style.display = "none"
 							document.getElementById("Indego_small").style.display = "none"
 						} else if (response[0] == 2 && logo_small_ok == 1) {
+							try
+							{
 							document.getElementById("Indego_small").style.display = "block"
 							document.getElementById("Indego_big").style.display = "none"
 							document.getElementById("Indego_unknown").style.display = "none"
+							}
+							catch (e)
+							{}
 						} else {
+							try
+							{
 							document.getElementById("Indego_unknown").style.display = "block"
 							document.getElementById("Indego_small").style.display = "none"
 							document.getElementById("Indego_big").style.display = "none"
+							}
+							catch (e)
+							{}
 						}
 						// Additional Views for Indego 1000er Series
 						if (response[0] == 1)
 						{
-							document.getElementById("Advanced_Info1_4_1000_1").style.display = "block"
+							try
+							{ document.getElementById("Advanced_Info1_4_1000_1").style.display = "block" }
+							catch (e)
+							{}
 						}
 						else
 						{
-							document.getElementById("Advanced_Info1_4_1000_1").style.display = "none"
+							try
+							{ document.getElementById("Advanced_Info1_4_1000_1").style.display = "none" }
+							catch (e)
+							{}
 						}
 
 					},
