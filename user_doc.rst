@@ -2,7 +2,7 @@
 .. index:: Indego4shNG
 
 indego4shng
-###
+###########
 
 Konfiguration
 =============

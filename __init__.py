@@ -240,89 +240,7 @@ class Indego4shNG(SmartPlugin):
                     newStruct[entry]=myStruct[entry]
             setattr(self, _attr_name, newStruct)
 
-        ################################################
-        '''
-        if item.property.name ==  self.parent_item+'.calendar_list':
-            self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'calendar_list', self.get_iattr_value(item.conf, 'calendar_list')))
-            return self.update_item
-            
-        
-        if item.property.name ==  self.parent_item+'.calendar_predictive_list':
-            self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'calendar_list', self.get_iattr_value(item.conf, 'calendar_list')))
-            return self.update_item
-        
-        if item.property.name ==  self.parent_item+'.calendar_save':
-            self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'calendar_list', self.get_iattr_value(item.conf, 'calendar_list')))
-            return self.update_item
-        
-        if item.property.name ==  self.parent_item+'.calendar_predictive_save':
-            self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'calendar_list', self.get_iattr_value(item.conf, 'calendar_list')))
-            return self.update_item
 
-        if item.property.name ==  self.parent_item+'.alm_mode':
-            self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'calendar_list', self.get_iattr_value(item.conf, 'calendar_list')))
-            return self.update_item        
-        
-        if item.property.name == self.parent_item+'.active_mode':
-                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'active_mode', self.get_iattr_value(item.conf, 'active_mode')))
-                return self.update_item
-        
-        if "active_mode" in item.property.name:
-                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
-                return self.update_item
-        
-        if "active_mode" in item.property.name:
-                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
-                return self.update_item
-        
-        if "refresh" in item.property.name:
-                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
-                return self.update_item
-        
-        if "store_sms_profile" in item.property.name:
-                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
-                return self.update_item
-        
-        if "visu.alerts_set_read" in item.property.name:
-                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
-                return self.update_item
-        
-        if "visu.alerts_set_clear" in item.property.name:
-                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
-                return self.update_item
-        
-        if "wartung.wintermodus" in item.property.name:
-                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
-                return self.update_item        
-        
-        if "visu.show_mow_track" in item.property.name:
-                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
-                return self.update_item
-        
-        if "visu.mow_track" in item.property.name:
-                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
-                return self.update_item
-        
-        if "wartung.update_auto" in item.property.name:
-                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
-                return self.update_item
-
-        if "wartung.update_start" in item.property.name:
-                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
-                return self.update_item
-        
-        if "webif.garden_map" in item.property.name:
-                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
-                return self.update_item
-        
-        if "visu.add_svg_images" in item.property.name:
-                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
-                return self.update_item
-        
-        if "visu.mower_colour" in item.property.name:
-                self.logger.debug("Item '{}' has attribute '{}' found with {}".format(item, 'modus', self.get_iattr_value(item.conf, 'modus')))
-                return self.update_item
-        '''
         return None
 
     def parse_logic(self, logic):
@@ -1875,7 +1793,7 @@ class Indego4shNG(SmartPlugin):
                 if alm_firmware_version != self.get_sh().indego.alm_firmware_version():
                     self._set_childitem('alm_firmware_version.before',self.get_sh().indego.alm_firmware_version())
                     self._set_childitem('alm_firmware_version.changed', self.shtime.now() )
-                    self.logger.info("indego updated firmware from {1} to {2}".format(self.get_sh().indego.alm_firmware_version(), str(alm_firmware_version)))
+                    self.logger.info("indego updated firmware from {0} to {1}".format(self.get_sh().indego.alm_firmware_version(), str(alm_firmware_version)))
 
                     self._set_childitem('alm_firmware_version',alm_firmware_version)
                 self.logger.debug("alm_firmware_version : {}".format(str(alm_firmware_version)))

@@ -93,6 +93,8 @@ plugin_functions:
                     en: 'Trigger which caused the function'
 
 
+
+  
 item_structs:
     child:
         name: Vorlage Struktur Indego-Mower
@@ -161,7 +163,7 @@ item_structs:
             store_sms_profile:
                 type: bool
                 visu_acl: rw
-                indego_function_4_all: '_handel_store_cals'
+                indego_function_4_all: '_handle_store_cals'
 
             alerts:
                 type: dict

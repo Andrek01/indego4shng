@@ -301,7 +301,9 @@ Am Ende wählt man im Menü die Ansicht "View" den Eintrag "Source". Hier kann m
 einfach in die Zwischenablage kopieren und im Web-Interface unter Tab-2 einfügen.
 Der letzte Original-Eintrag der Bosch-Karte ist die Zeile mit
  
-```<circle id="svg_8" r="15" cy="792" cx="768" fill="#FFF601" stroke-width="0.5" stroke="#888888"/>```
+```
+<circle id="svg_8" r="15" cy="792" cx="768" fill="#FFF601" stroke-width="0.5" stroke="#888888"/>
+```
 
 <strong>Die Werte können abweichen, da hier auch die Position des Mähers sowie die ID enthalten ist. Am besten auf "circle" und den Farbwert "#FFF601" achten.</strong>
 
@@ -320,7 +322,7 @@ Im Standard werden für den Mäher die Symbole des originalen Plugins von Marcov
 Man kann alternativ auch die Bilder der Bosch 2.2.8 App verwenden. Diese werden aus Urheberrechtsgründen nicht mit ausgeliefert.
 Man kann sich die Bilder aus der "Legacy Bosch Smart Gardening"-App extrahieren.
 Sollte die "Legacy Bosch Smart Gardening"-App nicht mehr vorliegen, da diese "depraceted" ist, kann man
-die App nochmals herunterladen. (https://www.google.com/search?sxsrf=ACYBGNR8BMk-x9S0HJr_qg-9i8T5g4gzng%3A1571577594574&ei=-l6sXZnXIoLFwQL2oInoCg&q=legacy+bosch+Smart+Gardening+2.2.8+APK+download&oq=legacy+bosch+Smart+Gardening+2.2.8+APK+download&gs_l=psy-ab.3...17003.21524..22444...1.0..0.96.672.8......0....1..gws-wiz.......35i304i39.IDCuZ5G9deI&ved=0ahUKEwiZvIvi9qrlAhWCYlAKHXZQAq0Q4dUDCAo&uact=5) hilft diese zu finden)
+die App nochmals herunterladen].[Google] (#https://www.google.com/search?sxsrf=ACYBGNR8BMk-x9S0HJr_qg-9i8T5g4gzng%3A1571577594574&ei=-l6sXZnXIoLFwQL2oInoCg&q=legacy+bosch+Smart+Gardening+2.2.8+APK+download&oq=legacy+bosch+Smart+Gardening+2.2.8+APK+download&gs_l=psy-ab.3...17003.21524..22444...1.0..0.96.672.8......0....1..gws-wiz.......35i304i39.IDCuZ5G9deI&ved=0ahUKEwiZvIvi9qrlAhWCYlAKHXZQAq0Q4dUDCAo&uact=5) hilft diese zu finden.
 
 Die apk-Datei mit einer Archiv-Verwaltung öffnen und dort im Pfad "/assets/www/assets" die Bilder extrahieren und in den Dropins-Ordner kopieren.
 Die Bilder haben folgende Dateinamen :

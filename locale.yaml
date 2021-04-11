@@ -1,13 +1,11 @@
 # translations for the indego plugin web interface
 plugin_translations:
     # Translations for the plugin specially for the web interface
-    'last Login / Login Experiation':         {'de': 'letztes Login / Ablaufdatum', 'en': '='}
-    'Credentials'                   :         {'de': 'Zugangsdaten', 'en': '='}
-    'zusätzliche Garden-Map Vektoren':        {'de': '=', 'en': 'additional garden-map vectors'}
-    'Gartenkarte/Settings'          :         {'de': '=', 'en': 'garden-map/settings'}
-    'Protokoll'                     :         {'de': '=', 'en': 'protocoll'}
-    'Indego-User'                   :         {'de': 'Indego-Benutzer', 'en': '='}
-    'Indego-Password'               :         {'de': 'Indego-Passwort', 'en': '='}
+    'Credentials'                   :         {'de': 'Zugangsdaten', 'en': '=', 'fr': ''}
+    'Gartenkarte/Settings'          :         {'de': '=', 'en': 'garden-map/settings', 'fr': ''}
+    'Protokoll'                     :         {'de': '=', 'en': 'protocoll', 'fr': ''}
+    'Indego-User'                   :         {'de': 'Indego-Benutzer', 'en': '=', 'fr': ''}
+    'Indego-Password'               :         {'de': 'Indego-Passwort', 'en': '=', 'fr': ''}
     'Store to Config'               :         {'de': 'in Konfiguration speichern', 'en': '=', 'fr': ''}
     'encoded Cred.:'                :         {'de': 'enkodierte Zugangsdaten', 'en': '=', 'fr': ''}
     'Farbwert für Mäher'            :         {'de': '=', 'en': 'Colour of the Mower', 'fr': ''}
