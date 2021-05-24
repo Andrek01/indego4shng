@@ -34,6 +34,11 @@ Vielen Dank an Jan Odvarko für die Entwicklung des Color-Pickers (http://jscolo
 <a name="changelog"/></a>
 ## Change Log
 
+#### 2021-05-16 V3.0.1
+- rücksetzen des Messerzählers eingebaut
+- besseres Handling beim automatischen AUS/EIN-Loggen
+- Einstellen des Mäher-Standorts über das Web-Interface (die Location wird durch die Bosch-App nicht richtig gesetzt, die Wetterdaten werden dann nicht mehr korrekt übermittelt.)
+
 #### 2019-10-28 V3.0.0
 - Kommunikation auf requests geändert
 - Verwendung von vordefinierten STRUCTS für alle benötigten Items
@@ -65,11 +70,12 @@ Vielen Dank an Jan Odvarko für die Entwicklung des Color-Pickers (http://jscolo
 
 ## Requirements
 
-Das Plugin benötigt keine zusätzlichen requirements
+Das UZSU-Plugin wird genutzt. Das UZSU-Plugin sollte <strong>vor</strong> dem Indego4shNG-Plugin geladen sein
+(Reihenfolge in der smarthome/etc/plugin.yaml)
 
 ### benötigte Software
 
-* SmartVISU 2.9
+* SmartVISU 2.9 oder höher (es werden Dropins verwendet)
 * smarthomeNg 1.6 oder höher (es werden vordefinierte STRUCTS verwendet)
 * für die Darstellung der Charts muss eine Database-plugin aktiviert sein 
 
@@ -101,8 +107,9 @@ Bei den "Kleinen" gibt es folgende Einschränkungen:
 folgende Einträge werden in der "./etc/plugin.yaml" benötigt.
 
 * `plugin_name: Indego4shNG`:  fix "Indego4shNG"
+* `class_path: plugins.indego4shng`:  fix "plugins.indego4shng"
 * `path_2_weather_pics: XXXXXXX`: ist der Pfad zu den Bilder des Wetter-Widgets.
-(default ="/smartVISU/lib/weather/pics/")
+(default ="/smartvisu/lib/weather/pics/")
 * `img_pfad: XXXXXXX`:  ist der Pfad unter dem die Gartenkarte gespeichert wird. 
 (default = "/tmp/garden.svg")
 Die Datei wird nicht für die VISU benötigt. Man kann die Datei als Vorlage
@@ -120,7 +127,8 @@ Beispiel:
 ```yaml
 Indego4shNG:
     plugin_name: Indego4shNG
-    path_2_weather_pics: /smartVISU/lib/weather/pics/
+    class_path: plugins.indego4shng
+    path_2_weather_pics: /smartvisu/lib/weather/pics/
     img_pfad: /tmp/garden.svg
     indego_credentials:
     parent_item: indego
@@ -147,10 +155,11 @@ indego:
 
 ### SmartVisu
 
-Die Inhalte des Ordners "./dropins" müssen in den entsprechenden Ordner der VISU.
+Die Inhalte des Ordners "./sv_widgets" müssen in den entsprechenden Ordner der VISU.
 In der Regel "/var/www/html/smartVISU2.9/dropins" kopiert werden.
+Wenn das smartvisu-Plugin verwendet wird und das kopieren der Widget nicht abgeschalten ist, werden die Dateien beim Start von shNG automatisch in den Dropin-Ordner kopiert. 
 
-Im Ordner "/pages" des plugins ist eine vorgefertigte Raumseite für die SmartVISU.
+Im Ordner "/pages" des plugins ist eine vorgefertigte Raumseite für die SmartVISU. (indego.html)
 Diese muss in den Ordner "/pages/DeinName/" kopiert werden und die Raumnavigation entsprechend ergänzt werden.
 
 <strong>!!! Immer auf die Rechte achten !!!</strong> 
@@ -169,6 +178,9 @@ Es kann mit dem Colour-Picker die Farbe des Mähers in der Visu angepasst werden
 Die Originalkarte bleibt unverändert. Im ersten Tab wird unter dem Item indego.visu.map_2_show
 die modifizierte Karte angzeigt.
 Es können auf dieser Seite zusätzlich Vektoren eingefügt werden welche die Gartenkarte erweitern bzw."aufhübschen"
+Hier kann die Location auf den Bosch-Servern gespeichert werden.
+Es müssen Längen/Breitengrad angegeben werden. Wenn noch keine Koordinaten in den Items gespeichert sind werden
+die Long/Lat von shNG vorgeschlagen.
 [Sieh auch hier](#gardenmap) 
 
 
@@ -318,11 +330,10 @@ Das Ergebnis ist in der VISU sofort sichtbar.
 <a name="boschpics"/></a>
 ## Nutzung der Original Bosch-Mäher-Symbole
 
-Im Standard werden für den Mäher die Symbole des originalen Plugins von Marcov verwendet.
-Man kann alternativ auch die Bilder der Bosch 2.2.8 App verwenden. Diese werden aus Urheberrechtsgründen nicht mit ausgeliefert.
+Es werden die Bilder der Bosch 2.2.8 App verwenden. 
 Man kann sich die Bilder aus der "Legacy Bosch Smart Gardening"-App extrahieren.
-Sollte die "Legacy Bosch Smart Gardening"-App nicht mehr vorliegen, da diese "depraceted" ist, kann man
-die App nochmals herunterladen].[Google] (#https://www.google.com/search?sxsrf=ACYBGNR8BMk-x9S0HJr_qg-9i8T5g4gzng%3A1571577594574&ei=-l6sXZnXIoLFwQL2oInoCg&q=legacy+bosch+Smart+Gardening+2.2.8+APK+download&oq=legacy+bosch+Smart+Gardening+2.2.8+APK+download&gs_l=psy-ab.3...17003.21524..22444...1.0..0.96.672.8......0....1..gws-wiz.......35i304i39.IDCuZ5G9deI&ved=0ahUKEwiZvIvi9qrlAhWCYlAKHXZQAq0Q4dUDCAo&uact=5) hilft diese zu finden.
+Die APK-Datei ist im Internet zu finden.
+
 
 Die apk-Datei mit einer Archiv-Verwaltung öffnen und dort im Pfad "/assets/www/assets" die Bilder extrahieren und in den Dropins-Ordner kopieren.
 Die Bilder haben folgende Dateinamen :
@@ -566,7 +577,7 @@ response = requests.get(url, headers=headers)
       <td style="text-align: center">-</td>
     </tr>
     <tr>
-      <td style="text-align: center">nein</td>
+      <td style="text-align: center">ja</td>
       <td style="text-align: left">@PUT("alms/{alm_serial}")</td>
       <td style="text-align: center">-</td>
     </tr>
@@ -606,7 +617,7 @@ response = requests.get(url, headers=headers)
       <td style="text-align: center">-</td>
     </tr>
     <tr>
-      <td style="text-align: center">nein</td>
+      <td style="text-align: center">ja</td>
       <td style="text-align: left">@PUT("alms/{alm_serial}/predictive/location")</td>
       <td style="text-align: center">-</td>
     </tr>

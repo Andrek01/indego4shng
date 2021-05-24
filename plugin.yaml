@@ -7,12 +7,12 @@ plugin:
         en: 'Indego Plugin to read out and control Bosch Indego mower robots with Connect interface'
     maintainer: AndreK, schuma
     tester: schuma, AndreK
-    state: develop                  # change to ready when done with development
+    state: ready                    # change to ready when done with development
     keywords: Indego smartmower bosch connect
     documentation: http://smarthomeng.de/user/plugins_doc/config/indego.html        # url of documentation (wiki) page
     support: https://knx-user-forum.de/forum/supportforen/smarthome-py
 
-    version: 3.0.0                  # Plugin version
+    version: 3.0.1                  # Plugin version
     sh_minversion: 1.6              # minimum shNG version to use this plugin
 #    sh_maxversion:                 # maximum shNG version to use this plugin (leave empty if latest)
     multi_instance: False           # plugin supports multi instance
@@ -60,9 +60,74 @@ parameters:
             en: 'The parent item for all children relating to this instance'
 
 
-item_attributes: NONE
+item_attributes:
     # Definition of item attributes defined by this plugin
-
+    indego_function_4_all:
+        type: str
+        mandatory: False
+        description:
+            de: 'Eine interne Funktion des Indego4ShNG-Plugins'
+            en: 'internal function of the Indego4ShNG-Plugin'
+    indego_function_4_visu:
+        type: str
+        mandatory: False
+        description:
+            de: 'Eine interne Funktion des Indego4ShNG-Plugins'
+            en: 'internal function of the Indego4ShNG-Plugin'            
+    indego_config:
+        type: str
+        mandatory: False
+        description:
+            de: 'Eine interne Funktion des Indego4ShNG-Plugins'
+            en: 'internal function of the Indego4ShNG-Plugin'            
+    indego_config_url:
+        type: str
+        mandatory: False
+        description:
+            de: 'Eine interne Funktion des Indego4ShNG-Plugins'
+            en: 'internal function of the Indego4ShNG-Plugin'            
+    indego_attr_name:
+        type: str
+        mandatory: False
+        description:
+            de: 'Eine interne Funktion des Indego4ShNG-Plugins'
+            en: 'internal function of the Indego4ShNG-Plugin'
+    indego_attr_type:
+        type: str
+        mandatory: False
+        description:
+            de: 'Eine interne Funktion des Indego4ShNG-Plugins'
+            en: 'internal function of the Indego4ShNG-Plugin'                                    
+    indego_parse_2_attr:
+        type: str
+        mandatory: False
+        description:
+            de: 'Eine interne Funktion des Indego4ShNG-Plugins'
+            en: 'internal function of the Indego4ShNG-Plugin'                        
+    indego_command:
+        type: str
+        mandatory: False
+        description:
+            de: 'Eine interne Funktion des Indego4ShNG-Plugins'
+            en: 'internal function of the Indego4ShNG-Plugin'
+    indego_plugin_handled:
+        type: str
+        mandatory: False
+        description:
+            de: 'Eine interne Funktion des Indego4ShNG-Plugins'
+            en: 'internal function of the Indego4ShNG-Plugin'                                    
+    indego_add_key:
+        type: str
+        mandatory: False
+        description:
+            de: 'Eine interne Funktion des Indego4ShNG-Plugins'
+            en: 'internal function of the Indego4ShNG-Plugin'                        
+    indego_smart:
+        type: str
+        mandatory: False
+        description:
+            de: 'Eine interne Funktion des Indego4ShNG-Plugins'
+            en: 'internal function of the Indego4ShNG-Plugin'                        
 
 logic_parameters: NONE
     # Definition of logic parameters defined by this plugin
@@ -243,7 +308,7 @@ item_structs:
                 visu_acl: rw
                 type : str
                 cache: 'on'
-                initial_value: "mower_colour|'#FFF601'"
+                initial_value: "mower_colour:'#FFF601'"
                 indego_function_4_all: '_handle_parse_map'
 
             map_2_display:
@@ -364,6 +429,14 @@ item_structs:
                 visu_acl: rw
                 indego_function_4_all: '_handle_parse_map'
 
+            location_longitude:
+                type: num
+                cache: 'on'                
+
+            location_latitude:
+                type: num
+                cache: 'on'                
+
 # End - Definitions for the webIf-Items
 
         wartung:
@@ -371,6 +444,7 @@ item_structs:
             messer_zaehler:
                 type: bool
                 visu_acl: rw
+                indego_function_4_visu: '_handle_wartung'
 
             update:
                 type: str

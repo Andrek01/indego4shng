@@ -4,6 +4,7 @@
 #  Copyright 2018 Marco Düchting                   Marco.Duechting@gmx.de
 #  Copyright 2018 Bernd Meiners                     Bernd.Meiners@mail.de
 #  Copyright 2019 Andre Kohler              andre.kohler01@googlemail.com
+#  Copyright 2021 Andre Kohler              andre.kohler01@googlemail.com
 #########################################################################
 #  This file is part of SmartHomeNG.   
 #
@@ -48,7 +49,6 @@ import base64
 
 
 
-
 # If a package is needed, which might be not installed in the Python environment,
 # import it like this:
 #
@@ -64,7 +64,7 @@ class Indego4shNG(SmartPlugin):
     Main class of the Indego Plugin. Does all plugin specific stuff and provides
     the update functions for the items
     """
-    PLUGIN_VERSION = '3.0.0'
+    PLUGIN_VERSION = '3.0.1'
 
     def __init__(self, sh, *args, **kwargs):
         """
@@ -109,6 +109,7 @@ class Indego4shNG(SmartPlugin):
         self.expiration_timestamp = 0.0
         self.last_login_timestamp = 0.0
         self.logged_in = False
+        self.login_pending = False
         
         self.context_id = ''
         self.user_id = ''
@@ -169,7 +170,7 @@ class Indego4shNG(SmartPlugin):
         self.scheduler_add('get_state', self._get_state, cycle = self.cycle)
         self.scheduler_add('alert', self.alert, cycle=300)
         self.scheduler_add('get_all_calendars', self._get_all_calendars, cycle=300)
-        self.scheduler_add('check_login_state', self._check_login_state, cycle=120)
+        self.scheduler_add('check_login_state', self._check_login_state, cycle=130)
         self.scheduler_add('device_data', self._device_data, cycle=120)
         self.scheduler_add('get_weather', self._get_weather, cycle=600)
         self.scheduler_add('get_next_time', self._get_next_time, cycle=300)
@@ -370,6 +371,12 @@ class Indego4shNG(SmartPlugin):
                     
         if item.property.name == self.parent_item+".wartung.update_auto":
             self._set_automatic_updates()
+            
+        if item.property.name == self.parent_item+".wartung.messer_zaehler":
+            if (item.property.value == True):
+                if (self._reset_bladeCounter() == True):
+                    item(False)
+                
         
         if item.property.name == self.parent_item+".wartung.update_start":
             if  item() == True:
@@ -531,6 +538,14 @@ class Indego4shNG(SmartPlugin):
             self.logger.warning("Could not set item '{}' to '{}'".format(self.parent_item+'.'+itemname, value))
 
 
+    def _set_location(self,body=None):
+        url = "{}alms/{}/predictive/location".format( self.indego_url, self.alm_sn)
+        try:
+            myResult, response = self._put_url( url, self.context_id, body)
+        except err as Exception:
+            self.logger.warning("Error during putting Location {}".format(err))
+            return False
+        return True
                                
     def _send_config(self,url,body=None):
         try:
@@ -601,11 +616,13 @@ class Indego4shNG(SmartPlugin):
             self.context_id = ''
             return
         actTimeStamp = time.time()
-        if self.expiration_timestamp < actTimeStamp+600:
+        if self.expiration_timestamp < actTimeStamp+575:
             self.logged_in = False
-            self.context_id = ''
+            self.login_pending = True
             self._delete_auth()
+            self.context_id = ''
             self._auth()
+            self.login_pending = False
             self.logged_in = self._check_auth()
             self._set_childitem('online', self.logged_in)
             actDate = datetime.now()
@@ -786,7 +803,7 @@ class Indego4shNG(SmartPlugin):
 
     def _fetch_url(self, url, username=None, password=None, timeout=10, body=None):
         try:
-            myResult, response = self._post_url(url, self.context_id, body, timeout,auth=(username,password))
+            myResult, response = self._post_url(url, self.context_id, body, timeout,auth=(username,password),nowait = True)
         except Exception as e:
             self.logger.warning("Problem fetching {0}: {1}".format(url, e))
             return False,''
@@ -806,7 +823,13 @@ class Indego4shNG(SmartPlugin):
         return content,expiration_timestamp
     
     
-    def _delete_url(self, url, contextid=None, timeout=40, auth=None):
+    def _delete_url(self, url, contextid=None, timeout=40, auth=None,nowait = True):
+        # Wait while login is pending
+        myCouner = 1
+        while self.login_pending == True and nowait == False and myCounter <=2:
+            myCouner += 1
+            time.sleep(2)
+            
         headers = {
                    'x-im-context-id' : self.context_id
                   }
@@ -832,6 +855,12 @@ class Indego4shNG(SmartPlugin):
 
         
     def _get_url(self, url, contextid=None, timeout=40, auth=None):
+        # Wait while login is pending
+        myCouner = 1
+        while self.login_pending == True and myCounter <=2:
+            myCouner += 1
+            time.sleep(2)
+            
         headers = {
                    'x-im-context-id' : self.context_id
                   }
@@ -866,7 +895,13 @@ class Indego4shNG(SmartPlugin):
         
         return content
         
-    def _post_url(self, url, contextid=None, body=None, timeout=2, auth = ""):
+    def _post_url(self, url, contextid=None, body=None, timeout=2, auth = "", nowait = True):
+        # Wait while login is pending
+        myCounter = 1
+        while self.login_pending == True and nowait == False and myCounter <=2:
+            myCouner += 1
+            time.sleep(2)
+            
         if (contextid != None and contextid != ""):
             headers = {
                        'x-im-context-id' : self.context_id
@@ -896,6 +931,12 @@ class Indego4shNG(SmartPlugin):
     
     
     def _put_url(self, url, contextid=None, body=None, timeout=2):
+        # Wait while login is pending
+        myCouner = 1
+        while self.login_pending == True and myCounter <=2:
+            myCouner += 1
+            time.sleep(2)
+            
         headers = {
                    'x-im-context-id' : contextid
                   }
@@ -948,7 +989,7 @@ class Indego4shNG(SmartPlugin):
                   }
         url = self.indego_url + 'authenticate'
         try:
-            response = self._delete_url(url, self.context_id, 10,auth=(self.user,self.password))
+            response = self._delete_url(url, self.context_id, 10,auth=None, nowait = True) 
         except Exception as e:
             self.logger.warning("Problem logging off {0}: {1}".format(url, e))
             return False
@@ -956,7 +997,7 @@ class Indego4shNG(SmartPlugin):
             return False
         
         if (response.status_code == 200 or response.status_code == 201): 
-            self.logger.info("Your logged off successfully")
+            self.logger.info("You logged off successfully")
             return True
         else:
             self.logger.info("Log off was not successfull : {0}".format(response.status_code))
@@ -1472,8 +1513,19 @@ class Indego4shNG(SmartPlugin):
         automatic_updates = self._get_url( url, self.context_id, 20)
         if automatic_updates != False:
             self._set_childitem('wartung.update_auto', automatic_updates['allow_automatic_update'])
-        
-        
+    
+    def _reset_bladeCounter(self):
+        '''
+        @PUT https://api.indego.iot.bosch-si.com/api/v1/alms/{serial}
+        Request:
+        {
+            "needs_service": false
+        }
+        '''
+        body ={ "needs_service": False } 
+        url = '{}alms/{}'.format( self.indego_url, self.alm_sn)
+        myResult, response = self._put_url(url, self.context_id, body, 10)
+        return myResult
         
     def _set_automatic_updates(self):
         '''
@@ -1718,13 +1770,20 @@ class Indego4shNG(SmartPlugin):
             return        
         
         # Get Location
-        self._get_location()
+        if self.logged_in == True:
+            self._get_location()
         # CheckUpdates
-        self._check_update()
+        if self.logged_in == True:        
+            self._check_update()
         # Get ALM-Config
-        self._get_alm_config()
+        if self.logged_in == True:        
+            self._get_alm_config()
         # Get Auto-Updates enabled
-        self._get_automatic_updates()
+        if self.logged_in == True:        
+            self._get_automatic_updates()
+        
+        if self.logged_in == False:
+            return
         
         self.logger.debug('getting device_date')
         device_data_response = self._get_url(self.indego_url + 'alms/' + self.alm_sn, self.context_id)
@@ -2121,6 +2180,8 @@ class Indego4shNG(SmartPlugin):
 # ------------------------------------------
 
 import cherrypy
+from ephem import degree
+
 from jinja2 import Environment, FileSystemLoader
 
 
@@ -2228,6 +2289,18 @@ class WebInterface(SmartPluginWebIf):
         self.plugin._set_childitem(proto_Name,[])
         return None
     
+    @cherrypy.expose
+    def set_location_html(self, longitude=None, latitude=None):
+        self.plugin._set_childitem('webif.location_longitude',float(longitude))
+        self.plugin._set_childitem('webif.location_latitude',float(latitude))
+        myLocation = {"latitude":str(latitude),"longitude":str(longitude),"timezone":"Europe/Berlin"}
+        result = self.plugin._set_location(myLocation)
+        if (result == True):
+            myResult = "Stored location successfully"
+        else:
+            myResult = "could not store location"
+        return myResult
+    
             
     
     @cherrypy.expose
@@ -2299,7 +2372,20 @@ class WebInterface(SmartPluginWebIf):
             Alarm_Trigger_4=self.plugin._get_childitem('trigger.alarm_trigger_4.alarm')
         except:
             pass
-         
+        myLongitude = ""
+        myLatitude = ""
+        myText = ""
+        try:
+            myLongitude = self.plugin._get_childitem('webif.location_longitude')
+            myLatitude = self.plugin._get_childitem('webif.location_latitude')
+            myText = 'Location from Indego-Server'
+            if (myLongitude == 0.0):
+                myLongitude = self.plugin.sh.sun._obs.long / degree
+                myLatitude =  self.plugin.sh.sun._obs.lat  / degree
+                myText = 'Location from shNG-Settings'
+        except:
+            pass
+        
         # add values to be passed to the Jinja2 template eg: tmpl.render(p=self.plugin, interface=interface, ...)
         return tmpl.render(p=self.plugin,
                            items=sorted(plgitems, key=lambda k: str.lower(k['_path'])),
@@ -2319,6 +2405,9 @@ class WebInterface(SmartPluginWebIf):
                            Alarm_Trigger_1=Alarm_Trigger_1,
                            Alarm_Trigger_2=Alarm_Trigger_2,
                            Alarm_Trigger_3=Alarm_Trigger_3,
-                           Alarm_Trigger_4=Alarm_Trigger_4 )
+                           Alarm_Trigger_4=Alarm_Trigger_4,
+                           myLongitude=myLongitude,
+                           myLatitude=myLatitude,
+                           myText=myText )
 
 

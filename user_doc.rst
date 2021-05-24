@@ -1,8 +1,12 @@
 .. index:: Plugins; Indego (Anbindung der Bosch-Indego Connect Mäher)
 .. index:: Indego4shNG
 
+===========
 indego4shng
-###########
+===========
+
+Das Indego4shNG-Plugin ermöglicht den Zugriff auf einen Bosch-Indego Rasenmäher. Es werden alle Funktionen der Bosch-App abgebildet. Lediglich die Einrichtung des Mähers
+muss über die App erfolgen. Es werden Kalender- sowie Smart-Mow-Funktionen unterstützt. Es werden die Gartenkarte sowie zusätzliche Vektoren dargestellt. Alarme werden in einem Popup-Window angezeigt. Die Wetterinformationen, Akku-Stand, Mäheffizienz, Mäh- und Ladezeiten werden über die SmartVISU dargestellt. Eine fertige smartVISU-Raumseite wird im Ordner ``"/pages"`` mitgeliefert.
 
 Konfiguration
 =============
@@ -28,7 +32,7 @@ Das Web-Interface enthält ein selbst rotierendes Protokoll für die Stati-Wechs
 .. important::
 
    Das Plugin kann mit SmartHomeNG v1.6 und höher genutzt werden. Versionen kleiner v1.6 ** werden nicht unterstützt** da STRUCT-Vorlagen genutzt werden.
-   Es wird für die VISU v2.9 unterstützt da DROPINS genutzt werden. Für die Nutzung von SmartVISU v2.8 müssen manuell Anpassungen vorgenommen werden.
+   Es wird ab der VISU v2.9 unterstützt da DROPINS genutzt werden. Für die Nutzung von SmartVISU v2.8 müssen manuell Anpassungen vorgenommen werden.
 
 
 Aufruf des Webinterfaces
@@ -37,7 +41,7 @@ Aufruf des Webinterfaces
 Das Plugin kann aus dem backend aufgerufen werden. Dazu auf der Seite Plugins in der entsprechenden
 Zeile das Icon in der Spalte **Web Interface** anklicken.
 
-Außerdem kann das Webinterface direkt über ``http://smarthome.local:8383/indego4shng``
+Außerdem kann das Webinterface direkt über ``http://smarthome.local:8383/plugin/indego4shng/``
 
 
 
