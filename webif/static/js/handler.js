@@ -3,6 +3,30 @@
 //*************************************************************
 setInterval(Checkupdate4Protocolls, 5000);
 
+//*************************************************************
+// set Location
+//*************************************************************
+
+function BtnStoreLocation()
+{
+ myLongitude = document.getElementById("txtlongitude").value
+ myLatitude  = document.getElementById("txtlatitude").value
+ $.ajax({
+    url: "set_location.html",
+    type: "GET",
+    data: { longitude : myLongitude,
+            latitude  : myLatitude
+          },
+    contentType: "application/json; charset=utf-8",
+    success: function (response) {
+		     document.getElementById("txt_LocationResult").innerHTML = response;
+    },
+    error: function () {
+        document.getElementById("txt_LocationResult").innerHTML = "Error while communication";
+        console.log("Error - while setting location :")
+    }
+ });
+};
 
 //*************************************************************
 // delete Protocols

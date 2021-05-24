@@ -252,7 +252,6 @@ window.addEventListener('load', function(){ if (document.readyState==='complete'
 	    			<td style="width: 5%; vertical-align:middle;align:left;font-size: 20px"><strong>Alarm-Triggers</strong></td>
                     <td></td>                 
                 </tr>
-                </tr>
 				<tr height="10%">
     				<td style="width: 15%; align:left; vertical-align: middle;">Alarm-Event für Trigger 1:</td>
                     <td>
@@ -278,6 +277,30 @@ window.addEventListener('load', function(){ if (document.readyState==='complete'
 			          <input type="input" style="margin-bottom: 1px; margin-left: 5px; width: 100%;font-size: 12px" class="form-control" name="alarm_trigger_4" id="alarm_trigger_4" placeholder="{{ _('Alarm-Text') }}" value="{{ Alarm_Trigger_4}}" onChange="selectAlarmTrigger(this.id)">			
                     </td>                 
                 </tr>
+				<tr height="10%">
+	    			<td colspan=2 style="width: 5%; vertical-align:middle;align:left;font-size: 20px"><strong>Location-Settings using : {{ myText }} </strong></td>
+
+                </tr>                
+				<tr height="10%">
+    				<td style="width: 15%; align:left; vertical-align: middle;">latitude:</td>
+            <td>                
+ 			          <input type="input" style="margin-bottom: 1px; margin-left: 5px; width: 100%;font-size: 12px" class="form-control" name="txtlatitude" id="txtlatitude" placeholder="{{ _('latitude') }}" value="{{ myLatitude }}">			
+            </td> 			          
+        </tr>
+				<tr height="10%">
+    				<td style="width: 15%; align:left; vertical-align: middle;">longitude:</td>
+            <td>                
+ 			          <input type="input" style="margin-bottom: 1px; margin-left: 5px; width: 100%;font-size: 12px" class="form-control" name="txtlongitude" id="txtlongitude" placeholder="{{ _('longitude') }}" value="{{ myLongitude }}">			
+            </td> 			          
+        </tr>        
+        <tr>
+          <td style="width:10%">
+          <button type="button" onclick="BtnStoreLocation()" style="margin-left : 5px" class="btn btn-shng btn-sm" value="btnStoreLocation" id="btnStoreLocation">&nbsp;{{ _('Store locations-settings to Items & Bosch-cloud') }}</button>
+          </td>
+          <td>
+          <textarea type="input" rows="2" style="width: 100%;height: 100%;font-size: 12px;" class="form-control" name="txt_LocationResult" id="txt_LocationResult" placeholder="{{ _('...') }}" disabled ></textarea>
+          </td>
+        </tr>
 			</tbody>
 		</table>
 
