@@ -1,7 +1,7 @@
 # Metadata for the Indego plugin
 plugin:
     # Global plugin attributes
-    type: interface                # plugin type (gateway, interface, protocol, system, web)
+    type: web                # plugin type (gateway, interface, protocol, system, web)
     description:
         de: 'Indego Plugin zum Auslesen und steuern von Bosch Indego Mährobotern mit Connect Ausstattung'
         en: 'Indego Plugin to read out and control Bosch Indego mower robots with Connect interface'
@@ -10,9 +10,9 @@ plugin:
     state: ready                    # change to ready when done with development
     keywords: Indego smartmower bosch connect
     documentation: http://smarthomeng.de/user/plugins_doc/config/indego.html        # url of documentation (wiki) page
-    support: https://knx-user-forum.de/forum/supportforen/smarthome-py
+    support: https://knx-user-forum.de/forum/supportforen/smarthome-py/966612-indego-connect
 
-    version: 3.0.1                  # Plugin version
+    version: 4.0.1                  # Plugin version
     sh_minversion: 1.6              # minimum shNG version to use this plugin
 #    sh_maxversion:                 # maximum shNG version to use this plugin (leave empty if latest)
     multi_instance: False           # plugin supports multi instance
@@ -839,10 +839,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
-
                 dateTime:
                     type: foo
                     cache: 'on'
@@ -850,9 +846,6 @@ item_structs:
                 tt:
                     type: num
                     cache: 'on'
-
-                wwtext:
-                    type: str
 
                 rrr:
                     type: num
@@ -877,10 +870,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
-
                 dateTime:
                     type: foo
                     cache: 'on'
@@ -888,9 +877,6 @@ item_structs:
                 tt:
                     type: num
                     cache: 'on'
-
-                wwtext:
-                    type: str
 
                 rrr:
                     type: num
@@ -914,10 +900,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
-
                 dateTime:
                     type: foo
                     cache: 'on'
@@ -925,9 +907,6 @@ item_structs:
                 tt:
                     type: num
                     cache: 'on'
-
-                wwtext:
-                    type: str
 
                 rrr:
                     type: num
@@ -952,10 +931,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
-
                 dateTime:
                     type: foo
                     cache: 'on'
@@ -963,9 +938,6 @@ item_structs:
                 tt:
                     type: num
                     cache: 'on'
-
-                wwtext:
-                    type: str
 
                 rrr:
                     type: num
@@ -991,10 +963,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
-
                 dateTime:
                     type: foo
                     cache: 'on'
@@ -1002,9 +970,6 @@ item_structs:
                 tt:
                     type: num
                     cache: 'on'
-
-                wwtext:
-                    type: str
 
                 rrr:
                     type: num
@@ -1030,10 +995,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
-
                 dateTime:
                     type: foo
                     cache: 'on'
@@ -1041,9 +1002,6 @@ item_structs:
                 tt:
                     type: num
                     cache: 'on'
-
-                wwtext:
-                    type: str
 
                 rrr:
                     type: num
@@ -1069,10 +1027,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
-
                 dateTime:
                     type: foo
                     cache: 'on'
@@ -1080,9 +1034,6 @@ item_structs:
                 tt:
                     type: num
                     cache: 'on'
-
-                wwtext:
-                    type: str
 
                 rrr:
                     type: num
@@ -1108,10 +1059,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
-
                 dateTime:
                     type: foo
                     cache: 'on'
@@ -1119,9 +1066,6 @@ item_structs:
                 tt:
                     type: num
                     cache: 'on'
-
-                wwtext:
-                    type: str
 
                 rrr:
                     type: num
@@ -1147,10 +1091,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
-
                 dateTime:
                     type: foo
                     cache: 'on'
@@ -1158,9 +1098,6 @@ item_structs:
                 tt:
                     type: num
                     cache: 'on'
-
-                wwtext:
-                    type: str
 
                 rrr:
                     type: num
@@ -1185,10 +1122,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
-
                 dateTime:
                     type: foo
                     cache: 'on'
@@ -1196,9 +1129,6 @@ item_structs:
                 tt:
                     type: num
                     cache: 'on'
-
-                wwtext:
-                    type: str
 
                 rrr:
                     type: num
@@ -1224,10 +1154,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
-
                 dateTime:
                     type: foo
                     cache: 'on'
@@ -1235,9 +1161,6 @@ item_structs:
                 tt:
                     type: num
                     cache: 'on'
-
-                wwtext:
-                    type: str
 
                 rrr:
                     type: num
@@ -1263,10 +1186,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
-
                 dateTime:
                     type: foo
                     cache: 'on'
@@ -1274,9 +1193,6 @@ item_structs:
                 tt:
                     type: num
                     cache: 'on'
-
-                wwtext:
-                    type: str
 
                 rrr:
                     type: num
@@ -1302,10 +1218,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
-
                 dateTime:
                     type: foo
                     cache: 'on'
@@ -1313,9 +1225,6 @@ item_structs:
                 tt:
                     type: num
                     cache: 'on'
-
-                wwtext:
-                    type: str
 
                 rrr:
                     type: num
@@ -1341,10 +1250,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
-
                 dateTime:
                     type: foo
                     cache: 'on'
@@ -1352,9 +1257,6 @@ item_structs:
                 tt:
                     type: num
                     cache: 'on'
-
-                wwtext:
-                    type: str
 
                 rrr:
                     type: num
@@ -1380,10 +1282,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
-
                 dateTime:
                     type: foo
                     cache: 'on'
@@ -1391,9 +1289,6 @@ item_structs:
                 tt:
                     type: num
                     cache: 'on'
-
-                wwtext:
-                    type: str
 
                 rrr:
                     type: num
@@ -1419,10 +1314,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
-
                 dateTime:
                     type: foo
                     cache: 'on'
@@ -1430,9 +1321,6 @@ item_structs:
                 tt:
                     type: num
                     cache: 'on'
-
-                wwtext:
-                    type: str
 
                 rrr:
                     type: num
@@ -1458,10 +1346,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
-
                 dateTime:
                     type: foo
                     cache: 'on'
@@ -1469,9 +1353,6 @@ item_structs:
                 tt:
                     type: num
                     cache: 'on'
-
-                wwtext:
-                    type: str
 
                 rrr:
                     type: num
@@ -1497,10 +1378,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
-
                 dateTime:
                     type: foo
                     cache: 'on'
@@ -1508,9 +1385,6 @@ item_structs:
                 tt:
                     type: num
                     cache: 'on'
-
-                wwtext:
-                    type: str
 
                 rrr:
                     type: num
@@ -1536,10 +1410,6 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
-                    type: num
-                    cache: 'on'
-
                 dateTime:
                     type: foo
                     cache: 'on'
@@ -1547,9 +1417,6 @@ item_structs:
                 tt:
                     type: num
                     cache: 'on'
-
-                wwtext:
-                    type: str
 
                 rrr:
                     type: num
@@ -1575,7 +1442,34 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                td:
+                dateTime:
+                    type: foo
+                    cache: 'on'
+
+                tt:
+                    type: num
+                    cache: 'on'
+
+                rrr:
+                    type: num
+                    cache: 'on'
+
+                prrr:
+                    type: num
+                    cache: 'on'
+
+                intervalLength:
+                    type: num
+                    cache: 'on'
+
+                picture:
+                    type: str
+                    cache: 'on'
+                    visu_acl: rw
+
+            int_20:
+
+                wwsymbol_mg2008:
                     type: num
                     cache: 'on'
 
@@ -1587,8 +1481,221 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                wwtext:
+                rrr:
+                    type: num
+                    cache: 'on'
+
+                prrr:
+                    type: num
+                    cache: 'on'
+
+                intervalLength:
+                    type: num
+                    cache: 'on'
+
+                picture:
                     type: str
+                    cache: 'on'
+                    visu_acl: rw
+            int_21:
+
+                wwsymbol_mg2008:
+                    type: num
+                    cache: 'on'
+
+                dateTime:
+                    type: foo
+                    cache: 'on'
+
+                tt:
+                    type: num
+                    cache: 'on'
+
+                rrr:
+                    type: num
+                    cache: 'on'
+
+                prrr:
+                    type: num
+                    cache: 'on'
+
+                intervalLength:
+                    type: num
+                    cache: 'on'
+
+                picture:
+                    type: str
+                    cache: 'on'
+                    visu_acl: rw                             
+
+            int_22:
+
+                wwsymbol_mg2008:
+                    type: num
+                    cache: 'on'
+
+                dateTime:
+                    type: foo
+                    cache: 'on'
+
+                tt:
+                    type: num
+                    cache: 'on'
+
+                rrr:
+                    type: num
+                    cache: 'on'
+
+                prrr:
+                    type: num
+                    cache: 'on'
+
+                intervalLength:
+                    type: num
+                    cache: 'on'
+
+                picture:
+                    type: str
+                    cache: 'on'
+                    visu_acl: rw
+
+            int_23:
+
+                wwsymbol_mg2008:
+                    type: num
+                    cache: 'on'
+
+                dateTime:
+                    type: foo
+                    cache: 'on'
+
+                tt:
+                    type: num
+                    cache: 'on'
+
+                rrr:
+                    type: num
+                    cache: 'on'
+
+                prrr:
+                    type: num
+                    cache: 'on'
+
+                intervalLength:
+                    type: num
+                    cache: 'on'
+
+                picture:
+                    type: str
+                    cache: 'on'
+                    visu_acl: rw
+
+            int_24:
+
+                wwsymbol_mg2008:
+                    type: num
+                    cache: 'on'
+
+                dateTime:
+                    type: foo
+                    cache: 'on'
+
+                tt:
+                    type: num
+                    cache: 'on'
+
+                rrr:
+                    type: num
+                    cache: 'on'
+
+                prrr:
+                    type: num
+                    cache: 'on'
+
+                intervalLength:
+                    type: num
+                    cache: 'on'
+
+                picture:
+                    type: str
+                    cache: 'on'
+                    visu_acl: rw                    
+
+            int_25:
+
+                wwsymbol_mg2008:
+                    type: num
+                    cache: 'on'
+
+                dateTime:
+                    type: foo
+                    cache: 'on'
+
+                tt:
+                    type: num
+                    cache: 'on'
+
+                rrr:
+                    type: num
+                    cache: 'on'
+
+                prrr:
+                    type: num
+                    cache: 'on'
+
+                intervalLength:
+                    type: num
+                    cache: 'on'
+
+                picture:
+                    type: str
+                    cache: 'on'
+                    visu_acl: rw
+
+            int_26:
+
+                wwsymbol_mg2008:
+                    type: num
+                    cache: 'on'
+
+                dateTime:
+                    type: foo
+                    cache: 'on'
+
+                tt:
+                    type: num
+                    cache: 'on'
+
+                rrr:
+                    type: num
+                    cache: 'on'
+
+                prrr:
+                    type: num
+                    cache: 'on'
+
+                intervalLength:
+                    type: num
+                    cache: 'on'
+
+                picture:
+                    type: str
+                    cache: 'on'
+                    visu_acl: rw
+
+            int_27:
+
+                wwsymbol_mg2008:
+                    type: num
+                    cache: 'on'
+
+                dateTime:
+                    type: foo
+                    cache: 'on'
+
+                tt:
+                    type: num
+                    cache: 'on'
 
                 rrr:
                     type: num
@@ -1608,22 +1715,15 @@ item_structs:
                     visu_acl: rw
 
 
+
             day_0:
 
                 tx:
                     type: num
                     cache: 'on'
 
-                date:
-                    type: foo
-                    cache: 'on'
-
                 wochentag:
                     type: str
-                    cache: 'on'
-
-                sun:
-                    type: num
                     cache: 'on'
 
                 tn:
@@ -1636,16 +1736,8 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                date:
-                    type: foo
-                    cache: 'on'
-
                 wochentag:
                     type: str
-                    cache: 'on'
-
-                sun:
-                    type: num
                     cache: 'on'
 
                 tn:
@@ -1658,16 +1750,8 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                date:
-                    type: foo
-                    cache: 'on'
-
                 wochentag:
                     type: str
-                    cache: 'on'
-
-                sun:
-                    type: num
                     cache: 'on'
 
                 tn:
@@ -1680,16 +1764,8 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                date:
-                    type: foo
-                    cache: 'on'
-
                 wochentag:
                     type: str
-                    cache: 'on'
-
-                sun:
-                    type: num
                     cache: 'on'
 
                 tn:
@@ -1702,21 +1778,42 @@ item_structs:
                     type: num
                     cache: 'on'
 
-                date:
-                    type: foo
+                wochentag:
+                    type: str
+                    cache: 'on'
+
+                tn:
+                    type: num
+                    cache: 'on'
+
+            day_5:
+
+                tx:
+                    type: num
                     cache: 'on'
 
                 wochentag:
                     type: str
                     cache: 'on'
 
-                sun:
+                tn:
                     type: num
+                    cache: 'on'                    
+
+            day_6:
+
+                tx:
+                    type: num
+                    cache: 'on'
+
+                wochentag:
+                    type: str
                     cache: 'on'
 
                 tn:
                     type: num
                     cache: 'on'
+
 
         operatingInfo:
 

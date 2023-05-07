@@ -34,7 +34,7 @@
 	<div id="{{ uid(page, id) }}" data-widget="indego.status" data-item="{{ implode(item) }}">
 
         <div id="Indego_small" style="display: none;">
-            {{ indego.symbol('state_offline_s','indego.online','dropins/indego-s.png',0,'','Offline') }}
+            {{ indego.symbol('state_offline_s','indego.online','dropins/icons/ws/indego-s.png',0,'','Offline') }}
 			{{ indego.symbol('state_docked_s',['indego.docked','indego.online'],'dropins/icons/ws/indego-s-docked.png','','and') }}
 			{{ indego.symbol('state_moving_s',['indego.moving','indego.online'],'dropins/icons/ws/indego-s-mowing.png','','and') }}
 			{{ indego.symbol('state_pause_s',['indego.pause','indego.online'],'dropins/icons/ws/indego-s.png','','and','Pause') }}
@@ -42,7 +42,7 @@
         </div>
 
         <div id="Indego_big" style="display: none;">
-			{{ indego.symbol('state_offline_b','indego.online','dropins/indego.png',0,'and','Offline') }}
+			{{ indego.symbol('state_offline_b','indego.online','dropins/icons/ws/indego.png',0,'and','Offline') }}
 			{{ indego.symbol('state_docked_b', ['indego.docked','indego.online'],'dropins/icons/ws/indego-docked.png','','and') }}
 			{{ indego.symbol('state_moving_b', ['indego.moving','indego.online'],'dropins/icons/ws/indego-mowing.png','','and') }}
 			{{ indego.symbol('state_pause_b',  ['indego.pause','indego.online'],'dropins/icons/ws/indego.png','','and','Pause') }}
@@ -50,11 +50,11 @@
         </div>
 
         <div id="Indego_unknown" style="display: none;">
-		    {{ basic.symbol('state_offline_u', 'indego.online','','scene_robo_lawnmower_offline.svg',0,'','#f00') }}
-		    {{ basic.symbol('state_docked_u', ['indego.docked','indego.online'],'','scene_robo_lawnmower_docked.svg','','and') }}
-		    {{ basic.symbol('state_moving_u', ['indego.moving','indego.online'],'','scene_robo_lawnmower_moving.svg','','and','icon1') }}
-		    {{ basic.symbol('state_pause_u', ['indego.pause','indego.online'],'','scene_robo_lawnmower_stopp.svg','','and') }}
-		    {{ basic.symbol('state_help_u', 'indego.help','','scene_robo_lawnmower_help.svg','','','#f00') }}
+		    {{ basic.symbol('state_offline_u', 'indego.online','','dropins/icons/ws/scene_robo_lawnmower_offline.svg',0,'','#f00') }}
+		    {{ basic.symbol('state_docked_u', ['indego.docked','indego.online'],'','dropins/icons/ws/scene_robo_lawnmower_docked.svg','','and') }}
+		    {{ basic.symbol('state_moving_u', ['indego.moving','indego.online'],'','dropins/icons/ws/scene_robo_lawnmower_moving.svg','','and','icon1') }}
+		    {{ basic.symbol('state_pause_u', ['indego.pause','indego.online'],'','dropins/icons/ws/scene_robo_lawnmower_stopp.svg','','and') }}
+		    {{ basic.symbol('state_help_u', 'indego.help','','dropins/icons/ws/scene_robo_lawnmower_help.svg','','','#f00') }}
         </div>
         <br />
         <center>

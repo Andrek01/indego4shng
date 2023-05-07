@@ -33,6 +33,11 @@ Vielen Dank an Jan Odvarko für die Entwicklung des Color-Pickers (http://jscolo
 
 <a name="changelog"/></a>
 ## Change Log
+#### 2023-03-08 V4.0.0
+- Login via Bosch-ID eingebaut
+
+#### 2023-02-05 V3.0.2
+- Anpassungen für die geänderten Daten für das Wetter (es werden nun 7 Tage statt 5 übermittelt, die Sonnenstunden je Tag wurden entfern)
 
 #### 2021-05-16 V3.0.1
 - rücksetzen des Messerzählers eingebaut
@@ -156,8 +161,11 @@ indego:
 ### SmartVisu
 
 Die Inhalte des Ordners "./sv_widgets" müssen in den entsprechenden Ordner der VISU.
-In der Regel "/var/www/html/smartVISU2.9/dropins" kopiert werden.
-Wenn das smartvisu-Plugin verwendet wird und das kopieren der Widget nicht abgeschalten ist, werden die Dateien beim Start von shNG automatisch in den Dropin-Ordner kopiert. 
+In der Regel "/var/www/html/smartvisu/dropins" kopiert werden.
+Wenn das smartvisu-Plugin verwendet wird und das kopieren der Widget nicht abgeschalten ist, werden die Dateien beim Start von shNG automatisch in den Dropin-Ordner kopiert.
+Ansonsten müssen die Daten manuell in das Verzeichnigs "./dropins" kopiert werden.
+
+<strong>Die Icons aus "indego4shng/pages/icons/" müssen in das visu-dir "dropins/icons/ws/" kopiert werden.</strong>
 
 Im Ordner "/pages" des plugins ist eine vorgefertigte Raumseite für die SmartVISU. (indego.html)
 Diese muss in den Ordner "/pages/DeinName/" kopiert werden und die Raumnavigation entsprechend ergänzt werden.
