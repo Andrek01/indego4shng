@@ -35,7 +35,8 @@ Vielen Dank an Jan Odvarko für die Entwicklung des Color-Pickers (http://jscolo
 ## Change Log
 #### 2023-05-06 V4.0.1
 - Login via Single-Key-ID eingebaut
-- 
+- Endpoit der Bosch-API wurde geändert (siehe Konfiguration)
+
 #### 2023-03-08 V4.0.0
 - Login via Bosch-ID eingebaut
 
